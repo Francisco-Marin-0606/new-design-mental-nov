@@ -13,7 +13,6 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { Video, ResizeMode, AVPlaybackStatus, Audio } from 'expo-av';
-import { RotateCcw, RotateCw } from 'lucide-react-native';
 
 import * as Haptics from 'expo-haptics';
 
@@ -681,7 +680,10 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
               <View style={styles.navigationControls}>
                 <TouchableOpacity style={styles.controlButton} onPress={() => skipBy(-10000)} testID="player-skip-back">
                   <View style={styles.skipButtonContainer}>
-                    <RotateCcw size={32} color="#ffffff" strokeWidth={2} />
+                    <Image
+                      source={{ uri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/flehcaRetroceder.png' }}
+                      style={{ width: 36, height: 36, resizeMode: 'contain' }}
+                    />
                     <Text style={styles.skipLabel}>10 segs</Text>
                   </View>
                 </TouchableOpacity>
@@ -700,7 +702,10 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
 
                 <TouchableOpacity style={styles.controlButton} onPress={() => skipBy(10000)} testID="player-skip-forward">
                   <View style={styles.skipButtonContainer}>
-                    <RotateCw size={32} color="#ffffff" strokeWidth={2} />
+                    <Image
+                      source={{ uri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/flehcaRetroceder.png' }}
+                      style={{ width: 36, height: 36, resizeMode: 'contain', transform: [{ scaleX: -1 as const }] }}
+                    />
                     <Text style={styles.skipLabel}>10 segs</Text>
                   </View>
                 </TouchableOpacity>
