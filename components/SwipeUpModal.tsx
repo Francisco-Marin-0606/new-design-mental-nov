@@ -15,7 +15,7 @@ import {
 
 import { X, Download, Check } from 'lucide-react-native';
 import Svg, { Defs, LinearGradient as SvgLinearGradient, Stop, Rect } from 'react-native-svg';
-import AudioPlayerModal from './AudioPlayerModal';
+import PlayerModal from './PlayerModal';
 
 interface SwipeUpModalProps {
   visible: boolean;
@@ -489,10 +489,12 @@ export default function SwipeUpModal({ visible, onClose }: SwipeUpModalProps) {
         </View>
       </Animated.View>
 
-      <AudioPlayerModal 
-        visible={audioPlayerVisible} 
+      <PlayerModal
+        visible={audioPlayerVisible}
         onClose={() => setAudioPlayerVisible(false)}
+        mode="audio"
         title="El reloj quieto en la mesa"
+        mediaUri="https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Netflix/Mental%20Login%20Background.mp4"
       />
     </View>
   );
