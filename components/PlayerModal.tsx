@@ -12,7 +12,7 @@ import {
   View,
   useWindowDimensions,
 } from 'react-native';
-import { Video, ResizeMode, AVPlaybackStatus } from 'expo-av';
+import { Video, ResizeMode, AVPlaybackStatus, Audio } from 'expo-av';
 import { X } from 'lucide-react-native';
 
 export type Mode = 'audio' | 'video';
@@ -66,8 +66,8 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
   // === Estado liviano ===
   const [position, setPosition] = useState<number>(0);
   const [duration, setDuration] = useState<number>(0);
-  const [isPlaying, setIsPlaying] = useState<boolean>(true);
-  const intendedPlayingRef = useRef<boolean>(true); // única verdad: intención del UI
+  const [isPlaying, setIsPlaying] = useState<boolean>(Platform.OS === 'web' ? false : true);
+  const intendedPlayingRef = useRef<boolean>(Platform.OS === 'web' ? false : true); // única verdad: intención del UI
 
   // refs para throttling/RAF
   const rafRef = useRef<number | null>(null);
@@ -213,10 +213,17 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
       Animated.timing(opacity, { toValue: 1, duration: DURATION_OPEN, easing: easeInOut, useNativeDriver: true }),
       Animated.timing(translateY, { toValue: 0, duration: DURATION_OPEN, easing: easeInOut, useNativeDriver: true }),
     ]).start(async () => {
-      intendedPlayingRef.current = true;
-      setIsPlaying(true);
       if (Platform.OS === 'web') {
-        await applyPlayStateWeb(true);
+        await applyPlayStateWeb(intendedPlayingRef.current);
+        setIsPlaying(intendedPlayingRef.current);
+      } else if (videoRef.current) {
+        if (intendedPlayingRef.current) {
+          try { await videoRef.current.playAsync(); } catch {}
+          setIsPlaying(true);
+        } else {
+          try { await videoRef.current.pauseAsync(); } catch {}
+          setIsPlaying(false);
+        }
       }
     });
   }, [DURATION_OPEN, easeInOut, opacity, translateY, applyPlayStateWeb]);
@@ -224,6 +231,19 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
   useEffect(() => {
     if (visible) openModal();
   }, [visible, openModal]);
+
+  useEffect(() => {
+    if (Platform.OS === 'web') return;
+    Audio.setAudioModeAsync({
+      allowsRecordingIOS: false,
+      staysActiveInBackground: false,
+      playsInSilentModeIOS: true,
+      shouldDuckAndroid: true,
+      playThroughEarpieceAndroid: false,
+      interruptionModeAndroid: 1,
+      interruptionModeIOS: 1,
+    }).catch((e) => console.log('Audio.setAudioModeAsync error', e));
+  }, []);
 
   useEffect(() => {
     if (!visible) {
@@ -261,14 +281,19 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
       setPosition((el.currentTime ?? 0) * 1000);
       setDuration((el.duration ?? 0) * 1000);
     };
-    // IMPORTANTE: NO tocar isPlaying acá para evitar ping-pong con el estado UI.
+    const onPlay = () => setIsPlaying(true);
+    const onPause = () => setIsPlaying(false);
 
     el.addEventListener('timeupdate', onTime);
     el.addEventListener('loadedmetadata', onTime);
+    el.addEventListener('play', onPlay);
+    el.addEventListener('pause', onPause);
 
     return () => {
       el.removeEventListener('timeupdate', onTime);
       el.removeEventListener('loadedmetadata', onTime);
+      el.removeEventListener('play', onPlay);
+      el.removeEventListener('pause', onPause);
     };
   }, [visible, mode]);
 
@@ -300,7 +325,7 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
               />
             ) : (
               <View style={[styles.video, styles.webVideoFallback]} testID="player-web-video-fallback">
-                <video ref={webVideoRef} style={styles.webVideo} autoPlay loop muted={false} playsInline />
+                <video ref={webVideoRef} style={styles.webVideo} autoPlay loop muted={false} playsInline preload="auto" />
                 {/* Set src via attribute to avoid React re-mounts */}
                 <script dangerouslySetInnerHTML={{__html:`
                   (function(){ try{
@@ -340,11 +365,11 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
             ) : (
               <View style={[styles.video, styles.webVideoFallback]} testID="player-audio-web-bg">
                 {/* Fondo visual */}
-                <video style={styles.webVideo} autoPlay loop muted playsInline>
+                <video style={styles.webVideo} autoPlay loop muted playsInline preload="auto">
                   <source src={BACKGROUND_URI} type="video/mp4" />
                 </video>
                 {/* Pista de audio real */}
-                <audio ref={webAudioRef} autoPlay loop />
+                <audio ref={webAudioRef} loop preload="auto" />
                 <script dangerouslySetInnerHTML={{__html:`
                   (function(){ try{
                     var a = document.currentScript.previousElementSibling;
