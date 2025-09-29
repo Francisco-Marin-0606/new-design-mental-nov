@@ -655,10 +655,10 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
             )
           )}
 
-          <View style={styles.controlsOverlay} pointerEvents="box-none">
-            <Animated.View style={styles.dragArea} {...panResponder.panHandlers} testID="player-drag-area">
+          <Animated.View style={styles.controlsOverlay} {...panResponder.panHandlers} testID="player-drag-area">
+            <View style={styles.dragHandle}>
               <View style={styles.handle} />
-            </Animated.View>
+            </View>
 
 
 
@@ -720,7 +720,7 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
                 </TouchableOpacity>
               </View>
             </View>
-          </View>
+          </Animated.View>
         </Animated.View>
       </View>
     </ErrorBoundary>
@@ -778,7 +778,7 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     zIndex: 2,
   },
-  dragArea: {
+  dragHandle: {
     position: 'absolute',
     top: 45,
     left: 0,
