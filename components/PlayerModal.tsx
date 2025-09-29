@@ -66,8 +66,8 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
   // === Estado liviano ===
   const [position, setPosition] = useState<number>(0);
   const [duration, setDuration] = useState<number>(0);
-  const [isPlaying, setIsPlaying] = useState<boolean>(Platform.OS === 'web' ? false : true);
-  const intendedPlayingRef = useRef<boolean>(Platform.OS === 'web' ? false : true); // única verdad: intención del UI
+  const [isPlaying, setIsPlaying] = useState<boolean>(false);
+  const intendedPlayingRef = useRef<boolean>(false); // única verdad: intención del UI
 
   // refs para throttling/RAF
   const rafRef = useRef<number | null>(null);
@@ -251,6 +251,10 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
       opacity.setValue(0);
       intendedPlayingRef.current = false;
       setIsPlaying(false);
+    } else {
+      // Cuando se abre el modal, queremos que se reproduzca automáticamente
+      intendedPlayingRef.current = true;
+      setIsPlaying(true);
     }
   }, [visible, screenHeight, translateY, opacity]);
 
