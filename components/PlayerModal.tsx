@@ -13,6 +13,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { Video, ResizeMode, AVPlaybackStatus, Audio } from 'expo-av';
+import { RotateCcw, RotateCw } from 'lucide-react-native';
 
 import * as Haptics from 'expo-haptics';
 
@@ -679,11 +680,10 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
 
               <View style={styles.navigationControls}>
                 <TouchableOpacity style={styles.controlButton} onPress={() => skipBy(-10000)} testID="player-skip-back">
-                  <Image
-                    source={{ uri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Netflix/10SegsRetroceder.png' }}
-                    style={styles.skipIcon}
-                    resizeMode="contain"
-                  />
+                  <View style={styles.skipButtonContainer}>
+                    <RotateCcw size={24} color="#ffffff" strokeWidth={2} />
+                    <Text style={styles.skipText}>10</Text>
+                  </View>
                 </TouchableOpacity>
 
                 <TouchableOpacity style={styles.playPauseButton} onPress={togglePlayPause} testID="player-toggle-play">
@@ -699,11 +699,10 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
                 </TouchableOpacity>
 
                 <TouchableOpacity style={styles.controlButton} onPress={() => skipBy(10000)} testID="player-skip-forward">
-                  <Image
-                    source={{ uri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Netflix/10Segs.png' }}
-                    style={styles.skipIcon}
-                    resizeMode="contain"
-                  />
+                  <View style={styles.skipButtonContainer}>
+                    <RotateCw size={24} color="#ffffff" strokeWidth={2} />
+                    <Text style={styles.skipText}>10</Text>
+                  </View>
                 </TouchableOpacity>
               </View>
             </View>
@@ -881,8 +880,17 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
   },
-  skipIcon: {
-    width: 30,
-    height: 30,
+  skipButtonContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  skipText: {
+    position: 'absolute',
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#ffffff',
+    textAlign: 'center',
+    marginTop: 2,
   },
 });
