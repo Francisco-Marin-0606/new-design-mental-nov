@@ -865,7 +865,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 40,
-    marginTop: 18,
+    marginTop: 8,
   },
   controlButton: {
     width: 60,
