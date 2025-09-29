@@ -626,12 +626,12 @@ const styles = StyleSheet.create({
     zIndex: 5,
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
+    fontSize: 32,
+    fontWeight: '600',
     color: '#ffffff',
     textAlign: 'center',
-    marginBottom: 12,
-    lineHeight: 34,
+    marginBottom: 0,
+    lineHeight: 38,
   },
   subtitle: {
     fontSize: 18,
