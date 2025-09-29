@@ -682,7 +682,7 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
                   <View style={styles.skipButtonContainer}>
                     <Image
                       source={{ uri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/FlechasPlayer.png' }}
-                      style={{ width: 36, height: 36, resizeMode: 'contain' }}
+                      style={{ width: 36, height: 36, resizeMode: 'contain', transform: [{ scaleX: -1 as const }] }}
                     />
                     <Text style={styles.skipLabel}>10 segs</Text>
                   </View>
@@ -704,7 +704,7 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
                   <View style={styles.skipButtonContainer}>
                     <Image
                       source={{ uri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/FlechasPlayer.png' }}
-                      style={{ width: 36, height: 36, resizeMode: 'contain', transform: [{ scaleX: -1 as const }] }}
+                      style={{ width: 36, height: 36, resizeMode: 'contain' }}
                     />
                     <Text style={styles.skipLabel}>10 segs</Text>
                   </View>
@@ -815,7 +815,7 @@ const styles = StyleSheet.create({
   },
   bottomControls: {
     position: 'absolute',
-    bottom: 160,
+    bottom: 155,
     left: 40,
     right: 40,
     alignItems: 'center',
