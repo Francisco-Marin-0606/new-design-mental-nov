@@ -144,45 +144,31 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
     }
   }, [applyPlayStateWeb, mode]);
 
-  const skipBy = useCallback(
-    async (deltaMs: number) => {
-      try {
-        const target = Math.max(0, Math.min(duration ?? 0, (position ?? 0) + deltaMs));
-        if (Platform.OS === 'web') {
-          if (mode === 'audio') {
-            const el = webAudioRef.current;
-            if (el) el.currentTime = target / 1000;
-          } else {
-            const el = webVideoRef.current;
-            if (el) el.currentTime = target / 1000;
-          }
-          setPosition(target);
-        } else if (videoRef.current) {
-          await videoRef.current.setPositionAsync(target);
-          setPosition(target);
-        }
-      } catch (err) {
-        console.log('skipBy error:', err);
-      }
-    },
-    [duration, position, mode]
-  );
-
   const seekTo = useCallback(
     async (targetMs: number) => {
       try {
         const target = Math.max(0, Math.min(duration ?? 0, targetMs));
         if (Platform.OS === 'web') {
           if (mode === 'audio') {
-            const el = webAudioRef.current;
-            if (el) el.currentTime = target / 1000;
+            const audioEl = webAudioRef.current;
+            const bgVideoEl = webBackgroundVideoRef.current;
+            if (audioEl) audioEl.currentTime = target / 1000;
+            if (bgVideoEl) bgVideoEl.currentTime = target / 1000; // Sync background video
           } else {
             const el = webVideoRef.current;
             if (el) el.currentTime = target / 1000;
           }
           setPosition(target);
-        } else if (videoRef.current) {
-          await videoRef.current.setPositionAsync(target);
+        } else {
+          // Native: sync both main video and background video
+          const promises = [];
+          if (videoRef.current) {
+            promises.push(videoRef.current.setPositionAsync(target));
+          }
+          if (mode === 'audio' && backgroundVideoRef.current) {
+            promises.push(backgroundVideoRef.current.setPositionAsync(target));
+          }
+          await Promise.all(promises);
           setPosition(target);
         }
       } catch (err) {
@@ -190,6 +176,18 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
       }
     },
     [duration, mode]
+  );
+
+  const skipBy = useCallback(
+    async (deltaMs: number) => {
+      try {
+        const target = Math.max(0, Math.min(duration ?? 0, (position ?? 0) + deltaMs));
+        await seekTo(target); // Use seekTo for consistency
+      } catch (err) {
+        console.log('skipBy error:', err);
+      }
+    },
+    [duration, position, seekTo]
   );
 
   // ====== Animaciones de apertura/cierre ======
@@ -311,44 +309,57 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
   );
 
   // ====== Timeline Seek Gestures ======
+  const timelineLayoutRef = useRef<{ width: number; x: number }>({ width: 350, x: 0 });
+  const seekPositionRef = useRef<number>(0);
+  
   const timelinePanResponder = useMemo(
     () =>
       PanResponder.create({
         onStartShouldSetPanResponder: () => true,
         onMoveShouldSetPanResponder: (_evt, gs) => Math.abs(gs.dx) > Math.abs(gs.dy) && Math.abs(gs.dx) > 5,
         onPanResponderTerminationRequest: () => false,
-        onPanResponderGrant: () => {
-          if (isClosingRef.current) return;
+        onPanResponderGrant: (evt) => {
+          if (isClosingRef.current || duration <= 0) return;
           isSeekingRef.current = true;
+          
+          // Calculate initial position based on touch
+          const touchX = evt.nativeEvent.pageX;
+          const timelineLayout = timelineLayoutRef.current;
+          const relativeX = touchX - timelineLayout.x;
+          const progress = Math.max(0, Math.min(1, relativeX / timelineLayout.width));
+          const targetPosition = progress * duration;
+          
+          seekPositionRef.current = targetPosition;
+          // Only update UI position, don't seek yet
+          setPosition(targetPosition);
         },
         onPanResponderMove: (evt, gs) => {
           if (!isSeekingRef.current || isClosingRef.current || duration <= 0) return;
           
-          // Calculate the timeline width (we need to account for the container padding)
-          const timelineWidth = evt.nativeEvent.target ? 
-            (evt.nativeEvent.target as any).offsetWidth || 350 : 350; // fallback width
-          
-          // Get the touch position relative to the timeline start
-          const touchX = evt.nativeEvent.locationX;
-          const progress = Math.max(0, Math.min(1, touchX / timelineWidth));
+          // Use cumulative gesture movement for smoother tracking
+          const touchX = evt.nativeEvent.pageX;
+          const timelineLayout = timelineLayoutRef.current;
+          const relativeX = touchX - timelineLayout.x;
+          const progress = Math.max(0, Math.min(1, relativeX / timelineLayout.width));
           const targetPosition = progress * duration;
           
-          // Update position immediately for smooth UI feedback
+          seekPositionRef.current = targetPosition;
+          // Only update UI position during drag, don't seek yet
           setPosition(targetPosition);
         },
-        onPanResponderRelease: async (evt, gs) => {
+        onPanResponderRelease: async () => {
           if (!isSeekingRef.current || isClosingRef.current || duration <= 0) return;
-          isSeekingRef.current = false;
           
-          // Calculate final seek position
-          const timelineWidth = evt.nativeEvent.target ? 
-            (evt.nativeEvent.target as any).offsetWidth || 350 : 350;
-          const touchX = evt.nativeEvent.locationX;
-          const progress = Math.max(0, Math.min(1, touchX / timelineWidth));
-          const targetPosition = progress * duration;
+          const targetPosition = seekPositionRef.current;
           
           // Perform the actual seek
-          await seekTo(targetPosition);
+          try {
+            await seekTo(targetPosition);
+          } catch (error) {
+            console.log('Seek error:', error);
+          } finally {
+            isSeekingRef.current = false;
+          }
         },
         onPanResponderTerminate: () => {
           isSeekingRef.current = false;
@@ -565,9 +576,18 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
             </View>
 
             <View style={styles.bottomControls}>
-              <View style={styles.timeline} {...timelinePanResponder.panHandlers}>
-                <View style={[styles.timelineProgress, { width: `${progressPct}%` }]} />
-                <View style={[styles.timelineThumb, { left: `${progressPct}%` }]} />
+              <View 
+                style={styles.timeline} 
+                {...timelinePanResponder.panHandlers}
+                onLayout={(event) => {
+                  const { width, x } = event.nativeEvent.layout;
+                  timelineLayoutRef.current = { width, x };
+                }}
+              >
+                <View style={styles.timelineTrack}>
+                  <View style={[styles.timelineProgress, { width: `${progressPct}%` }]} />
+                  <View style={[styles.timelineThumb, { left: `${progressPct}%` }]} />
+                </View>
               </View>
               <View style={styles.timeRow}>
                 <Text style={styles.timeText}>{formatTime(position)}</Text>
@@ -724,11 +744,19 @@ const styles = StyleSheet.create({
   },
   timeline: {
     width: '100%',
+    height: 20, // Increased touch area
+    backgroundColor: 'transparent',
+    borderRadius: 2,
+    position: 'relative',
+    marginBottom: 8,
+    justifyContent: 'center',
+  },
+  timelineTrack: {
+    width: '100%',
     height: 4,
     backgroundColor: 'rgba(255, 255, 255, 0.3)',
     borderRadius: 2,
     position: 'relative',
-    marginBottom: 8,
   },
   timelineProgress: {
     height: '100%',
