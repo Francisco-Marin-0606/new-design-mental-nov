@@ -58,6 +58,7 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
   const opacity = useRef(new Animated.Value(0)).current;
 
   const isDraggingRef = useRef<boolean>(false);
+  const isSeekingRef = useRef<boolean>(false);
 
   const videoRef = useRef<Video>(null);             // principal (video o "pista de audio" oculta)
   const backgroundVideoRef = useRef<Video>(null);   // video de fondo para modo audio
@@ -165,6 +166,30 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
       }
     },
     [duration, position, mode]
+  );
+
+  const seekTo = useCallback(
+    async (targetMs: number) => {
+      try {
+        const target = Math.max(0, Math.min(duration ?? 0, targetMs));
+        if (Platform.OS === 'web') {
+          if (mode === 'audio') {
+            const el = webAudioRef.current;
+            if (el) el.currentTime = target / 1000;
+          } else {
+            const el = webVideoRef.current;
+            if (el) el.currentTime = target / 1000;
+          }
+          setPosition(target);
+        } else if (videoRef.current) {
+          await videoRef.current.setPositionAsync(target);
+          setPosition(target);
+        }
+      } catch (err) {
+        console.log('seekTo error:', err);
+      }
+    },
+    [duration, mode]
   );
 
   // ====== Animaciones de apertura/cierre ======
@@ -285,6 +310,53 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
     [HANDLE_CLOSE_THRESHOLD, VELOCITY_CLOSE_THRESHOLD, DURATION_SNAP, easeInOut, opacity, screenHeight, translateY, closeModal]
   );
 
+  // ====== Timeline Seek Gestures ======
+  const timelinePanResponder = useMemo(
+    () =>
+      PanResponder.create({
+        onStartShouldSetPanResponder: () => true,
+        onMoveShouldSetPanResponder: (_evt, gs) => Math.abs(gs.dx) > Math.abs(gs.dy) && Math.abs(gs.dx) > 5,
+        onPanResponderTerminationRequest: () => false,
+        onPanResponderGrant: () => {
+          if (isClosingRef.current) return;
+          isSeekingRef.current = true;
+        },
+        onPanResponderMove: (evt, gs) => {
+          if (!isSeekingRef.current || isClosingRef.current || duration <= 0) return;
+          
+          // Calculate the timeline width (we need to account for the container padding)
+          const timelineWidth = evt.nativeEvent.target ? 
+            (evt.nativeEvent.target as any).offsetWidth || 350 : 350; // fallback width
+          
+          // Get the touch position relative to the timeline start
+          const touchX = evt.nativeEvent.locationX;
+          const progress = Math.max(0, Math.min(1, touchX / timelineWidth));
+          const targetPosition = progress * duration;
+          
+          // Update position immediately for smooth UI feedback
+          setPosition(targetPosition);
+        },
+        onPanResponderRelease: async (evt, gs) => {
+          if (!isSeekingRef.current || isClosingRef.current || duration <= 0) return;
+          isSeekingRef.current = false;
+          
+          // Calculate final seek position
+          const timelineWidth = evt.nativeEvent.target ? 
+            (evt.nativeEvent.target as any).offsetWidth || 350 : 350;
+          const touchX = evt.nativeEvent.locationX;
+          const progress = Math.max(0, Math.min(1, touchX / timelineWidth));
+          const targetPosition = progress * duration;
+          
+          // Perform the actual seek
+          await seekTo(targetPosition);
+        },
+        onPanResponderTerminate: () => {
+          isSeekingRef.current = false;
+        },
+      }),
+    [duration, seekTo]
+  );
+
   // ====== Apertura ======
   const openModal = useCallback(() => {
     if (isDraggingRef.current) return;
@@ -342,6 +414,7 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
       setIsPlaying(false);
       isClosingRef.current = false; // Reset flag cuando se cierra
       isDraggingRef.current = false; // Reset drag flag
+      isSeekingRef.current = false; // Reset seek flag
     } else {
       // Cuando se abre el modal, queremos que se reproduzca automáticamente
       intendedPlayingRef.current = true;
@@ -353,6 +426,7 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
   // ====== Listener de status (native) con throttle vía rAF ======
   const handlePlaybackStatus = useCallback((s: AVPlaybackStatus) => {
     if (!('isLoaded' in s) || !s.isLoaded) return;
+    if (isSeekingRef.current) return; // Don't update position while seeking
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
     rafRef.current = requestAnimationFrame(() => {
       setPosition(s.positionMillis ?? 0);
@@ -374,6 +448,7 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
     if (!el) return;
 
     const onTime = () => {
+      if (isSeekingRef.current) return; // Don't update position while seeking
       setPosition((el.currentTime ?? 0) * 1000);
       setDuration((el.duration ?? 0) * 1000);
     };
@@ -490,7 +565,7 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
             </View>
 
             <View style={styles.bottomControls}>
-              <View style={styles.timeline}>
+              <View style={styles.timeline} {...timelinePanResponder.panHandlers}>
                 <View style={[styles.timelineProgress, { width: `${progressPct}%` }]} />
                 <View style={[styles.timelineThumb, { left: `${progressPct}%` }]} />
               </View>
