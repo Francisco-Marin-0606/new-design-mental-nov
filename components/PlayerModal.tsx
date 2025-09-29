@@ -52,11 +52,10 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
 const BACKGROUND_URI =
   'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Netflix/Mental%20Login%20Background.mp4';
 
-// Speed zones configuration - exactly 3 levels
+// Speed zones configuration - exactly 2 levels
 const SPEED_ZONES = {
   SLOW: { multiplier: 0.2, hapticType: 'light' as const },    // Highest = slowest/most precise
-  NORMAL: { multiplier: 1.0, hapticType: 'medium' as const }, // Middle = normal speed
-  FAST: { multiplier: 3.0, hapticType: 'heavy' as const }     // Lowest = fastest
+  NORMAL: { multiplier: 1.0, hapticType: 'medium' as const }, // Lower = normal speed
 };
 
 const ZONE_HEIGHT = 80; // Height of each speed zone in pixels
@@ -322,15 +321,14 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
   const timelineLayoutRef = useRef<{ width: number; x: number }>({ width: 350, x: 0 });
   const seekPositionRef = useRef<number>(0);
   const initialTouchRef = useRef<{ x: number; y: number; position: number }>({ x: 0, y: 0, position: 0 });
-  const currentSpeedZoneRef = useRef<number>(1); // 0 = slow, 1 = normal, 2 = fast
+  const currentSpeedZoneRef = useRef<number>(1); // 0 = slow, 1 = normal
 
   
   const getSpeedZone = useCallback((deltaY: number): number => {
     // Negative deltaY means dragging upward (higher zones)
-    // Only 3 zones: slow (highest), normal (middle), fast (lowest)
+    // Only 2 zones: slow (highest), normal (lower)
     if (deltaY < -ZONE_HEIGHT) return 0; // SLOW zone (dragging high up) - most precise
-    if (deltaY < 0) return 1;             // NORMAL zone (slightly up or center)
-    return 2;                             // FAST zone (dragging down) - fastest
+    return 1;                             // NORMAL zone (center and below) - normal speed
   }, []);
   
   const triggerHapticForZone = useCallback(async (zone: number) => {
@@ -343,9 +341,6 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
           break;
         case 1: // Normal zone
           await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-          break;
-        case 2: // Fast zone
-          await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
           break;
       }
     } catch (error) {
@@ -408,7 +403,6 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
           
           // Get speed multiplier for current zone
           const speedMultiplier = newSpeedZone === 0 ? SPEED_ZONES.SLOW.multiplier :
-                                 newSpeedZone === 2 ? SPEED_ZONES.FAST.multiplier :
                                  SPEED_ZONES.NORMAL.multiplier;
           
           const timelineLayout = timelineLayoutRef.current;
