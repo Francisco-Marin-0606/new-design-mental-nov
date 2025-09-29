@@ -820,7 +820,6 @@ const styles = StyleSheet.create({
     left: 40,
     right: 40,
     alignItems: 'center',
-    margin: 15,
   },
   timeline: {
     width: '100%',
