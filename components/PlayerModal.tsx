@@ -52,14 +52,14 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
 const BACKGROUND_URI =
   'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Netflix/Mental%20Login%20Background.mp4';
 
-// Speed zones configuration - moved outside component to avoid dependency issues
+// Speed zones configuration - exactly 3 levels
 const SPEED_ZONES = {
-  SLOW: { multiplier: 0.3, hapticType: 'light' as const },
-  NORMAL: { multiplier: 1.0, hapticType: 'medium' as const },
-  FAST: { multiplier: 2.0, hapticType: 'heavy' as const }
+  SLOW: { multiplier: 0.2, hapticType: 'light' as const },    // Highest = slowest/most precise
+  NORMAL: { multiplier: 1.0, hapticType: 'medium' as const }, // Middle = normal speed
+  FAST: { multiplier: 3.0, hapticType: 'heavy' as const }     // Lowest = fastest
 };
 
-const ZONE_HEIGHT = 60; // Height of each speed zone in pixels
+const ZONE_HEIGHT = 80; // Height of each speed zone in pixels
 
 export default function PlayerModal({ visible, onClose, mode, title = 'Reproductor', mediaUri }: PlayerModalProps) {
   const { height: screenHeight } = useWindowDimensions();
@@ -326,11 +326,11 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
 
   
   const getSpeedZone = useCallback((deltaY: number): number => {
-    // Negative deltaY means dragging upward
-    if (deltaY < -ZONE_HEIGHT) return 0; // Slow zone (dragging up)
-    if (deltaY < -ZONE_HEIGHT/2) return 1; // Normal zone (slightly up)
-    if (deltaY > ZONE_HEIGHT/2) return 2;  // Fast zone (dragging down)
-    return 1; // Normal zone (center)
+    // Negative deltaY means dragging upward (higher zones)
+    // Only 3 zones: slow (highest), normal (middle), fast (lowest)
+    if (deltaY < -ZONE_HEIGHT) return 0; // SLOW zone (dragging high up) - most precise
+    if (deltaY < 0) return 1;             // NORMAL zone (slightly up or center)
+    return 2;                             // FAST zone (dragging down) - fastest
   }, []);
   
   const triggerHapticForZone = useCallback(async (zone: number) => {
@@ -384,28 +384,27 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
           // Calculate movement relative to initial touch
           const currentTouchX = evt.nativeEvent.pageX;
           const currentTouchY = evt.nativeEvent.pageY;
-          const deltaX = currentTouchX - initialTouchRef.current.x;
           const deltaY = currentTouchY - initialTouchRef.current.y;
           
-          // Determine speed zone based on vertical position
+          // Determine speed zone based on vertical position (only upward zones)
           const newSpeedZone = getSpeedZone(deltaY);
           
-          // When speed zone changes, we need to maintain the current position as reference
+          // When speed zone changes, trigger haptic and update reference
           if (newSpeedZone !== currentSpeedZoneRef.current) {
-            // Update the reference position to current position to avoid jumps
-            const currentSeekPosition = seekPositionRef.current;
-            initialTouchRef.current = {
-              x: currentTouchX,
-              y: currentTouchY,
-              position: currentSeekPosition
-            };
-            
             currentSpeedZoneRef.current = newSpeedZone;
             triggerHapticForZone(newSpeedZone);
             
-            // Reset deltaX since we updated the reference point
-            return;
+            // Update reference point to prevent jumps when changing zones
+            // Keep the current seek position as the new baseline
+            initialTouchRef.current = {
+              x: currentTouchX,
+              y: initialTouchRef.current.y, // Keep original Y to maintain zone calculation
+              position: seekPositionRef.current
+            };
           }
+          
+          // Calculate horizontal movement from the reference point
+          const deltaX = currentTouchX - initialTouchRef.current.x;
           
           // Get speed multiplier for current zone
           const speedMultiplier = newSpeedZone === 0 ? SPEED_ZONES.SLOW.multiplier :
