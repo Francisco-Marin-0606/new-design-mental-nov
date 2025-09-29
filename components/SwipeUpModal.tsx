@@ -237,7 +237,7 @@ export default function SwipeUpModal({ visible, onClose }: SwipeUpModalProps) {
   if (!visible) return null;
 
   return (
-    <View style={styles.overlay} testID="swipeup-overlay" {...panResponder.panHandlers}>
+    <View style={styles.overlay} testID="swipeup-overlay" {...(audioPlayerVisible ? {} : panResponder.panHandlers)}>
       <Animated.View style={[styles.backdrop, { opacity }]} pointerEvents="none" testID="modal-backdrop" />
       <Animated.View
         style={[
