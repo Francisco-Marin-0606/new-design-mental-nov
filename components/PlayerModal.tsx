@@ -618,7 +618,7 @@ const styles = StyleSheet.create({
   },
   titleContainer: {
     position: 'absolute',
-    top: 120,
+    top: 180,
     left: 0,
     right: 0,
     alignItems: 'center',
@@ -641,7 +641,7 @@ const styles = StyleSheet.create({
   },
   bottomControls: {
     position: 'absolute',
-    bottom: 60,
+    bottom: 120,
     left: 20,
     right: 20,
     alignItems: 'center',
