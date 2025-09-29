@@ -40,7 +40,8 @@ export default function AudioPlayerModal({ visible, onClose, title = 'Palabras q
   const DURATION_CLOSE = 600;
   const DURATION_SNAP = 480;
 
-  const HANDLE_CLOSE_THRESHOLD = Math.max(120, screenHeight * 0.2);
+  const HANDLE_CLOSE_THRESHOLD = 100;
+  const VELOCITY_CLOSE_THRESHOLD = 0.5;
 
   const formatTime = useCallback((milliseconds: number): string => {
     const totalSeconds = Math.floor(milliseconds / 1000);
@@ -187,7 +188,7 @@ export default function AudioPlayerModal({ visible, onClose, title = 'Palabras q
         },
         onPanResponderRelease: (_evt, gs) => {
           isDraggingRef.current = false;
-          const shouldClose = gs.dy > HANDLE_CLOSE_THRESHOLD || gs.vy > 0.6;
+          const shouldClose = gs.dy > HANDLE_CLOSE_THRESHOLD || gs.vy > VELOCITY_CLOSE_THRESHOLD;
           if (shouldClose) {
             closeBySwipe();
           } else {
