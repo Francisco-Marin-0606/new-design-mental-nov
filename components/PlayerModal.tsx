@@ -108,8 +108,19 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
     const next = !intendedPlayingRef.current;
     intendedPlayingRef.current = next;
     setIsPlaying(next);
-    if (Platform.OS === 'web') {
-      await applyPlayStateWeb(next);
+
+    try {
+      if (Platform.OS === 'web') {
+        await applyPlayStateWeb(next);
+      } else if (videoRef.current) {
+        const status = await videoRef.current.getStatusAsync();
+        if ('isLoaded' in status && status.isLoaded) {
+          if (next) await videoRef.current.playAsync();
+          else await videoRef.current.pauseAsync();
+        }
+      }
+    } catch (err) {
+      console.log('togglePlayPause error:', err);
     }
   }, [applyPlayStateWeb]);
 
@@ -283,7 +294,7 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
                 useNativeControls={false}
                 resizeMode={ResizeMode.COVER}
                 isLooping
-                shouldPlay={isPlaying}
+                shouldPlay={false}
                 onPlaybackStatusUpdate={handlePlaybackStatus}
                 testID="player-video"
               />
@@ -321,7 +332,7 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
                   useNativeControls={false}
                   resizeMode={ResizeMode.COVER}
                   isLooping
-                  shouldPlay={isPlaying}
+                  shouldPlay={false}
                   onPlaybackStatusUpdate={handlePlaybackStatus}
                   testID="player-audio-hidden"
                 />
