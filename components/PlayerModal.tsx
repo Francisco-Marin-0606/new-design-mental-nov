@@ -619,10 +619,11 @@ const styles = StyleSheet.create({
   titleContainer: {
     position: 'absolute',
     top: 180,
-    left: 0,
-    right: 0,
+    left: '10%',
+    right: '10%',
     alignItems: 'center',
-    paddingHorizontal: 40,
+    maxWidth: 344,
+    alignSelf: 'center',
     zIndex: 5,
   },
   title: {
