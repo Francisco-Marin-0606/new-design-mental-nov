@@ -797,6 +797,7 @@ const styles = StyleSheet.create({
     maxWidth: 220,
     alignSelf: 'center',
     zIndex: 5,
+    marginBottom: 10,
   },
   title: {
     fontSize: 32,
