@@ -311,6 +311,7 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
   // ====== Timeline Seek Gestures ======
   const timelineLayoutRef = useRef<{ width: number; x: number }>({ width: 350, x: 0 });
   const seekPositionRef = useRef<number>(0);
+  const initialTouchRef = useRef<{ x: number; position: number }>({ x: 0, position: 0 });
   
   const timelinePanResponder = useMemo(
     () =>
@@ -322,26 +323,29 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
           if (isClosingRef.current || duration <= 0) return;
           isSeekingRef.current = true;
           
-          // Calculate initial position based on touch
+          // Store initial touch position and current playback position
           const touchX = evt.nativeEvent.pageX;
-          const timelineLayout = timelineLayoutRef.current;
-          const relativeX = touchX - timelineLayout.x;
-          const progress = Math.max(0, Math.min(1, relativeX / timelineLayout.width));
-          const targetPosition = progress * duration;
+          const currentPosition = position || 0;
           
-          seekPositionRef.current = targetPosition;
-          // Only update UI position, don't seek yet
-          setPosition(targetPosition);
+          initialTouchRef.current = {
+            x: touchX,
+            position: currentPosition
+          };
+          
+          seekPositionRef.current = currentPosition;
+          // Don't change position on initial touch
         },
         onPanResponderMove: (evt, gs) => {
           if (!isSeekingRef.current || isClosingRef.current || duration <= 0) return;
           
-          // Use cumulative gesture movement for smoother tracking
-          const touchX = evt.nativeEvent.pageX;
+          // Calculate movement relative to initial touch
+          const currentTouchX = evt.nativeEvent.pageX;
+          const deltaX = currentTouchX - initialTouchRef.current.x;
           const timelineLayout = timelineLayoutRef.current;
-          const relativeX = touchX - timelineLayout.x;
-          const progress = Math.max(0, Math.min(1, relativeX / timelineLayout.width));
-          const targetPosition = progress * duration;
+          
+          // Convert pixel movement to time delta
+          const timeDelta = (deltaX / timelineLayout.width) * duration;
+          const targetPosition = Math.max(0, Math.min(duration, initialTouchRef.current.position + timeDelta));
           
           seekPositionRef.current = targetPosition;
           // Only update UI position during drag, don't seek yet
@@ -365,7 +369,7 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
           isSeekingRef.current = false;
         },
       }),
-    [duration, seekTo]
+    [duration, seekTo, position]
   );
 
   // ====== Apertura ======
