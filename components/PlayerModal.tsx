@@ -13,7 +13,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { Video, ResizeMode, AVPlaybackStatus, Audio } from 'expo-av';
-import { ChevronLeft, ChevronRight } from 'lucide-react-native';
+import { RotateCcw, RotateCw } from 'lucide-react-native';
 
 import * as Haptics from 'expo-haptics';
 
@@ -681,7 +681,7 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
               <View style={styles.navigationControls}>
                 <TouchableOpacity style={styles.controlButton} onPress={() => skipBy(-10000)} testID="player-skip-back">
                   <View style={styles.skipButtonContainer}>
-                    <ChevronLeft size={28} color="#ffffff" strokeWidth={2} />
+                    <RotateCcw size={28} color="#ffffff" strokeWidth={2} />
                     <Text style={styles.skipLabel}>10 segs</Text>
                   </View>
                 </TouchableOpacity>
@@ -700,7 +700,7 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
 
                 <TouchableOpacity style={styles.controlButton} onPress={() => skipBy(10000)} testID="player-skip-forward">
                   <View style={styles.skipButtonContainer}>
-                    <ChevronRight size={28} color="#ffffff" strokeWidth={2} />
+                    <RotateCw size={28} color="#ffffff" strokeWidth={2} />
                     <Text style={styles.skipLabel}>10 segs</Text>
                   </View>
                 </TouchableOpacity>
