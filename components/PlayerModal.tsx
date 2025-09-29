@@ -794,11 +794,11 @@ const styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.7)',
     textAlign: 'center',
     fontWeight: '400',
-    marginTop: 5,
+    marginTop: 15,
   },
   bottomControls: {
     position: 'absolute',
-    bottom: 120,
+    bottom: 160,
     left: 40,
     right: 40,
     alignItems: 'center',
