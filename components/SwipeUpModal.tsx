@@ -223,14 +223,14 @@ export default function SwipeUpModal({ visible, onClose }: SwipeUpModalProps) {
           ]}
           pointerEvents="none"
         >
-          <Svg width={screenWidth} height={screenHeight * 1.5}>
+          <Svg width={screenWidth} height={screenHeight * 1.8}>
             <Defs>
               <SvgLinearGradient id="modalBg" x1="0%" y1="0%" x2="86.6%" y2="50%">
                 <Stop offset="0%" stopColor="#a2380e" stopOpacity={1} />
                 <Stop offset="100%" stopColor="#7c2709" stopOpacity={1} />
               </SvgLinearGradient>
             </Defs>
-            <Rect x={0} y={0} width={screenWidth} height={screenHeight * 1.5} fill="url(#modalBg)" />
+            <Rect x={0} y={0} width={screenWidth} height={screenHeight * 1.8} fill="url(#modalBg)" />
           </Svg>
         </Animated.View>
         <View style={[styles.innerShift, { marginTop: shiftY }]} testID="modal-inner">
@@ -473,7 +473,7 @@ const styles = StyleSheet.create({
   handle: { width: 40, height: 4, backgroundColor: 'rgba(255, 255, 255, 0.3)', borderRadius: 2, marginBottom: 4 },
   closeButton: { position: 'absolute', top: 32, right: 20, width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(0, 0, 0, 0.2)', justifyContent: 'center', alignItems: 'center', zIndex: 10 },
   scroll: { flex: 1, backgroundColor: 'transparent' },
-  scrollContent: { paddingBottom: 60, position: 'relative' },
+  scrollContent: { paddingBottom: 120, position: 'relative' },
   content: { paddingHorizontal: 24, paddingTop: 56, marginTop: 40 },
   imageContainer: { alignItems: 'center', marginBottom: 24, alignSelf: 'center', width: '80%', maxWidth: 344, height: 200, position: 'relative' },
   imageShadowContainer: {
