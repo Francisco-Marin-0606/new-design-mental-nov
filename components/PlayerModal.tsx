@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { Video, ResizeMode, AVPlaybackStatus, Audio } from 'expo-av';
 import { X } from 'lucide-react-native';
+import * as Haptics from 'expo-haptics';
 
 export type Mode = 'audio' | 'video';
 
@@ -50,6 +51,15 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
 
 const BACKGROUND_URI =
   'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Netflix/Mental%20Login%20Background.mp4';
+
+// Speed zones configuration - moved outside component to avoid dependency issues
+const SPEED_ZONES = {
+  SLOW: { multiplier: 0.3, hapticType: 'light' as const },
+  NORMAL: { multiplier: 1.0, hapticType: 'medium' as const },
+  FAST: { multiplier: 2.0, hapticType: 'heavy' as const }
+};
+
+const ZONE_HEIGHT = 60; // Height of each speed zone in pixels
 
 export default function PlayerModal({ visible, onClose, mode, title = 'Reproductor', mediaUri }: PlayerModalProps) {
   const { height: screenHeight } = useWindowDimensions();
@@ -311,13 +321,40 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
   // ====== Timeline Seek Gestures ======
   const timelineLayoutRef = useRef<{ width: number; x: number }>({ width: 350, x: 0 });
   const seekPositionRef = useRef<number>(0);
-  const initialTouchRef = useRef<{ x: number; position: number }>({ x: 0, position: 0 });
+  const initialTouchRef = useRef<{ x: number; y: number; position: number }>({ x: 0, y: 0, position: 0 });
+  const currentSpeedZoneRef = useRef<number>(1); // 0 = slow, 1 = normal, 2 = fast
+  
+  const getSpeedZone = useCallback((deltaY: number): number => {
+    if (deltaY < -ZONE_HEIGHT) return 0; // Slow zone (above)
+    if (deltaY > ZONE_HEIGHT) return 2;  // Fast zone (below)
+    return 1; // Normal zone (center)
+  }, []);
+  
+  const triggerHapticForZone = useCallback(async (zone: number) => {
+    if (Platform.OS === 'web') return;
+    
+    try {
+      switch (zone) {
+        case 0: // Slow zone
+          await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          break;
+        case 1: // Normal zone
+          await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+          break;
+        case 2: // Fast zone
+          await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+          break;
+      }
+    } catch (error) {
+      console.log('Haptic feedback error:', error);
+    }
+  }, []);
   
   const timelinePanResponder = useMemo(
     () =>
       PanResponder.create({
         onStartShouldSetPanResponder: () => true,
-        onMoveShouldSetPanResponder: (_evt, gs) => Math.abs(gs.dx) > Math.abs(gs.dy) && Math.abs(gs.dx) > 5,
+        onMoveShouldSetPanResponder: (_evt, gs) => Math.abs(gs.dx) > 5 || Math.abs(gs.dy) > 5,
         onPanResponderTerminationRequest: () => false,
         onPanResponderGrant: (evt) => {
           if (isClosingRef.current || duration <= 0) return;
@@ -325,14 +362,17 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
           
           // Store initial touch position and current playback position
           const touchX = evt.nativeEvent.pageX;
+          const touchY = evt.nativeEvent.pageY;
           const currentPosition = position || 0;
           
           initialTouchRef.current = {
             x: touchX,
+            y: touchY,
             position: currentPosition
           };
           
           seekPositionRef.current = currentPosition;
+          currentSpeedZoneRef.current = 1; // Start in normal zone
           // Don't change position on initial touch
         },
         onPanResponderMove: (evt, gs) => {
@@ -340,11 +380,28 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
           
           // Calculate movement relative to initial touch
           const currentTouchX = evt.nativeEvent.pageX;
+          const currentTouchY = evt.nativeEvent.pageY;
           const deltaX = currentTouchX - initialTouchRef.current.x;
+          const deltaY = currentTouchY - initialTouchRef.current.y;
+          
+          // Determine speed zone based on vertical position
+          const newSpeedZone = getSpeedZone(deltaY);
+          
+          // Trigger haptic feedback when changing zones
+          if (newSpeedZone !== currentSpeedZoneRef.current) {
+            currentSpeedZoneRef.current = newSpeedZone;
+            triggerHapticForZone(newSpeedZone);
+          }
+          
+          // Get speed multiplier for current zone
+          const speedMultiplier = newSpeedZone === 0 ? SPEED_ZONES.SLOW.multiplier :
+                                 newSpeedZone === 2 ? SPEED_ZONES.FAST.multiplier :
+                                 SPEED_ZONES.NORMAL.multiplier;
+          
           const timelineLayout = timelineLayoutRef.current;
           
-          // Convert pixel movement to time delta
-          const timeDelta = (deltaX / timelineLayout.width) * duration;
+          // Convert pixel movement to time delta with speed adjustment
+          const timeDelta = (deltaX / timelineLayout.width) * duration * speedMultiplier;
           const targetPosition = Math.max(0, Math.min(duration, initialTouchRef.current.position + timeDelta));
           
           seekPositionRef.current = targetPosition;
@@ -355,6 +412,9 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
           if (!isSeekingRef.current || isClosingRef.current || duration <= 0) return;
           
           const targetPosition = seekPositionRef.current;
+          
+          // Reset speed zone
+          currentSpeedZoneRef.current = 1;
           
           // Perform the actual seek
           try {
@@ -367,9 +427,10 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
         },
         onPanResponderTerminate: () => {
           isSeekingRef.current = false;
+          currentSpeedZoneRef.current = 1;
         },
       }),
-    [duration, seekTo, position]
+    [duration, seekTo, position, getSpeedZone, triggerHapticForZone]
   );
 
   // ====== Apertura ======
