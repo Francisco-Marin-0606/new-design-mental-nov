@@ -622,7 +622,9 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     alignItems: 'center',
-    paddingHorizontal: 40,
+    alignSelf: 'center',
+    width: '80%',
+    maxWidth: 344,
     zIndex: 5,
   },
   title: {
