@@ -765,10 +765,11 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   handle: {
-    width: 40,
-    height: 6,
+    width: 60,
+    height: 8,
     backgroundColor: 'rgba(255, 255, 255, 0.6)',
-    borderRadius: 3,
+    borderRadius: 4,
+    marginTop: 8,
     marginBottom: 4,
   },
   closeButton: {
