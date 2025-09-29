@@ -531,7 +531,7 @@ const styles = StyleSheet.create({
   },
   dragArea: {
     position: 'absolute',
-    top: 30,
+    top: 45,
     left: 0,
     right: 0,
     paddingTop: 20,
@@ -541,9 +541,9 @@ const styles = StyleSheet.create({
   },
   handle: {
     width: 40,
-    height: 4,
+    height: 6,
     backgroundColor: 'rgba(255, 255, 255, 0.6)',
-    borderRadius: 2,
+    borderRadius: 3,
     marginBottom: 4,
   },
   closeButton: {
