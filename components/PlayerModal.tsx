@@ -323,10 +323,13 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
   const seekPositionRef = useRef<number>(0);
   const initialTouchRef = useRef<{ x: number; y: number; position: number }>({ x: 0, y: 0, position: 0 });
   const currentSpeedZoneRef = useRef<number>(1); // 0 = slow, 1 = normal, 2 = fast
+
   
   const getSpeedZone = useCallback((deltaY: number): number => {
-    if (deltaY < -ZONE_HEIGHT) return 0; // Slow zone (above)
-    if (deltaY > ZONE_HEIGHT) return 2;  // Fast zone (below)
+    // Negative deltaY means dragging upward
+    if (deltaY < -ZONE_HEIGHT) return 0; // Slow zone (dragging up)
+    if (deltaY < -ZONE_HEIGHT/2) return 1; // Normal zone (slightly up)
+    if (deltaY > ZONE_HEIGHT/2) return 2;  // Fast zone (dragging down)
     return 1; // Normal zone (center)
   }, []);
   
@@ -387,10 +390,21 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
           // Determine speed zone based on vertical position
           const newSpeedZone = getSpeedZone(deltaY);
           
-          // Trigger haptic feedback when changing zones
+          // When speed zone changes, we need to maintain the current position as reference
           if (newSpeedZone !== currentSpeedZoneRef.current) {
+            // Update the reference position to current position to avoid jumps
+            const currentSeekPosition = seekPositionRef.current;
+            initialTouchRef.current = {
+              x: currentTouchX,
+              y: currentTouchY,
+              position: currentSeekPosition
+            };
+            
             currentSpeedZoneRef.current = newSpeedZone;
             triggerHapticForZone(newSpeedZone);
+            
+            // Reset deltaX since we updated the reference point
+            return;
           }
           
           // Get speed multiplier for current zone
