@@ -13,7 +13,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { Video, ResizeMode, AVPlaybackStatus, Audio } from 'expo-av';
-import { X } from 'lucide-react-native';
+
 import * as Haptics from 'expo-haptics';
 
 export type Mode = 'audio' | 'video';
@@ -638,9 +638,7 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
               <View style={styles.handle} />
             </Animated.View>
 
-            <TouchableOpacity style={styles.closeButton} onPress={closeModal} testID="player-close-button">
-              <X color="#ffffff" size={24} />
-            </TouchableOpacity>
+
 
             <View style={styles.titleContainer}>
               <Text style={styles.title}>{title ?? (mode === 'video' ? 'Video' : 'Audio')}</Text>
@@ -772,18 +770,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     marginBottom: 4,
   },
-  closeButton: {
-    position: 'absolute',
-    top: 60,
-    right: 20,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 10,
-  },
+
   titleContainer: {
     position: 'absolute',
     top: 180,
