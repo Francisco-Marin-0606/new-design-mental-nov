@@ -27,38 +27,35 @@ export default function SwipeUpModal({ visible, onClose }: SwipeUpModalProps) {
   const translateY = useRef(new Animated.Value(screenHeight)).current;
   const opacity = useRef(new Animated.Value(0)).current;
 
-  const [activeTab, setActiveTab] = useState<'mensaje' | 'respuestas'>('mensaje');
+  const [activeTab, setActiveTab] = useState<'mensaje' | 'respuestas'>(() => 'mensaje');
 
-  // 🔒 Refs sincronizadas para evitar stale closures en PanResponder
   const activeTabRef = useRef(activeTab);
   useEffect(() => { activeTabRef.current = activeTab; }, [activeTab]);
 
-  const [tabWidths, setTabWidths] = useState({ mensaje: 0, respuestas: 0 });
-  const [tabPositions, setTabPositions] = useState({ mensaje: 0, respuestas: 0 });
+  const [tabWidths, setTabWidths] = useState<{ mensaje: number; respuestas: number }>({ mensaje: 0, respuestas: 0 });
+  const [tabPositions, setTabPositions] = useState<{ mensaje: number; respuestas: number }>({ mensaje: 0, respuestas: 0 });
   const tabWidthsRef = useRef(tabWidths);
   const tabPositionsRef = useRef(tabPositions);
   useEffect(() => { tabWidthsRef.current = tabWidths; }, [tabWidths]);
   useEffect(() => { tabPositionsRef.current = tabPositions; }, [tabPositions]);
 
-  const [isDownloading, setIsDownloading] = useState(false);
-  const [downloadProgress, setDownloadProgress] = useState(0);
-  const [isDownloaded, setIsDownloaded] = useState(false);
+  const [isDownloading, setIsDownloading] = useState<boolean>(false);
+  const [downloadProgress, setDownloadProgress] = useState<number>(0);
+  const [isDownloaded, setIsDownloaded] = useState<boolean>(false);
   const scrollY = useRef(new Animated.Value(0)).current;
   const backgroundTranslateY = useRef(new Animated.Value(0)).current;
   const progressWidth = useRef(new Animated.Value(0)).current;
 
   const tabIndicatorPosition = useRef(new Animated.Value(0)).current;
-  const [indicatorInitialized, setIndicatorInitialized] = useState(false);
+  const [indicatorInitialized, setIndicatorInitialized] = useState<boolean>(false);
 
-  const [audioPlayerVisible, setAudioPlayerVisible] = useState(false);
+  const [audioPlayerVisible, setAudioPlayerVisible] = useState<boolean>(false);
 
   const easeInOut = Easing.out(Easing.cubic);
   const DURATION_OPEN = 600;
   const DURATION_CLOSE = 600;
-  const DURATION_SNAP = 480;
   const shiftY = useMemo(() => screenHeight * 0.03, [screenHeight]);
 
-  // 👉 Siempre usa las posiciones actuales desde la ref
   const animateTabIndicator = useCallback((toTab: 'mensaje' | 'respuestas') => {
     const targetX = tabPositionsRef.current[toTab] ?? 0;
     Animated.timing(tabIndicatorPosition, {
@@ -69,13 +66,11 @@ export default function SwipeUpModal({ visible, onClose }: SwipeUpModalProps) {
     }).start();
   }, [tabIndicatorPosition]);
 
-  // 👉 Setter seguro que actualiza estado + indicador con valores actuales
   const switchToTabSafe = useCallback((toTab: 'mensaje' | 'respuestas') => {
     setActiveTab(toTab);
     animateTabIndicator(toTab);
   }, [animateTabIndicator]);
 
-  // (Opcional) mantener compatibilidad con onPress existentes
   const switchToTab = useCallback((toTab: 'mensaje' | 'respuestas') => {
     switchToTabSafe(toTab);
   }, [switchToTabSafe]);
@@ -134,74 +129,33 @@ export default function SwipeUpModal({ visible, onClose }: SwipeUpModalProps) {
     });
   }, [opacity, translateY, screenHeight, onClose, easeInOut]);
 
-  // ✅ PanResponder usa refs actuales (no se queda “viejo”)
   const panResponder = useMemo(
     () =>
       PanResponder.create({
         onMoveShouldSetPanResponder: (_, gestureState) => {
-          const isVertical = Math.abs(gestureState.dy) > Math.abs(gestureState.dx);
           const isHorizontal = Math.abs(gestureState.dx) > Math.abs(gestureState.dy);
-          const isSignificantVertical = Math.abs(gestureState.dy) > 10;
           const isSignificantHorizontal = Math.abs(gestureState.dx) > 20;
-
-          if (isHorizontal && isSignificantHorizontal) return true; // swipe tabs
-          if (isVertical && isSignificantVertical) return true; // close modal
+          if (isHorizontal && isSignificantHorizontal) return true;
           return false;
         },
-        onPanResponderMove: (_, gestureState) => {
-          const isVertical = Math.abs(gestureState.dy) > Math.abs(gestureState.dx);
-          if (isVertical && gestureState.dy > 0) {
-            const dragY = gestureState.dy;
-            translateY.setValue(dragY);
-            const progress = Math.min(dragY / screenHeight, 1);
-            opacity.setValue(1 - progress);
-          }
+        onPanResponderMove: () => {
         },
         onPanResponderRelease: (_, gestureState) => {
-          const isVertical = Math.abs(gestureState.dy) > Math.abs(gestureState.dx);
-          const isHorizontal = Math.abs(gestureState.dx) > Math.abs(gestureState.dy);
-
-          if (isHorizontal) {
-            const swipeThreshold = 30;
-            const velocityThreshold = 0.3;
-
-            const isLeftSwipe = gestureState.dx < -swipeThreshold || gestureState.vx < -velocityThreshold;
-            const isRightSwipe = gestureState.dx > swipeThreshold || gestureState.vx > velocityThreshold;
-
-            const currentTab = activeTabRef.current;
-
-            if (isLeftSwipe && currentTab === 'mensaje') {
-              switchToTabSafe('respuestas');
-              return;
-            } else if (isRightSwipe && currentTab === 'respuestas') {
-              switchToTabSafe('mensaje');
-              return;
-            }
-          }
-
-          if (isVertical) {
-            if (gestureState.dy > 100 || gestureState.vy > 0.5) {
-              closeModal();
-            } else {
-              Animated.parallel([
-                Animated.timing(translateY, {
-                  toValue: 0,
-                  duration: DURATION_SNAP,
-                  easing: easeInOut,
-                  useNativeDriver: true,
-                }),
-                Animated.timing(opacity, {
-                  toValue: 1,
-                  duration: DURATION_SNAP,
-                  easing: easeInOut,
-                  useNativeDriver: true,
-                }),
-              ]).start();
-            }
+          const swipeThreshold = 30;
+          const velocityThreshold = 0.3;
+          const isLeftSwipe = gestureState.dx < -swipeThreshold || gestureState.vx < -velocityThreshold;
+          const isRightSwipe = gestureState.dx > swipeThreshold || gestureState.vx > velocityThreshold;
+          const currentTab = activeTabRef.current;
+          if (isLeftSwipe && currentTab === 'mensaje') {
+            switchToTabSafe('respuestas');
+            return;
+          } else if (isRightSwipe && currentTab === 'respuestas') {
+            switchToTabSafe('mensaje');
+            return;
           }
         },
       }),
-    [closeModal, DURATION_SNAP, easeInOut, opacity, screenHeight, switchToTabSafe, translateY]
+    [switchToTabSafe]
   );
 
   const openModal = useCallback(() => {
@@ -237,7 +191,7 @@ export default function SwipeUpModal({ visible, onClose }: SwipeUpModalProps) {
   if (!visible) return null;
 
   return (
-    <View style={styles.overlay} testID="swipeup-overlay" pointerEvents={audioPlayerVisible ? "box-none" : "auto"} {...(audioPlayerVisible ? {} : panResponder.panHandlers)}>
+    <View style={styles.overlay} testID="swipeup-overlay" pointerEvents={audioPlayerVisible ? 'box-none' : 'auto'} {...(audioPlayerVisible ? {} : panResponder.panHandlers)}>
       <Animated.View style={[styles.backdrop, { opacity }]} pointerEvents="none" testID="modal-backdrop" />
       <Animated.View
         style={[
@@ -346,8 +300,8 @@ export default function SwipeUpModal({ visible, onClose }: SwipeUpModalProps) {
                       testID="download-button"
                       accessibilityRole="button"
                       accessibilityLabel={
-                        isDownloaded ? "Descargada" : 
-                        isDownloading ? `${downloadProgress}%` : "Descargar"
+                        isDownloaded ? 'Descargada' : 
+                        isDownloading ? `${downloadProgress}%` : 'Descargar'
                       }
                       disabled={isDownloading || isDownloaded}
                     >
