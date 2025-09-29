@@ -643,8 +643,8 @@ const styles = StyleSheet.create({
   bottomControls: {
     position: 'absolute',
     bottom: 120,
-    left: 20,
-    right: 20,
+    left: 40,
+    right: 40,
     alignItems: 'center',
   },
   timeline: {
