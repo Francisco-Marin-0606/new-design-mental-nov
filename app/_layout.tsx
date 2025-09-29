@@ -1,12 +1,15 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import * as SystemUI from "expo-system-ui";
-import { StyleSheet } from "react-native";
+import { StyleSheet, Platform } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
-SplashScreen.preventAutoHideAsync();
+// Only prevent auto hide on native platforms
+if (Platform.OS !== 'web') {
+  SplashScreen.preventAutoHideAsync();
+}
 
 const queryClient = new QueryClient();
 
@@ -19,10 +22,28 @@ function RootLayoutNav() {
 }
 
 export default function RootLayout() {
+  const [isReady, setIsReady] = useState(Platform.OS === 'web');
+
   useEffect(() => {
-    SystemUI.setBackgroundColorAsync("transparent").catch((e) => console.log("SystemUI error", e));
-    SplashScreen.hideAsync();
+    const initializeApp = async () => {
+      try {
+        if (Platform.OS !== 'web') {
+          await SystemUI.setBackgroundColorAsync("transparent").catch((e) => console.log("SystemUI error", e));
+          await SplashScreen.hideAsync();
+        }
+      } catch (error) {
+        console.log('App initialization error:', error);
+      } finally {
+        setIsReady(true);
+      }
+    };
+
+    initializeApp();
   }, []);
+
+  if (!isReady) {
+    return null;
+  }
 
   return (
     <QueryClientProvider client={queryClient}>
