@@ -63,10 +63,11 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
   const webVideoRef = useRef<HTMLVideoElement | null>(null); // web video visible (o pista)
   const webAudioRef = useRef<HTMLAudioElement | null>(null); // web audio cuando mode === 'audio'
 
-  // === Estado liviano (evitamos guardar "status" entero en state) ===
+  // === Estado liviano ===
   const [position, setPosition] = useState<number>(0);
   const [duration, setDuration] = useState<number>(0);
   const [isPlaying, setIsPlaying] = useState<boolean>(true);
+  const intendedPlayingRef = useRef<boolean>(true); // única verdad: intención del UI
 
   // refs para throttling/RAF
   const rafRef = useRef<number | null>(null);
@@ -86,32 +87,31 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
   }, []);
 
   // ====== PLAY/PAUSE ======
-  const togglePlayPause = useCallback(async () => {
+  const applyPlayStateWeb = useCallback(async (playing: boolean) => {
     try {
-      const next = !isPlaying;
-      setIsPlaying(next);
-      if (Platform.OS === 'web') {
-        // En web, accionamos manualmente el <video>/<audio> nativo
-        if (mode === 'audio') {
-          const el = webAudioRef.current;
-          if (el) {
-            if (next) await el.play();
-            else el.pause();
-          }
-        } else {
-          const el = webVideoRef.current;
-          if (el) {
-            if (next) await el.play();
-            else el.pause();
-          }
-        }
+      if (Platform.OS !== 'web') return;
+      if (mode === 'audio') {
+        const el = webAudioRef.current;
+        if (!el) return;
+        if (playing) await el.play(); else el.pause();
+      } else {
+        const el = webVideoRef.current;
+        if (!el) return;
+        if (playing) await el.play(); else el.pause();
       }
-      // En native NO llamamos playAsync/pauseAsync si usamos shouldPlay,
-      // para evitar peleas de estado.
     } catch (err) {
-      console.log('togglePlayPause error:', err);
+      console.log('applyPlayStateWeb error:', err);
     }
-  }, [isPlaying, mode]);
+  }, [mode]);
+
+  const togglePlayPause = useCallback(async () => {
+    const next = !intendedPlayingRef.current;
+    intendedPlayingRef.current = next;
+    setIsPlaying(next);
+    if (Platform.OS === 'web') {
+      await applyPlayStateWeb(next);
+    }
+  }, [applyPlayStateWeb]);
 
   const skipBy = useCallback(
     async (deltaMs: number) => {
@@ -150,13 +150,11 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
 
   const closeModal = useCallback(() => {
     try {
+      intendedPlayingRef.current = false;
       setIsPlaying(false);
       if (Platform.OS === 'web') {
         if (mode === 'audio') webAudioRef.current?.pause();
         else webVideoRef.current?.pause();
-      } else {
-        // En native dependemos de shouldPlay=false para pausar
-        // (evitamos llamadas redundantes a pauseAsync()).
       }
     } catch {}
     closeAnimated(onClose);
@@ -204,17 +202,13 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
       Animated.timing(opacity, { toValue: 1, duration: DURATION_OPEN, easing: easeInOut, useNativeDriver: true }),
       Animated.timing(translateY, { toValue: 0, duration: DURATION_OPEN, easing: easeInOut, useNativeDriver: true }),
     ]).start(async () => {
-      setIsPlaying(true); // fuente de verdad única
+      intendedPlayingRef.current = true;
+      setIsPlaying(true);
       if (Platform.OS === 'web') {
-        try {
-          if (mode === 'audio') await webAudioRef.current?.play();
-          else await webVideoRef.current?.play();
-        } catch (err) {
-          console.log('openModal play (web) error:', err);
-        }
+        await applyPlayStateWeb(true);
       }
     });
-  }, [DURATION_OPEN, easeInOut, opacity, translateY, mode]);
+  }, [DURATION_OPEN, easeInOut, opacity, translateY, applyPlayStateWeb]);
 
   useEffect(() => {
     if (visible) openModal();
@@ -224,6 +218,7 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
     if (!visible) {
       translateY.setValue(screenHeight);
       opacity.setValue(0);
+      intendedPlayingRef.current = false;
       setIsPlaying(false);
     }
   }, [visible, screenHeight, translateY, opacity]);
@@ -235,7 +230,7 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
     rafRef.current = requestAnimationFrame(() => {
       setPosition(s.positionMillis ?? 0);
       setDuration(s.durationMillis ?? 0);
-      setIsPlaying(!!s.isPlaying);
+      // IMPORTANTE: NO actualizamos isPlaying desde el status para evitar loops.
     });
   }, []);
 
@@ -255,19 +250,14 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
       setPosition((el.currentTime ?? 0) * 1000);
       setDuration((el.duration ?? 0) * 1000);
     };
-    const onPlay = () => setIsPlaying(true);
-    const onPause = () => setIsPlaying(false);
+    // IMPORTANTE: NO tocar isPlaying acá para evitar ping-pong con el estado UI.
 
     el.addEventListener('timeupdate', onTime);
     el.addEventListener('loadedmetadata', onTime);
-    el.addEventListener('play', onPlay);
-    el.addEventListener('pause', onPause);
 
     return () => {
       el.removeEventListener('timeupdate', onTime);
       el.removeEventListener('loadedmetadata', onTime);
-      el.removeEventListener('play', onPlay);
-      el.removeEventListener('pause', onPause);
     };
   }, [visible, mode]);
 
@@ -299,9 +289,14 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
               />
             ) : (
               <View style={[styles.video, styles.webVideoFallback]} testID="player-web-video-fallback">
-                <video ref={webVideoRef} style={styles.webVideo} autoPlay loop muted={false} playsInline>
-                  <source src={mediaUri} type="video/mp4" />
-                </video>
+                <video ref={webVideoRef} style={styles.webVideo} autoPlay loop muted={false} playsInline />
+                {/* Set src via attribute to avoid React re-mounts */}
+                <script dangerouslySetInnerHTML={{__html:`
+                  (function(){ try{
+                    var v = document.currentScript.previousElementSibling;
+                    if (v && v.tagName==='VIDEO'){ if (v.src !== ${JSON.stringify(mediaUri)}) v.src = ${JSON.stringify(mediaUri)}; }
+                  }catch(e){} })();
+                `}} />
               </View>
             )
           ) : (
@@ -316,8 +311,7 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
                   resizeMode={ResizeMode.COVER}
                   isLooping
                   isMuted
-                  shouldPlay={isPlaying}
-                  // No necesitamos status acá
+                  shouldPlay={true} // fondo puede animar siempre
                 />
                 {/* Pista de audio "invisible" */}
                 <Video
@@ -339,9 +333,13 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
                   <source src={BACKGROUND_URI} type="video/mp4" />
                 </video>
                 {/* Pista de audio real */}
-                <audio ref={webAudioRef} autoPlay loop>
-                  <source src={mediaUri} />
-                </audio>
+                <audio ref={webAudioRef} autoPlay loop />
+                <script dangerouslySetInnerHTML={{__html:`
+                  (function(){ try{
+                    var a = document.currentScript.previousElementSibling;
+                    if (a && a.tagName==='AUDIO'){ if (a.src !== ${JSON.stringify(mediaUri)}) a.src = ${JSON.stringify(mediaUri)}; }
+                  }catch(e){} })();
+                `}} />
               </View>
             )
           )}
