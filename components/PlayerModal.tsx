@@ -24,6 +24,7 @@ interface PlayerModalProps {
   mode: Mode;
   title?: string;
   mediaUri: string;
+  disableModalDrag?: boolean;
 }
 
 class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean }> {
@@ -60,7 +61,7 @@ const SPEED_ZONES = {
 
 const ZONE_HEIGHT = 80; // Height of each speed zone in pixels
 
-export default function PlayerModal({ visible, onClose, mode, title = 'Reproductor', mediaUri }: PlayerModalProps) {
+export default function PlayerModal({ visible, onClose, mode, title = 'Reproductor', mediaUri, disableModalDrag = false }: PlayerModalProps) {
   const { height: screenHeight } = useWindowDimensions();
 
   const translateY = useRef(new Animated.Value(screenHeight)).current;
@@ -634,7 +635,7 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
           )}
 
           <View style={styles.controlsOverlay} pointerEvents="box-none">
-            <Animated.View style={styles.dragArea} {...panResponder.panHandlers} testID="player-drag-area">
+            <Animated.View style={styles.dragArea} {...(disableModalDrag ? {} : panResponder.panHandlers)} testID="player-drag-area">
               <View style={styles.handle} />
             </Animated.View>
 
