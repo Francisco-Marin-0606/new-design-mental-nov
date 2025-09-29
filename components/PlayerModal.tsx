@@ -786,10 +786,10 @@ const styles = StyleSheet.create({
   titleContainer: {
     position: 'absolute',
     top: 180,
-    left: '12.5%',
-    right: '12.5%',
+    left: '20%',
+    right: '20%',
     alignItems: 'center',
-    maxWidth: 344,
+    maxWidth: 280,
     alignSelf: 'center',
     zIndex: 5,
   },
