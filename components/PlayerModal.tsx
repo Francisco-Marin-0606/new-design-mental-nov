@@ -681,7 +681,7 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
                 <TouchableOpacity style={styles.controlButton} onPress={() => skipBy(-10000)} testID="player-skip-back">
                   <View style={styles.skipButtonContainer}>
                     <Image
-                      source={{ uri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/flehcaRetroceder.png' }}
+                      source={{ uri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/FlechasPlayer.png' }}
                       style={{ width: 36, height: 36, resizeMode: 'contain' }}
                     />
                     <Text style={styles.skipLabel}>10 segs</Text>
@@ -703,7 +703,7 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
                 <TouchableOpacity style={styles.controlButton} onPress={() => skipBy(10000)} testID="player-skip-forward">
                   <View style={styles.skipButtonContainer}>
                     <Image
-                      source={{ uri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/flehcaRetroceder.png' }}
+                      source={{ uri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/FlechasPlayer.png' }}
                       style={{ width: 36, height: 36, resizeMode: 'contain', transform: [{ scaleX: -1 as const }] }}
                     />
                     <Text style={styles.skipLabel}>10 segs</Text>
