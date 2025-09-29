@@ -872,6 +872,7 @@ const styles = StyleSheet.create({
     height: 60,
     justifyContent: 'center',
     alignItems: 'center',
+    marginTop: 10,
   },
   playPauseButton: {
     width: 80,
