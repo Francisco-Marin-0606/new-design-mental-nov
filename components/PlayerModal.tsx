@@ -377,19 +377,17 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
       setPosition((el.currentTime ?? 0) * 1000);
       setDuration((el.duration ?? 0) * 1000);
     };
-    const onPlay = () => setIsPlaying(true);
-    const onPause = () => setIsPlaying(false);
+    // REMOVIDO: onPlay y onPause listeners que causaban conflictos
+    // El estado isPlaying debe ser controlado únicamente por la lógica interna
 
     el.addEventListener('timeupdate', onTime);
     el.addEventListener('loadedmetadata', onTime);
-    el.addEventListener('play', onPlay);
-    el.addEventListener('pause', onPause);
+    // REMOVIDO: event listeners de play/pause que reseteaban el estado
 
     return () => {
       el.removeEventListener('timeupdate', onTime);
       el.removeEventListener('loadedmetadata', onTime);
-      el.removeEventListener('play', onPlay);
-      el.removeEventListener('pause', onPause);
+      // REMOVIDO: cleanup de listeners de play/pause
     };
   }, [visible, mode]);
 
