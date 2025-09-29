@@ -259,6 +259,11 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
           // Pausar animaciones suavemente
           translateY.stopAnimation();
           opacity.stopAnimation();
+          // Cancelar cualquier RAF pendiente para evitar conflictos
+          if (rafRef.current) {
+            cancelAnimationFrame(rafRef.current);
+            rafRef.current = null;
+          }
         },
         onPanResponderMove: (_evt, gs) => {
           if (!isDraggingRef.current || isClosingRef.current) return;
@@ -270,7 +275,6 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
         },
         onPanResponderRelease: (_evt, gs) => {
           if (!isDraggingRef.current || isClosingRef.current) return;
-          isDraggingRef.current = false;
           
           const shouldClose = gs.dy > HANDLE_CLOSE_THRESHOLD || gs.vy > VELOCITY_CLOSE_THRESHOLD;
           if (shouldClose) {
@@ -290,13 +294,15 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
                 easing: easeInOut,
                 useNativeDriver: true,
               }),
-            ]).start();
+            ]).start(() => {
+              // Reset dragging flag after animation completes
+              isDraggingRef.current = false;
+            });
           }
         },
         onPanResponderTerminate: () => {
           // Manejar terminación inesperada
           if (isDraggingRef.current && !isClosingRef.current) {
-            isDraggingRef.current = false;
             Animated.parallel([
               Animated.timing(translateY, {
                 toValue: 0,
@@ -310,7 +316,10 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
                 easing: easeInOut,
                 useNativeDriver: true,
               }),
-            ]).start();
+            ]).start(() => {
+              // Reset dragging flag after animation completes
+              isDraggingRef.current = false;
+            });
           }
         },
       }),
@@ -510,6 +519,8 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
   const handlePlaybackStatus = useCallback((s: AVPlaybackStatus) => {
     if (!('isLoaded' in s) || !s.isLoaded) return;
     if (isSeekingRef.current) return; // Don't update position while seeking
+    if (isDraggingRef.current) return; // Don't update position while dragging modal
+    if (isClosingRef.current) return; // Don't update position while closing
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
     rafRef.current = requestAnimationFrame(() => {
       setPosition(s.positionMillis ?? 0);
@@ -532,6 +543,8 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
 
     const onTime = () => {
       if (isSeekingRef.current) return; // Don't update position while seeking
+      if (isDraggingRef.current) return; // Don't update position while dragging modal
+      if (isClosingRef.current) return; // Don't update position while closing
       setPosition((el.currentTime ?? 0) * 1000);
       setDuration((el.duration ?? 0) * 1000);
     };
