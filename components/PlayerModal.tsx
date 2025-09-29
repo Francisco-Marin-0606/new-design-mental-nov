@@ -70,6 +70,7 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
   const [duration, setDuration] = useState<number>(0);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const intendedPlayingRef = useRef<boolean>(false); // única verdad: intención del UI
+  const isClosingRef = useRef<boolean>(false); // prevenir operaciones durante cierre
 
   // refs para throttling/RAF
   const rafRef = useRef<number | null>(null);
@@ -178,19 +179,39 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
   );
 
   const closeModal = useCallback(() => {
+    if (isClosingRef.current) return; // Prevenir múltiples llamadas
+    isClosingRef.current = true;
+    
     try {
       intendedPlayingRef.current = false;
       setIsPlaying(false);
+      
+      // Pausar medios de forma más robusta
       if (Platform.OS === 'web') {
         if (mode === 'audio') {
-          webAudioRef.current?.pause();
-          webBackgroundVideoRef.current?.pause();
+          const audio = webAudioRef.current;
+          const bgVideo = webBackgroundVideoRef.current;
+          if (audio && !audio.paused) audio.pause();
+          if (bgVideo && !bgVideo.paused) bgVideo.pause();
         } else {
-          webVideoRef.current?.pause();
+          const video = webVideoRef.current;
+          if (video && !video.paused) video.pause();
         }
+      } else {
+        // Para native, pausar de forma asíncrona sin bloquear
+        Promise.all([
+          videoRef.current?.pauseAsync().catch(() => {}),
+          backgroundVideoRef.current?.pauseAsync().catch(() => {})
+        ]).catch(() => {});
       }
-    } catch {}
-    closeAnimated(onClose);
+    } catch (error) {
+      console.log('Error pausing media:', error);
+    }
+    
+    closeAnimated(() => {
+      isClosingRef.current = false; // Reset flag después del cierre
+      onClose();
+    });
   }, [closeAnimated, onClose, mode]);
 
   // ====== Gestos ======
@@ -201,26 +222,62 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
         onMoveShouldSetPanResponder: (_evt, gs) => Math.abs(gs.dy) > Math.abs(gs.dx) && Math.abs(gs.dy) > 10,
         onPanResponderTerminationRequest: () => false,
         onPanResponderGrant: () => {
+          if (isClosingRef.current) return; // No permitir gestos durante cierre
           isDraggingRef.current = true;
+          // Pausar animaciones suavemente
           translateY.stopAnimation();
           opacity.stopAnimation();
         },
         onPanResponderMove: (_evt, gs) => {
+          if (!isDraggingRef.current || isClosingRef.current) return;
           if (gs.dy > 0) {
             translateY.setValue(gs.dy);
             const progress = Math.min(gs.dy / screenHeight, 1);
-            opacity.setValue(1 - progress);
+            opacity.setValue(1 - progress * 0.8); // Menos opacidad para mejor UX
           }
         },
         onPanResponderRelease: (_evt, gs) => {
+          if (!isDraggingRef.current || isClosingRef.current) return;
           isDraggingRef.current = false;
+          
           const shouldClose = gs.dy > HANDLE_CLOSE_THRESHOLD || gs.vy > VELOCITY_CLOSE_THRESHOLD;
           if (shouldClose) {
             closeModal();
           } else {
+            // Snap back suave
             Animated.parallel([
-              Animated.timing(translateY, { toValue: 0, duration: DURATION_SNAP, easing: easeInOut, useNativeDriver: true }),
-              Animated.timing(opacity, { toValue: 1, duration: DURATION_SNAP, easing: easeInOut, useNativeDriver: true }),
+              Animated.timing(translateY, {
+                toValue: 0,
+                duration: DURATION_SNAP,
+                easing: easeInOut,
+                useNativeDriver: true,
+              }),
+              Animated.timing(opacity, {
+                toValue: 1,
+                duration: DURATION_SNAP,
+                easing: easeInOut,
+                useNativeDriver: true,
+              }),
+            ]).start();
+          }
+        },
+        onPanResponderTerminate: () => {
+          // Manejar terminación inesperada
+          if (isDraggingRef.current && !isClosingRef.current) {
+            isDraggingRef.current = false;
+            Animated.parallel([
+              Animated.timing(translateY, {
+                toValue: 0,
+                duration: DURATION_SNAP,
+                easing: easeInOut,
+                useNativeDriver: true,
+              }),
+              Animated.timing(opacity, {
+                toValue: 1,
+                duration: DURATION_SNAP,
+                easing: easeInOut,
+                useNativeDriver: true,
+              }),
             ]).start();
           }
         },
@@ -283,10 +340,13 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
       opacity.setValue(0);
       intendedPlayingRef.current = false;
       setIsPlaying(false);
+      isClosingRef.current = false; // Reset flag cuando se cierra
+      isDraggingRef.current = false; // Reset drag flag
     } else {
       // Cuando se abre el modal, queremos que se reproduzca automáticamente
       intendedPlayingRef.current = true;
       setIsPlaying(true);
+      isClosingRef.current = false; // Asegurar que no esté en estado de cierre
     }
   }, [visible, screenHeight, translateY, opacity]);
 
