@@ -1,3 +1,4 @@
+
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Animated,
@@ -47,6 +48,9 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
   }
 }
 
+const BACKGROUND_URI =
+  'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Netflix/Mental%20Login%20Background.mp4';
+
 export default function PlayerModal({ visible, onClose, mode, title = 'Reproductor', mediaUri }: PlayerModalProps) {
   const { height: screenHeight } = useWindowDimensions();
 
@@ -55,10 +59,17 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
 
   const isDraggingRef = useRef<boolean>(false);
 
-  const videoRef = useRef<Video>(null);
-  const webVideoRef = useRef<HTMLVideoElement | null>(null);
-  const [status, setStatus] = useState<AVPlaybackStatus | null>(null);
+  const videoRef = useRef<Video>(null);             // principal (video o "pista de audio" oculta)
+  const webVideoRef = useRef<HTMLVideoElement | null>(null); // web video visible (o pista)
+  const webAudioRef = useRef<HTMLAudioElement | null>(null); // web audio cuando mode === 'audio'
+
+  // === Estado liviano (evitamos guardar "status" entero en state) ===
+  const [position, setPosition] = useState<number>(0);
+  const [duration, setDuration] = useState<number>(0);
   const [isPlaying, setIsPlaying] = useState<boolean>(true);
+
+  // refs para throttling/RAF
+  const rafRef = useRef<number | null>(null);
 
   const easeInOut = Easing.out(Easing.cubic);
   const DURATION_OPEN = 600;
@@ -74,49 +85,59 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
     return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   }, []);
 
-  const [position, setPosition] = useState<number>(0);
-  const [duration, setDuration] = useState<number>(0);
-
+  // ====== PLAY/PAUSE ======
   const togglePlayPause = useCallback(async () => {
     try {
       const next = !isPlaying;
       setIsPlaying(next);
       if (Platform.OS === 'web') {
-        if (webVideoRef.current) {
-          if (next) await webVideoRef.current.play();
-          else webVideoRef.current.pause();
-        }
-      } else {
-        if (videoRef.current && status && 'isLoaded' in status && status.isLoaded) {
-          if (next) await videoRef.current.playAsync();
-          else await videoRef.current.pauseAsync();
+        // En web, accionamos manualmente el <video>/<audio> nativo
+        if (mode === 'audio') {
+          const el = webAudioRef.current;
+          if (el) {
+            if (next) await el.play();
+            else el.pause();
+          }
+        } else {
+          const el = webVideoRef.current;
+          if (el) {
+            if (next) await el.play();
+            else el.pause();
+          }
         }
       }
-      console.log('[PlayerModal] togglePlayPause =>', next);
+      // En native NO llamamos playAsync/pauseAsync si usamos shouldPlay,
+      // para evitar peleas de estado.
     } catch (err) {
       console.log('togglePlayPause error:', err);
     }
-  }, [isPlaying, status]);
+  }, [isPlaying, mode]);
 
   const skipBy = useCallback(
     async (deltaMs: number) => {
       try {
-        const target = Math.max(0, Math.min((duration ?? 0), (position ?? 0) + deltaMs));
+        const target = Math.max(0, Math.min(duration ?? 0, (position ?? 0) + deltaMs));
         if (Platform.OS === 'web') {
-          if (webVideoRef.current) {
-            webVideoRef.current.currentTime = target / 1000;
+          if (mode === 'audio') {
+            const el = webAudioRef.current;
+            if (el) el.currentTime = target / 1000;
+          } else {
+            const el = webVideoRef.current;
+            if (el) el.currentTime = target / 1000;
           }
+          setPosition(target);
         } else if (videoRef.current) {
           await videoRef.current.setPositionAsync(target);
+          setPosition(target);
         }
-        setPosition(target);
       } catch (err) {
         console.log('skipBy error:', err);
       }
     },
-    [duration, position]
+    [duration, position, mode]
   );
 
+  // ====== Animaciones de apertura/cierre ======
   const closeAnimated = useCallback(
     (done: () => void) => {
       Animated.parallel([
@@ -129,22 +150,24 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
 
   const closeModal = useCallback(() => {
     try {
+      setIsPlaying(false);
       if (Platform.OS === 'web') {
-        webVideoRef.current?.pause();
+        if (mode === 'audio') webAudioRef.current?.pause();
+        else webVideoRef.current?.pause();
       } else {
-        if (videoRef.current) {
-          videoRef.current.pauseAsync().catch(() => {});
-        }
+        // En native dependemos de shouldPlay=false para pausar
+        // (evitamos llamadas redundantes a pauseAsync()).
       }
     } catch {}
     closeAnimated(onClose);
-  }, [closeAnimated, onClose]);
+  }, [closeAnimated, onClose, mode]);
 
+  // ====== Gestos ======
   const panResponder = useMemo(
     () =>
       PanResponder.create({
         onStartShouldSetPanResponder: () => true,
-        onMoveShouldSetPanResponder: (_evt, gs) => Math.abs(gs.dy) > Math.abs(gs.dx) && Math.abs(gs.dy) > 6,
+        onMoveShouldSetPanResponder: (_evt, gs) => Math.abs(gs.dy) > Math.abs(gs.dx) && Math.abs(gs.dy) > 10,
         onPanResponderTerminationRequest: () => false,
         onPanResponderGrant: () => {
           isDraggingRef.current = true;
@@ -174,24 +197,24 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
     [HANDLE_CLOSE_THRESHOLD, VELOCITY_CLOSE_THRESHOLD, DURATION_SNAP, easeInOut, opacity, screenHeight, translateY, closeModal]
   );
 
+  // ====== Apertura ======
   const openModal = useCallback(() => {
     if (isDraggingRef.current) return;
     Animated.parallel([
       Animated.timing(opacity, { toValue: 1, duration: DURATION_OPEN, easing: easeInOut, useNativeDriver: true }),
       Animated.timing(translateY, { toValue: 0, duration: DURATION_OPEN, easing: easeInOut, useNativeDriver: true }),
     ]).start(async () => {
-      try {
-        if (Platform.OS === 'web') {
-          if (webVideoRef.current) await webVideoRef.current.play();
-        } else if (videoRef.current) {
-          await videoRef.current.playAsync();
+      setIsPlaying(true); // fuente de verdad única
+      if (Platform.OS === 'web') {
+        try {
+          if (mode === 'audio') await webAudioRef.current?.play();
+          else await webVideoRef.current?.play();
+        } catch (err) {
+          console.log('openModal play (web) error:', err);
         }
-        setIsPlaying(true);
-      } catch (err) {
-        console.log('openModal play error:', err);
       }
     });
-  }, [DURATION_OPEN, easeInOut, opacity, translateY]);
+  }, [DURATION_OPEN, easeInOut, opacity, translateY, mode]);
 
   useEffect(() => {
     if (visible) openModal();
@@ -201,41 +224,52 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
     if (!visible) {
       translateY.setValue(screenHeight);
       opacity.setValue(0);
+      setIsPlaying(false);
     }
   }, [visible, screenHeight, translateY, opacity]);
 
-  useEffect(() => {
-    if (Platform.OS !== 'web' && status && 'isLoaded' in status && status.isLoaded) {
-      const pos = status.positionMillis ?? 0;
-      const dur = status.durationMillis ?? 0;
-      setPosition(pos);
-      setDuration(dur);
-      setIsPlaying(status.isPlaying ?? false);
-    }
-  }, [status]);
+  // ====== Listener de status (native) con throttle vía rAF ======
+  const handlePlaybackStatus = useCallback((s: AVPlaybackStatus) => {
+    if (!('isLoaded' in s) || !s.isLoaded) return;
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    rafRef.current = requestAnimationFrame(() => {
+      setPosition(s.positionMillis ?? 0);
+      setDuration(s.durationMillis ?? 0);
+      setIsPlaying(!!s.isPlaying);
+    });
+  }, []);
 
   useEffect(() => {
-    if (Platform.OS === 'web' && webVideoRef.current) {
-      const el = webVideoRef.current;
-      const onTime = () => {
-        setPosition((el.currentTime ?? 0) * 1000);
-        setDuration((el.duration ?? 0) * 1000);
-      };
-      const onPlay = () => setIsPlaying(true);
-      const onPause = () => setIsPlaying(false);
-      el.addEventListener('timeupdate', onTime);
-      el.addEventListener('loadedmetadata', onTime);
-      el.addEventListener('play', onPlay);
-      el.addEventListener('pause', onPause);
-      return () => {
-        el.removeEventListener('timeupdate', onTime);
-        el.removeEventListener('loadedmetadata', onTime);
-        el.removeEventListener('play', onPlay);
-        el.removeEventListener('pause', onPause);
-      };
-    }
-    return undefined;
-  }, [visible]);
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, []);
+
+  // ====== Web events para progreso ======
+  useEffect(() => {
+    if (Platform.OS !== 'web') return;
+    const el = mode === 'audio' ? webAudioRef.current : webVideoRef.current;
+    if (!el) return;
+
+    const onTime = () => {
+      setPosition((el.currentTime ?? 0) * 1000);
+      setDuration((el.duration ?? 0) * 1000);
+    };
+    const onPlay = () => setIsPlaying(true);
+    const onPause = () => setIsPlaying(false);
+
+    el.addEventListener('timeupdate', onTime);
+    el.addEventListener('loadedmetadata', onTime);
+    el.addEventListener('play', onPlay);
+    el.addEventListener('pause', onPause);
+
+    return () => {
+      el.removeEventListener('timeupdate', onTime);
+      el.removeEventListener('loadedmetadata', onTime);
+      el.removeEventListener('play', onPlay);
+      el.removeEventListener('pause', onPause);
+    };
+  }, [visible, mode]);
 
   if (!visible) return null;
 
@@ -243,8 +277,8 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
 
   return (
     <ErrorBoundary>
-      <View style={styles.overlay} testID="player-overlay">
-        <Animated.View style={[styles.backdrop, { opacity }]} pointerEvents="none" testID="player-backdrop" />
+      <View style={styles.overlay} testID="player-overlay" pointerEvents="auto">
+        <Animated.View style={[styles.backdrop, { opacity }]} testID="player-backdrop" pointerEvents="auto" />
 
         <Animated.View
           style={[styles.modalContainer, { height: screenHeight, transform: [{ translateY }] }]}
@@ -260,39 +294,54 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
                 resizeMode={ResizeMode.COVER}
                 isLooping
                 shouldPlay={isPlaying}
-                onPlaybackStatusUpdate={setStatus}
+                onPlaybackStatusUpdate={handlePlaybackStatus}
                 testID="player-video"
               />
             ) : (
               <View style={[styles.video, styles.webVideoFallback]} testID="player-web-video-fallback">
-                <video ref={webVideoRef} style={styles.webVideo} autoPlay loop muted playsInline>
+                <video ref={webVideoRef} style={styles.webVideo} autoPlay loop muted={false} playsInline>
                   <source src={mediaUri} type="video/mp4" />
                 </video>
               </View>
             )
           ) : (
+            // ======= Modo AUDIO =======
             Platform.OS !== 'web' ? (
-              <Video
-                ref={videoRef}
-                style={styles.video}
-                source={{
-                  uri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Netflix/Mental%20Login%20Background.mp4',
-                }}
-                useNativeControls={false}
-                resizeMode={ResizeMode.COVER}
-                isLooping
-                shouldPlay={isPlaying}
-                onPlaybackStatusUpdate={setStatus}
-                testID="player-audio-bg-video"
-              />
+              <>
+                {/* Fondo visual (muteado) */}
+                <Video
+                  style={styles.video}
+                  source={{ uri: BACKGROUND_URI }}
+                  useNativeControls={false}
+                  resizeMode={ResizeMode.COVER}
+                  isLooping
+                  isMuted
+                  shouldPlay={isPlaying}
+                  // No necesitamos status acá
+                />
+                {/* Pista de audio "invisible" */}
+                <Video
+                  ref={videoRef}
+                  style={{ width: 0, height: 0 }}
+                  source={{ uri: mediaUri }}
+                  useNativeControls={false}
+                  resizeMode={ResizeMode.COVER}
+                  isLooping
+                  shouldPlay={isPlaying}
+                  onPlaybackStatusUpdate={handlePlaybackStatus}
+                  testID="player-audio-hidden"
+                />
+              </>
             ) : (
               <View style={[styles.video, styles.webVideoFallback]} testID="player-audio-web-bg">
-                <video ref={webVideoRef} style={styles.webVideo} autoPlay loop muted playsInline>
-                  <source
-                    src="https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Netflix/Mental%20Login%20Background.mp4"
-                    type="video/mp4"
-                  />
+                {/* Fondo visual */}
+                <video style={styles.webVideo} autoPlay loop muted playsInline>
+                  <source src={BACKGROUND_URI} type="video/mp4" />
                 </video>
+                {/* Pista de audio real */}
+                <audio ref={webAudioRef} autoPlay loop>
+                  <source src={mediaUri} />
+                </audio>
               </View>
             )
           )}
