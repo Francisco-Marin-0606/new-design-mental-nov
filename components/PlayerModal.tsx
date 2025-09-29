@@ -60,7 +60,9 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
   const isDraggingRef = useRef<boolean>(false);
 
   const videoRef = useRef<Video>(null);             // principal (video o "pista de audio" oculta)
+  const backgroundVideoRef = useRef<Video>(null);   // video de fondo para modo audio
   const webVideoRef = useRef<HTMLVideoElement | null>(null); // web video visible (o pista)
+  const webBackgroundVideoRef = useRef<HTMLVideoElement | null>(null); // web video de fondo para audio
   const webAudioRef = useRef<HTMLAudioElement | null>(null); // web audio cuando mode === 'audio'
 
   // === Estado liviano ===
@@ -91,9 +93,14 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
     try {
       if (Platform.OS !== 'web') return;
       if (mode === 'audio') {
-        const el = webAudioRef.current;
-        if (!el) return;
-        if (playing) await el.play(); else el.pause();
+        const audioEl = webAudioRef.current;
+        const bgVideoEl = webBackgroundVideoRef.current;
+        if (audioEl) {
+          if (playing) await audioEl.play(); else audioEl.pause();
+        }
+        if (bgVideoEl) {
+          if (playing) await bgVideoEl.play(); else bgVideoEl.pause();
+        }
       } else {
         const el = webVideoRef.current;
         if (!el) return;
@@ -112,17 +119,28 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
     try {
       if (Platform.OS === 'web') {
         await applyPlayStateWeb(next);
-      } else if (videoRef.current) {
-        const status = await videoRef.current.getStatusAsync();
-        if ('isLoaded' in status && status.isLoaded) {
-          if (next) await videoRef.current.playAsync();
-          else await videoRef.current.pauseAsync();
+      } else {
+        // Control del audio/video principal
+        if (videoRef.current) {
+          const status = await videoRef.current.getStatusAsync();
+          if ('isLoaded' in status && status.isLoaded) {
+            if (next) await videoRef.current.playAsync();
+            else await videoRef.current.pauseAsync();
+          }
+        }
+        // Control del video de fondo en modo audio
+        if (mode === 'audio' && backgroundVideoRef.current) {
+          const bgStatus = await backgroundVideoRef.current.getStatusAsync();
+          if ('isLoaded' in bgStatus && bgStatus.isLoaded) {
+            if (next) await backgroundVideoRef.current.playAsync();
+            else await backgroundVideoRef.current.pauseAsync();
+          }
         }
       }
     } catch (err) {
       console.log('togglePlayPause error:', err);
     }
-  }, [applyPlayStateWeb]);
+  }, [applyPlayStateWeb, mode]);
 
   const skipBy = useCallback(
     async (deltaMs: number) => {
@@ -164,8 +182,12 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
       intendedPlayingRef.current = false;
       setIsPlaying(false);
       if (Platform.OS === 'web') {
-        if (mode === 'audio') webAudioRef.current?.pause();
-        else webVideoRef.current?.pause();
+        if (mode === 'audio') {
+          webAudioRef.current?.pause();
+          webBackgroundVideoRef.current?.pause();
+        } else {
+          webVideoRef.current?.pause();
+        }
       }
     } catch {}
     closeAnimated(onClose);
@@ -216,17 +238,27 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
       if (Platform.OS === 'web') {
         await applyPlayStateWeb(intendedPlayingRef.current);
         setIsPlaying(intendedPlayingRef.current);
-      } else if (videoRef.current) {
+      } else {
         if (intendedPlayingRef.current) {
-          try { await videoRef.current.playAsync(); } catch {}
+          try {
+            if (videoRef.current) await videoRef.current.playAsync();
+            if (mode === 'audio' && backgroundVideoRef.current) {
+              await backgroundVideoRef.current.playAsync();
+            }
+          } catch {}
           setIsPlaying(true);
         } else {
-          try { await videoRef.current.pauseAsync(); } catch {}
+          try {
+            if (videoRef.current) await videoRef.current.pauseAsync();
+            if (mode === 'audio' && backgroundVideoRef.current) {
+              await backgroundVideoRef.current.pauseAsync();
+            }
+          } catch {}
           setIsPlaying(false);
         }
       }
     });
-  }, [DURATION_OPEN, easeInOut, opacity, translateY, applyPlayStateWeb]);
+  }, [DURATION_OPEN, easeInOut, opacity, translateY, applyPlayStateWeb, mode]);
 
   useEffect(() => {
     if (visible) openModal();
@@ -345,13 +377,14 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
               <>
                 {/* Fondo visual (muteado) */}
                 <Video
+                  ref={backgroundVideoRef}
                   style={styles.video}
                   source={{ uri: BACKGROUND_URI }}
                   useNativeControls={false}
                   resizeMode={ResizeMode.COVER}
                   isLooping
                   isMuted
-                  shouldPlay={true} // fondo puede animar siempre
+                  shouldPlay={false} // se controla manualmente
                 />
                 {/* Pista de audio "invisible" */}
                 <Video
@@ -369,7 +402,7 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
             ) : (
               <View style={[styles.video, styles.webVideoFallback]} testID="player-audio-web-bg">
                 {/* Fondo visual */}
-                <video style={styles.webVideo} autoPlay loop muted playsInline preload="auto">
+                <video ref={webBackgroundVideoRef} style={styles.webVideo} loop muted playsInline preload="auto">
                   <source src={BACKGROUND_URI} type="video/mp4" />
                 </video>
                 {/* Pista de audio real */}
