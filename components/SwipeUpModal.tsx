@@ -495,7 +495,6 @@ export default function SwipeUpModal({ visible, onClose }: SwipeUpModalProps) {
         mode="audio"
         title="El reloj quieto en la mesa"
         mediaUri="https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Para%20ti/Hombre/Del%20miedo%20al%20amor%20-%20Unisex%20Version2.mp3"
-        disableModalDrag={true}
       />
     </View>
   );
