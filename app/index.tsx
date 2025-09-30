@@ -171,14 +171,14 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    paddingTop: 40,
+    paddingTop: 24,
     paddingBottom: 20,
   },
   headerTitle: {
-    fontSize: 40,
+    fontSize: 36,
     fontWeight: '700',
     color: '#f9eedd',
-    marginBottom: 40,
+    marginBottom: 32,
     paddingHorizontal: 24,
   },
   carousel: {
@@ -207,19 +207,20 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   cardTitle: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: '700',
     color: '#f9eedd',
-    marginTop: 16,
+    marginTop: 20,
+    textAlign: 'center',
   },
   badge: {
     position: 'absolute',
-    bottom: 16,
-    left: 16,
+    bottom: 20,
+    alignSelf: 'center',
     backgroundColor: '#d4621f',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 24,
   },
   badgeText: {
     fontSize: 12,
@@ -229,12 +230,13 @@ const styles = StyleSheet.create({
   },
   bottomSection: {
     paddingHorizontal: 24,
-    paddingBottom: 20,
+    paddingBottom: 32,
+    paddingTop: 16,
   },
   nextButton: {
     backgroundColor: 'rgba(212, 98, 31, 0.5)',
-    paddingVertical: 18,
-    borderRadius: 12,
+    paddingVertical: 20,
+    borderRadius: 16,
     alignItems: 'center',
   },
   nextButtonText: {
