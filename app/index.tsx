@@ -245,10 +245,19 @@ const styles = StyleSheet.create({
   // Pie
   bottomSection: { paddingHorizontal: 44, paddingBottom: 55, paddingTop: 12 },
   nextButton: {
-    backgroundColor: 'rgba(212, 98, 31, 0.5)',
-    paddingVertical: 25,
-    borderRadius: 14,
+    width: '100%',
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#b36017',
+    paddingVertical: 16,
+    borderRadius: 10,
+    gap: 8,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 8,
   },
-  nextButtonText: { fontSize: 20, fontWeight: '600', color: '#ffffff' },
+  nextButtonText: { fontSize: 20, fontWeight: '700', color: '#ffffff' },
 });
