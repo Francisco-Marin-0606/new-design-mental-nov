@@ -1,5 +1,5 @@
-import React, { ReactNode, useMemo, useState, useCallback } from 'react';
-import { LayoutChangeEvent, Platform, StyleSheet, View, ViewStyle } from 'react-native';
+import React, { ReactNode, useMemo } from 'react';
+import { Platform, StyleSheet, View, ViewStyle } from 'react-native';
 import MaskedView from '@react-native-masked-view/masked-view';
 import Svg, { Defs, RadialGradient, Stop, Rect } from 'react-native-svg';
 
@@ -7,60 +7,30 @@ type Props = {
   children: ReactNode;
   borderRadius?: number;
   featherPct?: number;
-  featherPx?: number;
   style?: ViewStyle;
-  testID?: string;
 };
 
 export default function SoftEdgesMask({
   children,
   borderRadius = 16,
   featherPct = 24,
-  featherPx = 5,
   style,
-  testID,
 }: Props) {
-  const [size, setSize] = useState<{ w: number; h: number } | null>(null);
-  const onLayout = useCallback((e: LayoutChangeEvent) => {
-    const { width, height } = e.nativeEvent.layout;
-    if (width > 0 && height > 0) {
-      setSize({ w: width, h: height });
-    }
-  }, []);
-
-  const derivedPct = useMemo(() => {
-    if (featherPx != null && size) {
-      const minDim = Math.min(size.w, size.h);
-      const radius = minDim / 2;
-      const pct = (featherPx / radius) * 100;
-      return Math.max(0, Math.min(100, pct));
-    }
-    return featherPct;
-  }, [featherPx, size, featherPct]);
-
-  const innerStop = Math.max(0, Math.min(100, 100 - derivedPct));
+  const innerStop = Math.max(0, Math.min(100, 100 - featherPct));
   const gradientId = useMemo(() => `soft-${Math.random().toString(36).slice(2)}` as const, []);
 
   if (Platform.OS === 'web') {
-    return (
-      <View testID={testID} onLayout={onLayout} style={[style, { borderRadius, overflow: 'hidden' }]}> 
-        {children}
-      </View>
-    );
+    return <View style={[style, { borderRadius, overflow: 'hidden' }]}>{children}</View>;
   }
 
-  if (derivedPct === 0) {
-    return (
-      <View testID={testID} onLayout={onLayout} style={[style, { borderRadius, overflow: 'hidden' }]}>
-        {children}
-      </View>
-    );
+  if (featherPct === 0) {
+    return <View style={[style, { borderRadius, overflow: 'hidden' }]}>{children}</View>;
   }
 
-  const containerStyle = derivedPct > 0 ? style : [style, { borderRadius, overflow: 'hidden' as const }];
+  const containerStyle = featherPct > 0 ? style : [style, { borderRadius, overflow: 'hidden' as const }];
 
   return (
-    <View testID={testID} onLayout={onLayout} style={containerStyle}>
+    <View style={containerStyle}>
       <MaskedView
         style={StyleSheet.absoluteFillObject}
         maskElement={
