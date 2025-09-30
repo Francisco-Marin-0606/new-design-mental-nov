@@ -293,7 +293,7 @@ const styles = StyleSheet.create({
   },
 
   // Pie
-  bottomSection: { paddingHorizontal: 44, paddingBottom: 65, paddingTop: 12 },
+  bottomSection: { paddingHorizontal: 44, paddingBottom: 65, paddingTop: 0 },
   nextButton: {
     width: '100%',
     flexDirection: 'row',
