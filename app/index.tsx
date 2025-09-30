@@ -47,6 +47,7 @@ export default function HomeScreen() {
 
   const scrollX = useRef(new Animated.Value(0)).current;
   const currentIndexRef = useRef<number>(0);
+  const lastHapticIndexRef = useRef<number>(0);
 
   const handleOpen = useCallback(async () => {
     if (Platform.OS !== 'web') {
@@ -63,24 +64,28 @@ export default function HomeScreen() {
     }
   }, []);
 
-  const onMomentumScrollEnd = useCallback(async (e: { nativeEvent: { contentOffset: { x: number } } }) => {
+  const onScroll = useCallback((e: { nativeEvent: { contentOffset: { x: number } } }) => {
+    try {
+      const x = e?.nativeEvent?.contentOffset?.x ?? 0;
+      const currentIndex = Math.round(x / snapInterval);
+      
+      if (currentIndex !== lastHapticIndexRef.current) {
+        lastHapticIndexRef.current = currentIndex;
+        if (Platform.OS !== 'web') {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+        }
+      }
+    } catch (err) {
+      console.log('[Carousel] onScroll error', err);
+    }
+  }, [snapInterval]);
+
+  const onMomentumScrollEnd = useCallback((e: { nativeEvent: { contentOffset: { x: number } } }) => {
     try {
       const x = e?.nativeEvent?.contentOffset?.x ?? 0;
       const nextIndex = Math.round(x / snapInterval);
-      const prevIndex = currentIndexRef.current;
-      console.log('[Carousel] momentum end x:', x, 'nextIndex:', nextIndex, 'prevIndex:', prevIndex);
-      if (nextIndex !== prevIndex) {
-        currentIndexRef.current = nextIndex;
-        if (Platform.OS !== 'web') {
-          try {
-            await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-          } catch (err) {
-            console.log('[Haptics] error on page change', err);
-          }
-        } else {
-          console.log('[Haptics] Skipped on web');
-        }
-      }
+      currentIndexRef.current = nextIndex;
+      console.log('[Carousel] momentum end x:', x, 'nextIndex:', nextIndex);
     } catch (err) {
       console.log('[Carousel] onMomentumScrollEnd error', err);
     }
@@ -160,7 +165,7 @@ export default function HomeScreen() {
             contentContainerStyle={{ paddingLeft: sidePadding, paddingRight: sidePadding, paddingVertical: 18 }}
             onScroll={Animated.event(
               [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-              { useNativeDriver: false }
+              { useNativeDriver: false, listener: onScroll }
             )}
             scrollEventThrottle={16}
           />
