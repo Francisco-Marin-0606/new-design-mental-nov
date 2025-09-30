@@ -138,7 +138,10 @@ export default function HomeScreen() {
             testID="carousel-card"
             onPress={() => handleCardPress(item)}
             android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.08)' } : undefined}
-            style={({ pressed }) => [styles.cardColumn, pressed && { opacity: 0.2 }]}
+            style={({ pressed }) => [
+              styles.cardColumn,
+              pressed && { opacity: 0.2, transform: [{ scale: 0.9 }] }
+            ]}
           >
             <View style={styles.card}>
               <Image source={{ uri: item.imageUri }} style={styles.cardImage} resizeMode="cover" />
