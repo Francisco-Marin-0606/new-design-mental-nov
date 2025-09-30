@@ -59,7 +59,7 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
     const listenerId = scrollX.addListener(({ value }) => {
       const position = value / snapInterval;
       const distance = Math.abs(position - index);
-      const blur = Math.min(8, distance * 8);
+      const blur = Math.min(20, distance * 20);
       blurIntensityRef.current = blur;
       requestAnimationFrame(() => {
         setBlurIntensity(blur);
