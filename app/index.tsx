@@ -243,7 +243,7 @@ const styles = StyleSheet.create({
   },
 
   // Pie
-  bottomSection: { paddingHorizontal: 44, paddingBottom: 55, paddingTop: 12 },
+  bottomSection: { paddingHorizontal: 44, paddingBottom: 65, paddingTop: 12 },
   nextButton: {
     width: '100%',
     flexDirection: 'row',
@@ -251,7 +251,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#b36017',
     paddingVertical: 16,
-    borderRadius: 10,
+    borderRadius: 14,
     gap: 8,
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 0 },
