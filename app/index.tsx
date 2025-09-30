@@ -192,11 +192,12 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: '#170501' },
   container: { flex: 1, paddingTop: 24, paddingBottom: 20 },
   headerTitle: {
-    fontSize: 36,
+    fontSize: 32.4,
     fontWeight: '700',
     color: '#f9eedd',
     marginBottom: 120,
-    paddingHorizontal: 24,
+    paddingLeft: 54,
+    paddingRight: 24,
   },
 
   // Carrusel
