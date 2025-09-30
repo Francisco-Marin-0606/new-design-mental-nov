@@ -52,25 +52,36 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
     extrapolate: 'clamp',
   });
 
-  const calculateBlur = useCallback((scrollValue: number) => {
+  const calculateImageBlur = useCallback((scrollValue: number) => {
     const position = scrollValue / snapInterval;
     const distance = Math.abs(position - index);
     return Math.min(25, distance * 25);
   }, [snapInterval, index]);
 
-  const [blurIntensity, setBlurIntensity] = React.useState<number>(() => calculateBlur(0));
-  const blurIntensityRef = useRef<number>(calculateBlur(0));
+  const calculateTextBlur = useCallback((scrollValue: number) => {
+    const position = scrollValue / snapInterval;
+    const distance = Math.abs(position - index);
+    return Math.min(8, distance * 8);
+  }, [snapInterval, index]);
+
+  const [imageBlurIntensity, setImageBlurIntensity] = React.useState<number>(() => calculateImageBlur(0));
+  const [textBlurIntensity, setTextBlurIntensity] = React.useState<number>(() => calculateTextBlur(0));
+  const imageBlurIntensityRef = useRef<number>(calculateImageBlur(0));
+  const textBlurIntensityRef = useRef<number>(calculateTextBlur(0));
 
   React.useEffect(() => {
     const listenerId = scrollX.addListener(({ value }) => {
-      const blur = calculateBlur(value);
-      blurIntensityRef.current = blur;
+      const imageBlur = calculateImageBlur(value);
+      const textBlur = calculateTextBlur(value);
+      imageBlurIntensityRef.current = imageBlur;
+      textBlurIntensityRef.current = textBlur;
       requestAnimationFrame(() => {
-        setBlurIntensity(blur);
+        setImageBlurIntensity(imageBlur);
+        setTextBlurIntensity(textBlur);
       });
     });
     return () => scrollX.removeListener(listenerId);
-  }, [scrollX, calculateBlur]);
+  }, [scrollX, calculateImageBlur, calculateTextBlur]);
 
   const pressScale = useRef(new Animated.Value(1)).current;
 
@@ -121,9 +132,9 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
         <Animated.View style={{ transform: [{ scale: pressScale }] }}>
           <View style={styles.card}>
             <Image source={{ uri: item.imageUri }} style={styles.cardImage} resizeMode="cover" />
-            {Platform.OS !== 'web' && blurIntensity > 0 ? (
+            {Platform.OS !== 'web' && imageBlurIntensity > 0 ? (
               <BlurView
-                intensity={blurIntensity}
+                intensity={imageBlurIntensity}
                 tint="dark"
                 style={styles.blurOverlay}
               />
@@ -134,9 +145,9 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
             <Text style={[styles.cardTitle, { width: cardWidth }]} numberOfLines={3}>
               {item.title}
             </Text>
-            {Platform.OS !== 'web' && blurIntensity > 0 ? (
+            {Platform.OS !== 'web' && textBlurIntensity > 0 ? (
               <BlurView
-                intensity={blurIntensity}
+                intensity={textBlurIntensity}
                 tint="dark"
                 style={StyleSheet.absoluteFill}
               />
@@ -148,9 +159,9 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
               <View style={styles.badge} testID="listen-badge">
                 <Text style={styles.badgeText}>ESCUCHAR</Text>
               </View>
-              {Platform.OS !== 'web' && blurIntensity > 0 ? (
+              {Platform.OS !== 'web' && textBlurIntensity > 0 ? (
                 <BlurView
-                  intensity={blurIntensity}
+                  intensity={textBlurIntensity}
                   tint="dark"
                   style={StyleSheet.absoluteFill}
                 />
