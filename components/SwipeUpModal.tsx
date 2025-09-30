@@ -26,18 +26,10 @@ interface SwipeUpModalProps {
 
 export default function SwipeUpModal({ visible, onClose }: SwipeUpModalProps) {
   const { height: screenHeight, width: screenWidth } = useWindowDimensions();
-  const [isClient, setIsClient] = useState(Platform.OS !== 'web');
   
-  // Initialize animated values with safe defaults for SSR
-  const translateY = useRef(new Animated.Value(isClient ? screenHeight : 1000)).current;
+  // Initialize animated values - use screenHeight directly
+  const translateY = useRef(new Animated.Value(screenHeight)).current;
   const opacity = useRef(new Animated.Value(0)).current;
-  
-  useEffect(() => {
-    if (Platform.OS === 'web') {
-      setIsClient(true);
-      translateY.setValue(screenHeight);
-    }
-  }, [screenHeight, translateY]);
 
   const [activeTab, setActiveTab] = useState<'mensaje' | 'respuestas'>(() => 'mensaje');
 
@@ -299,7 +291,7 @@ export default function SwipeUpModal({ visible, onClose }: SwipeUpModalProps) {
     }
   }, [visible, translateY, opacity, screenHeight]);
 
-  if (!visible || !isClient) return null;
+  if (!visible) return null;
 
   return (
     <View style={styles.overlay} testID="swipeup-overlay" pointerEvents={audioPlayerVisible ? 'box-none' : 'auto'} {...(audioPlayerVisible ? {} : panResponder.panHandlers)}>
