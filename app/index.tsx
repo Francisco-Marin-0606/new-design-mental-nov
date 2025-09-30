@@ -124,10 +124,7 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.08)' } : undefined}
-        style={({ pressed }) => [
-          styles.cardColumn,
-          pressed && { opacity: 0.2 }
-        ]}
+        style={styles.cardColumn}
       >
         <Animated.View style={{ transform: [{ scale: pressScale }] }}>
           <View style={styles.card}>
@@ -397,6 +394,8 @@ const styles = StyleSheet.create({
     right: -30,
     bottom: -30,
     borderRadius: 16,
+    backgroundColor: 'transparent',
+    overflow: 'hidden',
   },
   textBlurWrapper: {
     marginTop: 20,
