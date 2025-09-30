@@ -220,7 +220,7 @@ export default function HomeScreen() {
             snapToAlignment="start"
             onMomentumScrollEnd={onMomentumScrollEnd}
             testID="hypnosis-carousel"
-            contentContainerStyle={{ paddingLeft: sidePadding, paddingRight: sidePadding, paddingVertical: 18 }}
+            contentContainerStyle={{ paddingLeft: sidePadding, paddingRight: sidePadding, paddingVertical: 0 }}
             onScroll={Animated.event(
               [{ nativeEvent: { contentOffset: { x: scrollX } } }],
               { useNativeDriver: false, listener: onScroll }
