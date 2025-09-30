@@ -16,6 +16,7 @@ import {
 
 import { X, Download, Check } from 'lucide-react-native';
 import Svg, { Defs, LinearGradient as SvgLinearGradient, Stop, Rect } from 'react-native-svg';
+import * as Haptics from 'expo-haptics';
 import PlayerModal from './PlayerModal';
 
 interface SwipeUpModalProps {
@@ -106,7 +107,16 @@ export default function SwipeUpModal({ visible, onClose }: SwipeUpModalProps) {
     ]).start();
   }, [textTranslateX, textOpacity, screenWidth]);
 
-  const switchToTabSafe = useCallback((toTab: 'mensaje' | 'respuestas', direction?: 'left' | 'right') => {
+  const switchToTabSafe = useCallback(async (toTab: 'mensaje' | 'respuestas', direction?: 'left' | 'right') => {
+    // Add haptic feedback for tab switches
+    if (Platform.OS !== 'web') {
+      try {
+        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      } catch (error) {
+        console.log('Haptic feedback error:', error);
+      }
+    }
+    
     // Determine direction if not provided
     const currentTab = activeTabRef.current;
     const autoDirection = (currentTab === 'mensaje' && toTab === 'respuestas') ? 'left' : 'right';
@@ -121,8 +131,17 @@ export default function SwipeUpModal({ visible, onClose }: SwipeUpModalProps) {
     switchToTabSafe(toTab);
   }, [switchToTabSafe]);
 
-  const startDownload = useCallback(() => {
+  const startDownload = useCallback(async () => {
     if (isDownloading || isDownloaded) return;
+
+    // Add haptic feedback
+    if (Platform.OS !== 'web') {
+      try {
+        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      } catch (error) {
+        console.log('Haptic feedback error:', error);
+      }
+    }
 
     setIsDownloading(true);
     setDownloadProgress(0);
@@ -156,7 +175,16 @@ export default function SwipeUpModal({ visible, onClose }: SwipeUpModalProps) {
     }, stepDuration);
   }, [isDownloading, isDownloaded, progressWidth]);
 
-  const closeModal = useCallback(() => {
+  const closeModal = useCallback(async () => {
+    // Add haptic feedback
+    if (Platform.OS !== 'web') {
+      try {
+        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      } catch (error) {
+        console.log('Haptic feedback error:', error);
+      }
+    }
+    
     Animated.parallel([
       Animated.timing(opacity, {
         toValue: 0,
@@ -360,7 +388,17 @@ export default function SwipeUpModal({ visible, onClose }: SwipeUpModalProps) {
                     <TouchableOpacity
                       style={styles.playBtn}
                       activeOpacity={0.1}
-                      onPress={() => setAudioPlayerVisible(true)}
+                      onPress={async () => {
+                        // Add haptic feedback
+                        if (Platform.OS !== 'web') {
+                          try {
+                            await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                          } catch (error) {
+                            console.log('Haptic feedback error:', error);
+                          }
+                        }
+                        setAudioPlayerVisible(true);
+                      }}
                       testID="play-button"
                       accessibilityRole="button"
                       accessibilityLabel="Reproducir"
@@ -417,7 +455,17 @@ export default function SwipeUpModal({ visible, onClose }: SwipeUpModalProps) {
                   <TouchableOpacity
                     style={styles.explainBtnWide}
                     activeOpacity={0.1}
-                    onPress={() => console.log('Explicación pressed')}
+                    onPress={async () => {
+                      // Add haptic feedback
+                      if (Platform.OS !== 'web') {
+                        try {
+                          await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                        } catch (error) {
+                          console.log('Haptic feedback error:', error);
+                        }
+                      }
+                      console.log('Explicación pressed');
+                    }}
                     testID="explain-button"
                     accessibilityRole="button"
                     accessibilityLabel="Ver explicación"

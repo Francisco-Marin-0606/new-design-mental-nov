@@ -132,6 +132,15 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
   }, [mode]);
 
   const togglePlayPause = useCallback(async () => {
+    // Add haptic feedback
+    if (Platform.OS !== 'web') {
+      try {
+        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      } catch (error) {
+        console.log('Haptic feedback error:', error);
+      }
+    }
+    
     const next = !intendedPlayingRef.current;
     intendedPlayingRef.current = next;
     setIsPlaying(next);
@@ -198,6 +207,15 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
 
   const skipBy = useCallback(
     async (deltaMs: number) => {
+      // Add haptic feedback
+      if (Platform.OS !== 'web') {
+        try {
+          await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        } catch (error) {
+          console.log('Haptic feedback error:', error);
+        }
+      }
+      
       try {
         const target = Math.max(0, Math.min(duration ?? 0, (position ?? 0) + deltaMs));
         await seekTo(target); // Use seekTo for consistency
@@ -219,9 +237,18 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
     [DURATION_CLOSE, easeInOut, opacity, screenHeight, translateY]
   );
 
-  const closeModal = useCallback(() => {
+  const closeModal = useCallback(async () => {
     if (isClosingRef.current) return; // Prevenir múltiples llamadas
     isClosingRef.current = true;
+    
+    // Add haptic feedback
+    if (Platform.OS !== 'web') {
+      try {
+        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      } catch (error) {
+        console.log('Haptic feedback error:', error);
+      }
+    }
     
     try {
       intendedPlayingRef.current = false;

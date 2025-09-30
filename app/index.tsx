@@ -2,13 +2,24 @@ import React, { useState, useCallback } from 'react';
 import { StyleSheet, View, Pressable, ImageBackground, Platform } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import * as Haptics from 'expo-haptics';
 import SwipeUpModal from '@/components/SwipeUpModal';
 
 export default function HomeScreen() {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
 
-  const handleOpen = useCallback(() => {
+  const handleOpen = useCallback(async () => {
     console.log('[HomeScreen] Opening SwipeUpModal via background press');
+    
+    // Add haptic feedback
+    if (Platform.OS !== 'web') {
+      try {
+        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      } catch (error) {
+        console.log('Haptic feedback error:', error);
+      }
+    }
+    
     setModalVisible(true);
   }, []);
 
