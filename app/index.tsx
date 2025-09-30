@@ -223,8 +223,7 @@ const styles = StyleSheet.create({
     position: 'relative',
     justifyContent: 'center' 
   },
-  cardImage: { width: '100%', height: '100%',    marginTop: '25%',
- },
+  cardImage: { width: '100%', height: '100%' },
   cardTitle: {
     marginTop: 16,
     fontSize: 22,

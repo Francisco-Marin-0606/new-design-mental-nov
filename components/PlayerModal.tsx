@@ -62,10 +62,18 @@ const ZONE_HEIGHT = 80; // Height of each speed zone in pixels
 
 export default function PlayerModal({ visible, onClose, mode, title = 'Reproductor', mediaUri }: PlayerModalProps) {
   const { height: screenHeight } = useWindowDimensions();
+  const [isClient, setIsClient] = useState(Platform.OS !== 'web');
 
-  // Initialize animated values - use screenHeight directly
-  const translateY = useRef(new Animated.Value(screenHeight)).current;
+  // Initialize animated values with safe defaults for SSR
+  const translateY = useRef(new Animated.Value(isClient ? screenHeight : 1000)).current;
   const opacity = useRef(new Animated.Value(0)).current;
+  
+  useEffect(() => {
+    if (Platform.OS === 'web') {
+      setIsClient(true);
+      translateY.setValue(screenHeight);
+    }
+  }, [screenHeight, translateY]);
 
   const isDraggingRef = useRef<boolean>(false);
   const isSeekingRef = useRef<boolean>(false);
@@ -590,7 +598,7 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
     };
   }, [visible, mode]);
 
-  if (!visible) return null;
+  if (!visible || !isClient) return null;
 
   const progressPct = duration > 0 ? Math.min((position / duration) * 100, 100) : 0;
 
