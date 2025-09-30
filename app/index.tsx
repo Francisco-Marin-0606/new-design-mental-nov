@@ -22,7 +22,7 @@ interface HypnosisSession {
   imageUri: string;
 }
 
-const HYPNOSIS_SESSIONS: HypnosisSession[] = [
+const HYPNOSIS_SESSIONS_RAW: HypnosisSession[] = [
   { id: '1', title: 'Calma profunda en los Colomos', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg' },
   { id: '2', title: 'Célula de sanación y calma', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg' },
   { id: '3', title: 'El reloj quieto sobre la mesa', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg' },
@@ -34,6 +34,8 @@ const HYPNOSIS_SESSIONS: HypnosisSession[] = [
   { id: '9', title: 'Liberación emocional suave y guiada', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg' },
   { id: '10', title: 'Conexión espiritual serena y profunda', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg' },
 ];
+
+const HYPNOSIS_SESSIONS: HypnosisSession[] = [...HYPNOSIS_SESSIONS_RAW].reverse();
 
 export default function HomeScreen() {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
@@ -146,7 +148,7 @@ export default function HomeScreen() {
               {item.title}
             </Text>
 
-            {index === HYPNOSIS_SESSIONS.length - 1 && (
+            {index === 0 && (
               <View style={styles.badge} testID="listen-badge">
                 <Text style={styles.badgeText}>ESCUCHAR</Text>
               </View>
@@ -191,7 +193,7 @@ export default function HomeScreen() {
             snapToAlignment="start"
             onMomentumScrollEnd={onMomentumScrollEnd}
             testID="hypnosis-carousel"
-            initialScrollIndex={HYPNOSIS_SESSIONS.length - 1}
+            initialScrollIndex={0}
             getItemLayout={(data: ArrayLike<HypnosisSession> | null | undefined, index: number) => ({
               length: snapInterval,
               offset: sidePadding + index * snapInterval,
