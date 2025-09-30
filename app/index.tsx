@@ -95,19 +95,14 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
         style={({ pressed }) => [styles.cardColumn, pressed && { opacity: 0.2 }]}
       >
         <View style={styles.card}>
-          <Image source={{ uri: item.imageUri }} style={StyleSheet.absoluteFillObject} resizeMode="cover" />
-          {Platform.OS !== 'web' ? (
-            <>
+          <SoftEdgesMask borderRadius={16} featherPct={isCenter ? 0 : 24} style={{ width: '100%', height: '100%' }}>
+            <Image source={{ uri: item.imageUri }} style={StyleSheet.absoluteFillObject} resizeMode="cover" />
+            {Platform.OS !== 'web' ? (
               <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { opacity: blurOpacity }]}>
-                <BlurView intensity={12} tint="dark" style={StyleSheet.absoluteFill} />
+                <BlurView intensity={15} tint="dark" style={StyleSheet.absoluteFill} />
               </Animated.View>
-              <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { opacity: maskOpacity }]}>
-                <SoftEdgesMask borderRadius={16} featherPct={15} style={{ width: '100%', height: '100%' }}>
-                  <View style={{ width: '100%', height: '100%', backgroundColor: 'transparent' }} />
-                </SoftEdgesMask>
-              </Animated.View>
-            </>
-          ) : null}
+            ) : null}
+          </SoftEdgesMask>
         </View>
 
         {/* Título con blur recortado */}
@@ -117,7 +112,7 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
           </Text>
           {Platform.OS !== 'web' ? (
             <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { opacity: blurOpacity, borderRadius: 8, overflow: 'hidden' as const }]}>
-              <BlurView intensity={12} tint="dark" style={StyleSheet.absoluteFill} />
+              <BlurView intensity={15} tint="dark" style={StyleSheet.absoluteFill} />
             </Animated.View>
           ) : null}
         </View>
@@ -133,7 +128,7 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
                 pointerEvents="none"
                 style={[StyleSheet.absoluteFill, { opacity: blurOpacity, borderRadius: 999, overflow: 'hidden' as const }]}
               >
-                <BlurView intensity={12} tint="dark" style={StyleSheet.absoluteFill} />
+                <BlurView intensity={15} tint="dark" style={StyleSheet.absoluteFill} />
               </Animated.View>
             ) : null}
           </View>
