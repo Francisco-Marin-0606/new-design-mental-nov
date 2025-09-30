@@ -73,7 +73,7 @@ export default function HomeScreen() {
       if (currentIndex !== lastHapticIndexRef.current) {
         lastHapticIndexRef.current = currentIndex;
         if (Platform.OS !== 'web') {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => {});
         }
       }
     } catch (err) {

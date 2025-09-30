@@ -111,7 +111,7 @@ export default function SwipeUpModal({ visible, onClose }: SwipeUpModalProps) {
     // Add haptic feedback for tab switches
     if (Platform.OS !== 'web') {
       try {
-        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
       } catch (error) {
         console.log('Haptic feedback error:', error);
       }
@@ -137,7 +137,7 @@ export default function SwipeUpModal({ visible, onClose }: SwipeUpModalProps) {
     // Add haptic feedback
     if (Platform.OS !== 'web') {
       try {
-        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
       } catch (error) {
         console.log('Haptic feedback error:', error);
       }
@@ -179,7 +179,7 @@ export default function SwipeUpModal({ visible, onClose }: SwipeUpModalProps) {
     // Add haptic feedback
     if (Platform.OS !== 'web') {
       try {
-        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
       } catch (error) {
         console.log('Haptic feedback error:', error);
       }
@@ -392,7 +392,7 @@ export default function SwipeUpModal({ visible, onClose }: SwipeUpModalProps) {
                         // Add haptic feedback
                         if (Platform.OS !== 'web') {
                           try {
-                            await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                            await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
                           } catch (error) {
                             console.log('Haptic feedback error:', error);
                           }
@@ -459,7 +459,7 @@ export default function SwipeUpModal({ visible, onClose }: SwipeUpModalProps) {
                       // Add haptic feedback
                       if (Platform.OS !== 'web') {
                         try {
-                          await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                          await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
                         } catch (error) {
                           console.log('Haptic feedback error:', error);
                         }
