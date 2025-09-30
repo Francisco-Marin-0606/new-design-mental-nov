@@ -129,7 +129,7 @@ export default function HomeScreen() {
           </Pressable>
 
           {/* Título alineado al borde izquierdo de la tarjeta */}
-          <Text style={[styles.cardTitle, { width: cardWidth }]} numberOfLines={2}>
+          <Text style={[styles.cardTitle, { width: cardWidth }]} numberOfLines={3}>
             {item.title}
           </Text>
           <View style={styles.badge} testID="listen-badge">
@@ -245,12 +245,12 @@ const styles = StyleSheet.create({
   cardImage: { width: '100%', height: '100%' },
   cardTitle: {
     marginTop: 20,
-    fontSize: 32,
+    fontSize: 30,
     fontWeight: '600',
     color: '#fbefd9',
     textAlign: 'left',
     paddingHorizontal: 4,
-    lineHeight: 26,
+    lineHeight: 36,
   },
   badge: {
     marginTop: 15,
