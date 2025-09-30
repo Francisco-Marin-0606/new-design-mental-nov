@@ -184,7 +184,27 @@ export default function SwipeUpModal({ visible, onClose }: SwipeUpModalProps) {
           if (isHorizontal && isSignificantHorizontal) return true;
           return false;
         },
-        onPanResponderMove: () => {
+        onPanResponderGrant: () => {
+          // Reset any ongoing animations when starting a new gesture
+          textTranslateX.stopAnimation();
+          textOpacity.stopAnimation();
+        },
+        onPanResponderMove: (_, gestureState) => {
+          // Make the text follow the finger with some resistance
+          const dragResistance = 0.6; // Adjust this value to change how much the text follows (0-1)
+          const maxDrag = screenWidth * 0.4; // Maximum distance the text can be dragged
+          
+          // Calculate the drag offset with resistance and limits
+          let dragOffset = gestureState.dx * dragResistance;
+          dragOffset = Math.max(-maxDrag, Math.min(maxDrag, dragOffset));
+          
+          // Apply the drag offset to the text
+          textTranslateX.setValue(dragOffset);
+          
+          // Slightly fade the text as it's being dragged
+          const fadeAmount = Math.abs(dragOffset) / maxDrag;
+          const opacity = 1 - (fadeAmount * 0.3); // Fade up to 30%
+          textOpacity.setValue(Math.max(0.7, opacity));
         },
         onPanResponderRelease: (_, gestureState) => {
           const swipeThreshold = 30;
@@ -192,6 +212,7 @@ export default function SwipeUpModal({ visible, onClose }: SwipeUpModalProps) {
           const isLeftSwipe = gestureState.dx < -swipeThreshold || gestureState.vx < -velocityThreshold;
           const isRightSwipe = gestureState.dx > swipeThreshold || gestureState.vx > velocityThreshold;
           const currentTab = activeTabRef.current;
+          
           if (isLeftSwipe && currentTab === 'mensaje') {
             switchToTabSafe('respuestas', 'left');
             return;
@@ -199,9 +220,25 @@ export default function SwipeUpModal({ visible, onClose }: SwipeUpModalProps) {
             switchToTabSafe('mensaje', 'right');
             return;
           }
+          
+          // If no tab switch occurred, animate back to original position
+          Animated.parallel([
+            Animated.spring(textTranslateX, {
+              toValue: 0,
+              useNativeDriver: true,
+              tension: 100,
+              friction: 8,
+            }),
+            Animated.spring(textOpacity, {
+              toValue: 1,
+              useNativeDriver: true,
+              tension: 100,
+              friction: 8,
+            }),
+          ]).start();
         },
       }),
-    [switchToTabSafe]
+    [switchToTabSafe, textTranslateX, textOpacity, screenWidth]
   );
 
   const openModal = useCallback(() => {
