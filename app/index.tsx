@@ -15,17 +15,17 @@ const HYPNOSIS_SESSIONS: HypnosisSession[] = [
   {
     id: '1',
     title: 'Calma en los Colomos',
-    imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Netflix/ImagenPrueba.png',
+    imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarrusel1.png',
   },
   {
     id: '2',
     title: 'Célula de sanación',
-    imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Netflix/IMG_7923.PNG',
+    imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarrusel1.png',
   },
   {
     id: '3',
     title: 'El reloj quieto en la mesa',
-    imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Netflix/ImagenPrueba.png',
+    imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarrusel1.png',
   },
 ];
 
