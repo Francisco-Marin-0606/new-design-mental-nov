@@ -52,38 +52,21 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
     extrapolate: 'clamp',
   });
 
-  const calculateImageBlur = useCallback((scrollValue: number) => {
-    const position = scrollValue / snapInterval;
-    const distance = Math.abs(position - index);
-    return Math.min(25, distance * 25);
-  }, [snapInterval, index]);
-
-  const calculateTextBlur = useCallback((scrollValue: number) => {
-    const position = scrollValue / snapInterval;
-    const distance = Math.abs(position - index);
-    return Math.min(8, distance * 8);
-  }, [snapInterval, index]);
-
-  const [imageBlurIntensity, setImageBlurIntensity] = React.useState<number>(() => calculateImageBlur(0));
-  const [textBlurIntensity, setTextBlurIntensity] = React.useState<number>(() => calculateTextBlur(0));
-  const imageBlurIntensityRef = useRef<number>(calculateImageBlur(0));
-  const textBlurIntensityRef = useRef<number>(calculateTextBlur(0));
+  const [blurIntensity, setBlurIntensity] = React.useState<number>(0);
 
   React.useEffect(() => {
     const listenerId = scrollX.addListener(({ value }) => {
-      const imageBlur = calculateImageBlur(value);
-      const textBlur = calculateTextBlur(value);
-      imageBlurIntensityRef.current = imageBlur;
-      textBlurIntensityRef.current = textBlur;
-      requestAnimationFrame(() => {
-        setImageBlurIntensity(imageBlur);
-        setTextBlurIntensity(textBlur);
-      });
+      const position = value / snapInterval;
+      const distance = Math.abs(position - index);
+      const blur = Math.min(8, distance * 8);
+      setBlurIntensity(blur);
     });
     return () => scrollX.removeListener(listenerId);
-  }, [scrollX, calculateImageBlur, calculateTextBlur]);
+  }, [scrollX, index, snapInterval]);
 
   const pressScale = useRef(new Animated.Value(1)).current;
+
+  const combinedScale = Animated.multiply(scale, pressScale);
 
   const handlePressIn = useCallback(() => {
     Animated.spring(pressScale, {
@@ -114,7 +97,7 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
         {
           width: cardWidth,
           marginRight: index === HYPNOSIS_SESSIONS.length - 1 ? 0 : cardSpacing,
-          transform: [{ scale }, { translateY }],
+          transform: [{ scale: combinedScale }, { translateY }],
         },
       ]}
     >
@@ -124,48 +107,49 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.08)' } : undefined}
-        style={styles.cardColumn}
+        style={({ pressed }) => [
+          styles.cardColumn,
+          pressed && { opacity: 0.2 }
+        ]}
       >
-        <Animated.View style={{ transform: [{ scale: pressScale }] }}>
-          <View style={styles.card}>
-            <Image source={{ uri: item.imageUri }} style={styles.cardImage} resizeMode="cover" />
-            {Platform.OS !== 'web' && imageBlurIntensity > 0 ? (
-              <BlurView
-                intensity={imageBlurIntensity}
-                tint="dark"
-                style={styles.blurOverlay}
-              />
-            ) : null}
-          </View>
+        <View style={styles.card}>
+          <Image source={{ uri: item.imageUri }} style={styles.cardImage} resizeMode="cover" />
+          {Platform.OS !== 'web' && blurIntensity > 0 ? (
+            <BlurView
+              intensity={blurIntensity}
+              tint="dark"
+              style={styles.blurOverlay}
+            />
+          ) : null}
+        </View>
 
-          <View style={styles.textBlurWrapper}>
-            <Text style={[styles.cardTitle, { width: cardWidth }]} numberOfLines={3}>
-              {item.title}
-            </Text>
-            {Platform.OS !== 'web' && textBlurIntensity > 0 ? (
+        <View style={styles.textBlurWrapper}>
+          <Text style={[styles.cardTitle, { width: cardWidth }]} numberOfLines={3}>
+            {item.title}
+          </Text>
+          {Platform.OS !== 'web' && blurIntensity > 0 ? (
+            <BlurView
+              intensity={blurIntensity}
+              tint="dark"
+              style={StyleSheet.absoluteFill}
+            />
+          ) : null}
+        </View>
+
+        {index === 0 && (
+          <View style={styles.badgeBlurWrapper}>
+            <View style={styles.badge} testID="listen-badge">
+              <Text style={styles.badgeText}>ESCUCHAR</Text>
+            </View>
+            {Platform.OS !== 'web' && blurIntensity > 0 ? (
               <BlurView
-                intensity={textBlurIntensity}
+                intensity={blurIntensity}
                 tint="dark"
                 style={StyleSheet.absoluteFill}
               />
             ) : null}
           </View>
-
-          {index === 0 && (
-            <View style={styles.badgeBlurWrapper}>
-              <View style={styles.badge} testID="listen-badge">
-                <Text style={styles.badgeText}>ESCUCHAR</Text>
-              </View>
-              {Platform.OS !== 'web' && textBlurIntensity > 0 ? (
-                <BlurView
-                  intensity={textBlurIntensity}
-                  tint="dark"
-                  style={StyleSheet.absoluteFill}
-                />
-              ) : null}
-            </View>
-          )}
-        </Animated.View>
+        )}
       </Pressable>
     </Animated.View>
   );
@@ -394,8 +378,6 @@ const styles = StyleSheet.create({
     right: -30,
     bottom: -30,
     borderRadius: 16,
-    backgroundColor: 'transparent',
-    overflow: 'hidden',
   },
   textBlurWrapper: {
     marginTop: 20,
