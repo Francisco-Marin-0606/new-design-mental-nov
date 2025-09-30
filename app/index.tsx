@@ -52,11 +52,17 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
     extrapolate: 'clamp',
   });
 
-  const blurIntensity = scrollX.interpolate({
-    inputRange,
-    outputRange: [8, 0, 8],
-    extrapolate: 'clamp',
-  });
+  const [blurIntensity, setBlurIntensity] = React.useState<number>(0);
+
+  React.useEffect(() => {
+    const listenerId = scrollX.addListener(({ value }) => {
+      const position = value / snapInterval;
+      const distance = Math.abs(position - index);
+      const blur = Math.min(8, distance * 8);
+      setBlurIntensity(blur);
+    });
+    return () => scrollX.removeListener(listenerId);
+  }, [scrollX, index, snapInterval]);
 
   const pressScale = useRef(new Animated.Value(1)).current;
 
@@ -106,62 +112,40 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
           pressed && { opacity: 0.2 }
         ]}
       >
-        {Platform.OS !== 'web' ? (
-          <BlurView
-            intensity={blurIntensity as any}
-            style={styles.card}
-          >
-            <Image source={{ uri: item.imageUri }} style={styles.cardImage} resizeMode="cover" />
-          </BlurView>
-        ) : (
-          <Animated.View style={[styles.card, { filter: blurIntensity.interpolate({
-            inputRange: [0, 8],
-            outputRange: ['blur(0px)', 'blur(8px)'] as any,
-          }) }]}>
-            <Image source={{ uri: item.imageUri }} style={styles.cardImage} resizeMode="cover" />
-          </Animated.View>
-        )}
+        <View style={styles.card}>
+          {Platform.OS !== 'web' && blurIntensity > 0 ? (
+            <BlurView
+              intensity={blurIntensity}
+              style={StyleSheet.absoluteFill}
+            />
+          ) : null}
+          <Image source={{ uri: item.imageUri }} style={styles.cardImage} resizeMode="cover" />
+        </View>
 
-        {Platform.OS !== 'web' ? (
-          <BlurView
-            intensity={blurIntensity as any}
-            style={styles.textBlurWrapper}
-          >
-            <Text style={[styles.cardTitle, { width: cardWidth }]} numberOfLines={3}>
-              {item.title}
-            </Text>
-          </BlurView>
-        ) : (
-          <Animated.View style={[styles.textBlurWrapper, { filter: blurIntensity.interpolate({
-            inputRange: [0, 8],
-            outputRange: ['blur(0px)', 'blur(8px)'] as any,
-          }) }]}>
-            <Text style={[styles.cardTitle, { width: cardWidth }]} numberOfLines={3}>
-              {item.title}
-            </Text>
-          </Animated.View>
-        )}
+        <View style={styles.textBlurWrapper}>
+          {Platform.OS !== 'web' && blurIntensity > 0 ? (
+            <BlurView
+              intensity={blurIntensity}
+              style={StyleSheet.absoluteFill}
+            />
+          ) : null}
+          <Text style={[styles.cardTitle, { width: cardWidth }]} numberOfLines={3}>
+            {item.title}
+          </Text>
+        </View>
 
         {index === 0 && (
-          Platform.OS !== 'web' ? (
-            <BlurView
-              intensity={blurIntensity as any}
-              style={styles.badgeBlurWrapper}
-            >
-              <View style={styles.badge} testID="listen-badge">
-                <Text style={styles.badgeText}>ESCUCHAR</Text>
-              </View>
-            </BlurView>
-          ) : (
-            <Animated.View style={[styles.badgeBlurWrapper, { filter: blurIntensity.interpolate({
-              inputRange: [0, 8],
-              outputRange: ['blur(0px)', 'blur(8px)'] as any,
-            }) }]}>
-              <View style={styles.badge} testID="listen-badge">
-                <Text style={styles.badgeText}>ESCUCHAR</Text>
-              </View>
-            </Animated.View>
-          )
+          <View style={styles.badgeBlurWrapper}>
+            {Platform.OS !== 'web' && blurIntensity > 0 ? (
+              <BlurView
+                intensity={blurIntensity}
+                style={StyleSheet.absoluteFill}
+              />
+            ) : null}
+            <View style={styles.badge} testID="listen-badge">
+              <Text style={styles.badgeText}>ESCUCHAR</Text>
+            </View>
+          </View>
         )}
       </Pressable>
     </Animated.View>
@@ -386,6 +370,7 @@ const styles = StyleSheet.create({
   cardImage: { width: '100%', height: '100%' },
   textBlurWrapper: {
     marginTop: 20,
+    position: 'relative' as const,
   },
   cardTitle: {
     fontSize: 26,
@@ -398,6 +383,7 @@ const styles = StyleSheet.create({
   badgeBlurWrapper: {
     marginTop: 15,
     alignSelf: 'flex-start',
+    position: 'relative' as const,
   },
   badge: {
     backgroundColor: '#c9841e',
