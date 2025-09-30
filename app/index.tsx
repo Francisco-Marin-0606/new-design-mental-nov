@@ -319,7 +319,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     // 🔑 recorta todo lo interno (imagen + blur) => sin recuadros
     overflow: 'hidden',
-    backgroundColor: '#2a1410',
+    backgroundColor: '#170501',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.45,
