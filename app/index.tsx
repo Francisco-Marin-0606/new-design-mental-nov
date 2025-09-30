@@ -52,21 +52,25 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
     extrapolate: 'clamp',
   });
 
-  const [blurIntensity, setBlurIntensity] = React.useState<number>(0);
-  const blurIntensityRef = useRef<number>(0);
+  const calculateBlur = useCallback((scrollValue: number) => {
+    const position = scrollValue / snapInterval;
+    const distance = Math.abs(position - index);
+    return Math.min(25, distance * 25);
+  }, [snapInterval, index]);
+
+  const [blurIntensity, setBlurIntensity] = React.useState<number>(() => calculateBlur(0));
+  const blurIntensityRef = useRef<number>(calculateBlur(0));
 
   React.useEffect(() => {
     const listenerId = scrollX.addListener(({ value }) => {
-      const position = value / snapInterval;
-      const distance = Math.abs(position - index);
-      const blur = Math.min(8, distance * 8);
+      const blur = calculateBlur(value);
       blurIntensityRef.current = blur;
       requestAnimationFrame(() => {
         setBlurIntensity(blur);
       });
     });
     return () => scrollX.removeListener(listenerId);
-  }, [scrollX, index, snapInterval]);
+  }, [scrollX, calculateBlur]);
 
   const pressScale = useRef(new Animated.Value(1)).current;
 
