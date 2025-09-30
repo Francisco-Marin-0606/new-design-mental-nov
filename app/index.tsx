@@ -246,9 +246,9 @@ const styles = StyleSheet.create({
   bottomSection: { paddingHorizontal: 44, paddingBottom: 55, paddingTop: 12 },
   nextButton: {
     backgroundColor: 'rgba(212, 98, 31, 0.5)',
-    paddingVertical: 18,
-    borderRadius: 10,
+    paddingVertical: 25,
+    borderRadius: 14,
     alignItems: 'center',
   },
-  nextButtonText: { fontSize: 18, fontWeight: '600', color: '#ffffff' },
+  nextButtonText: { fontSize: 20, fontWeight: '600', color: '#ffffff' },
 });
