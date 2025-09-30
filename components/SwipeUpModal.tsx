@@ -610,7 +610,7 @@ const styles = StyleSheet.create({
   gradientFill: { flex: 1 },
   innerShift: { flex: 1, position: 'relative' },
   dragArea: { paddingTop: 12, paddingBottom: 8, alignItems: 'center' },
-  handle: { width: 40, height: 4, backgroundColor: 'rgba(255, 255, 255, 0.3)', borderRadius: 2, marginBottom: 4 },
+  handle: { width: 40, height: 4, backgroundColor: 'transparent', borderRadius: 2, marginBottom: 4 },
   closeButton: { position: 'absolute', top: 32, right: 20, width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(0, 0, 0, 0.2)', justifyContent: 'center', alignItems: 'center', zIndex: 10 },
   scroll: { flex: 1, backgroundColor: 'transparent' },
   scrollContent: { paddingBottom: 120, position: 'relative' },
