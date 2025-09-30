@@ -58,7 +58,7 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
     const listenerId = scrollX.addListener(({ value }) => {
       const position = value / snapInterval;
       const distance = Math.abs(position - index);
-      const blur = Math.min(8, distance * 8);
+      const blur = Math.min(15, distance * 15);
       setBlurIntensity(blur);
     });
     return () => scrollX.removeListener(listenerId);
@@ -116,7 +116,7 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
           <Image source={{ uri: item.imageUri }} style={styles.cardImage} resizeMode="cover" />
           {Platform.OS !== 'web' && blurIntensity > 0 ? (
             <BlurView
-              intensity={blurIntensity}
+              intensity={15}
               tint="dark"
               style={styles.blurOverlay}
             />
