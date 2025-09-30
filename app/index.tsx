@@ -22,6 +22,101 @@ interface HypnosisSession {
   imageUri: string;
 }
 
+interface CarouselItemProps {
+  item: HypnosisSession;
+  index: number;
+  cardWidth: number;
+  cardSpacing: number;
+  snapInterval: number;
+  scrollX: Animated.Value;
+  onPress: (session: HypnosisSession) => void;
+}
+
+function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrollX, onPress }: CarouselItemProps) {
+  const inputRange = [
+    (index - 1) * snapInterval,
+    index * snapInterval,
+    (index + 1) * snapInterval,
+  ];
+
+  const scale = scrollX.interpolate({
+    inputRange,
+    outputRange: [0.9, 1, 0.9],
+    extrapolate: 'clamp',
+  });
+
+  const translateY = scrollX.interpolate({
+    inputRange,
+    outputRange: [8, 0, 8],
+    extrapolate: 'clamp',
+  });
+
+  const pressScale = useRef(new Animated.Value(1)).current;
+
+  const handlePressIn = useCallback(() => {
+    Animated.spring(pressScale, {
+      toValue: 0.9,
+      useNativeDriver: true,
+      speed: 50,
+      bounciness: 0,
+    }).start();
+  }, [pressScale]);
+
+  const handlePressOut = useCallback(() => {
+    Animated.spring(pressScale, {
+      toValue: 1,
+      useNativeDriver: true,
+      speed: 50,
+      bounciness: 0,
+    }).start();
+  }, [pressScale]);
+
+  const handlePress = useCallback(() => {
+    onPress(item);
+  }, [item, onPress]);
+
+  return (
+    <Animated.View
+      style={[
+        styles.cardWrapper,
+        {
+          width: cardWidth,
+          marginRight: index === HYPNOSIS_SESSIONS.length - 1 ? 0 : cardSpacing,
+          transform: [{ scale }, { translateY }],
+        },
+      ]}
+    >
+      <Pressable
+        testID="carousel-card"
+        onPress={handlePress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.08)' } : undefined}
+        style={({ pressed }) => [
+          styles.cardColumn,
+          pressed && { opacity: 0.2 }
+        ]}
+      >
+        <Animated.View style={{ transform: [{ scale: pressScale }] }}>
+          <View style={styles.card}>
+            <Image source={{ uri: item.imageUri }} style={styles.cardImage} resizeMode="cover" />
+          </View>
+
+          <Text style={[styles.cardTitle, { width: cardWidth }]} numberOfLines={3}>
+            {item.title}
+          </Text>
+
+          {index === 0 && (
+            <View style={styles.badge} testID="listen-badge">
+              <Text style={styles.badgeText}>ESCUCHAR</Text>
+            </View>
+          )}
+        </Animated.View>
+      </Pressable>
+    </Animated.View>
+  );
+}
+
 const HYPNOSIS_SESSIONS_RAW: HypnosisSession[] = [
   { id: '1', title: 'Calma profunda en los Colomos', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg' },
   { id: '2', title: 'Célula de sanación y calma', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg' },
@@ -104,62 +199,17 @@ export default function HomeScreen() {
   }, [handleOpen]);
 
   const renderItem = useCallback(
-    ({ item, index }: ListRenderItemInfo<HypnosisSession>) => {
-      const inputRange = [
-        (index - 1) * snapInterval,
-        index * snapInterval,
-        (index + 1) * snapInterval,
-      ];
-
-      const scale = scrollX.interpolate({
-        inputRange,
-        outputRange: [0.9, 1, 0.9],
-        extrapolate: 'clamp',
-      });
-
-      const translateY = scrollX.interpolate({
-        inputRange,
-        outputRange: [8, 0, 8],
-        extrapolate: 'clamp',
-      });
-
-      return (
-        <Animated.View
-          style={[
-            styles.cardWrapper,
-            {
-              width: cardWidth,
-              marginRight: index === HYPNOSIS_SESSIONS.length - 1 ? 0 : cardSpacing,
-              transform: [{ scale }, { translateY }],
-            },
-          ]}
-        >
-          <Pressable
-            testID="carousel-card"
-            onPress={() => handleCardPress(item)}
-            android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.08)' } : undefined}
-            style={({ pressed }) => [
-              styles.cardColumn,
-              pressed && { opacity: 0.2, transform: [{ scale: 0.9 }] }
-            ]}
-          >
-            <View style={styles.card}>
-              <Image source={{ uri: item.imageUri }} style={styles.cardImage} resizeMode="cover" />
-            </View>
-
-            <Text style={[styles.cardTitle, { width: cardWidth }]} numberOfLines={3}>
-              {item.title}
-            </Text>
-
-            {index === 0 && (
-              <View style={styles.badge} testID="listen-badge">
-                <Text style={styles.badgeText}>ESCUCHAR</Text>
-              </View>
-            )}
-          </Pressable>
-        </Animated.View>
-      );
-    },
+    ({ item, index }: ListRenderItemInfo<HypnosisSession>) => (
+      <CarouselItem
+        item={item}
+        index={index}
+        cardWidth={cardWidth}
+        cardSpacing={cardSpacing}
+        snapInterval={snapInterval}
+        scrollX={scrollX}
+        onPress={handleCardPress}
+      />
+    ),
     [cardWidth, cardSpacing, snapInterval, scrollX, handleCardPress]
   );
 
