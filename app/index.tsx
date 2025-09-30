@@ -56,6 +56,12 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
     extrapolate: 'clamp',
   });
 
+  const maskOpacity = scrollX.interpolate({
+    inputRange,
+    outputRange: [1, 0, 1],
+    extrapolate: 'clamp',
+  });
+
   const pressScale = useRef(new Animated.Value(1)).current;
   const combinedScale = Animated.multiply(scale, pressScale);
 
@@ -89,25 +95,19 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
         style={({ pressed }) => [styles.cardColumn, pressed && { opacity: 0.2 }]}
       >
         <View style={styles.card}>
-          {isCenter ? (
+          <Image source={{ uri: item.imageUri }} style={StyleSheet.absoluteFillObject} resizeMode="cover" />
+          {Platform.OS !== 'web' ? (
             <>
-              <Image source={{ uri: item.imageUri }} style={StyleSheet.absoluteFillObject} resizeMode="cover" />
-              {Platform.OS !== 'web' ? (
-                <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { opacity: blurOpacity }]}>
-                  <BlurView intensity={12} tint="dark" style={StyleSheet.absoluteFill} />
-                </Animated.View>
-              ) : null}
+              <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { opacity: blurOpacity }]}>
+                <BlurView intensity={12} tint="dark" style={StyleSheet.absoluteFill} />
+              </Animated.View>
+              <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { opacity: maskOpacity }]}>
+                <SoftEdgesMask borderRadius={16} featherPct={2} style={{ width: '100%', height: '100%' }}>
+                  <View style={{ width: '100%', height: '100%', backgroundColor: 'transparent' }} />
+                </SoftEdgesMask>
+              </Animated.View>
             </>
-          ) : (
-            <SoftEdgesMask borderRadius={16} featherPct={14} style={{ width: '100%', aspectRatio: 4 / 5 }}>
-              <Image source={{ uri: item.imageUri }} style={StyleSheet.absoluteFillObject} resizeMode="cover" />
-              {Platform.OS !== 'web' ? (
-                <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { opacity: blurOpacity }]}>
-                  <BlurView intensity={12} tint="dark" style={StyleSheet.absoluteFill} />
-                </Animated.View>
-              ) : null}
-            </SoftEdgesMask>
-          )}
+          ) : null}
         </View>
 
         {/* Título con blur recortado */}

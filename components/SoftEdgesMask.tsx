@@ -22,6 +22,10 @@ export default function SoftEdgesMask({
     return <View style={[style, { borderRadius, overflow: 'hidden' }]}>{children}</View>;
   }
 
+  if (featherPct === 0) {
+    return <View style={[style, { borderRadius, overflow: 'hidden' }]}>{children}</View>;
+  }
+
   return (
     <View style={[style, { borderRadius, overflow: 'hidden' }]}>
       <MaskedView
