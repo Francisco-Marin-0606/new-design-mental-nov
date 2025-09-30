@@ -52,6 +52,12 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
     extrapolate: 'clamp',
   });
 
+  const blurIntensity = scrollX.interpolate({
+    inputRange,
+    outputRange: [8, 0, 8],
+    extrapolate: 'clamp',
+  });
+
   const pressScale = useRef(new Animated.Value(1)).current;
 
   const combinedScale = Animated.multiply(scale, pressScale);
@@ -100,18 +106,62 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
           pressed && { opacity: 0.2 }
         ]}
       >
-        <View style={styles.card}>
-          <Image source={{ uri: item.imageUri }} style={styles.cardImage} resizeMode="cover" />
-        </View>
+        {Platform.OS !== 'web' ? (
+          <BlurView
+            intensity={blurIntensity as any}
+            style={styles.card}
+          >
+            <Image source={{ uri: item.imageUri }} style={styles.cardImage} resizeMode="cover" />
+          </BlurView>
+        ) : (
+          <Animated.View style={[styles.card, { filter: blurIntensity.interpolate({
+            inputRange: [0, 8],
+            outputRange: ['blur(0px)', 'blur(8px)'] as any,
+          }) }]}>
+            <Image source={{ uri: item.imageUri }} style={styles.cardImage} resizeMode="cover" />
+          </Animated.View>
+        )}
 
-        <Text style={[styles.cardTitle, { width: cardWidth }]} numberOfLines={3}>
-          {item.title}
-        </Text>
+        {Platform.OS !== 'web' ? (
+          <BlurView
+            intensity={blurIntensity as any}
+            style={styles.textBlurWrapper}
+          >
+            <Text style={[styles.cardTitle, { width: cardWidth }]} numberOfLines={3}>
+              {item.title}
+            </Text>
+          </BlurView>
+        ) : (
+          <Animated.View style={[styles.textBlurWrapper, { filter: blurIntensity.interpolate({
+            inputRange: [0, 8],
+            outputRange: ['blur(0px)', 'blur(8px)'] as any,
+          }) }]}>
+            <Text style={[styles.cardTitle, { width: cardWidth }]} numberOfLines={3}>
+              {item.title}
+            </Text>
+          </Animated.View>
+        )}
 
         {index === 0 && (
-          <View style={styles.badge} testID="listen-badge">
-            <Text style={styles.badgeText}>ESCUCHAR</Text>
-          </View>
+          Platform.OS !== 'web' ? (
+            <BlurView
+              intensity={blurIntensity as any}
+              style={styles.badgeBlurWrapper}
+            >
+              <View style={styles.badge} testID="listen-badge">
+                <Text style={styles.badgeText}>ESCUCHAR</Text>
+              </View>
+            </BlurView>
+          ) : (
+            <Animated.View style={[styles.badgeBlurWrapper, { filter: blurIntensity.interpolate({
+              inputRange: [0, 8],
+              outputRange: ['blur(0px)', 'blur(8px)'] as any,
+            }) }]}>
+              <View style={styles.badge} testID="listen-badge">
+                <Text style={styles.badgeText}>ESCUCHAR</Text>
+              </View>
+            </Animated.View>
+          )
         )}
       </Pressable>
     </Animated.View>
@@ -262,25 +312,7 @@ export default function HomeScreen() {
               scrollEventThrottle={16}
             />
 
-            {Platform.OS !== 'web' ? (
-              <>
-                <BlurView
-                  intensity={40}
-                  style={styles.blurLeft}
-                  pointerEvents="none"
-                />
-                <BlurView
-                  intensity={40}
-                  style={styles.blurRight}
-                  pointerEvents="none"
-                />
-              </>
-            ) : (
-              <>
-                <View style={[styles.blurLeft, styles.blurWeb]} pointerEvents="none" />
-                <View style={[styles.blurRight, styles.blurWeb]} pointerEvents="none" />
-              </>
-            )}
+
           </View>
         </View>
 
@@ -331,28 +363,6 @@ const styles = StyleSheet.create({
     flex: 1,
     position: 'relative',
   },
-  blurLeft: {
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    bottom: 0,
-    width: 80,
-    zIndex: 10,
-  },
-  blurRight: {
-    position: 'absolute',
-    right: 0,
-    top: 0,
-    bottom: 0,
-    width: 80,
-    zIndex: 10,
-  },
-  blurWeb: {
-    backgroundColor: 'rgba(23, 5, 1, 0.3)',
-    ...(Platform.OS === 'web' && {
-      backdropFilter: 'blur(10px)',
-    }),
-  },
   cardWrapper: {
     alignItems: 'flex-start',
   },
@@ -374,8 +384,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center'
   },
   cardImage: { width: '100%', height: '100%' },
-  cardTitle: {
+  textBlurWrapper: {
     marginTop: 20,
+  },
+  cardTitle: {
     fontSize: 26,
     fontWeight: '600',
     color: '#fbefd9',
@@ -383,9 +395,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
     lineHeight: 30,
   },
-  badge: {
+  badgeBlurWrapper: {
     marginTop: 15,
     alignSelf: 'flex-start',
+  },
+  badge: {
     backgroundColor: '#c9841e',
     paddingHorizontal: 14,
     paddingVertical: 7,
