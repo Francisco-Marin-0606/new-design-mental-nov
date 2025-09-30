@@ -245,15 +245,15 @@ const styles = StyleSheet.create({
   cardImage: { width: '100%', height: '100%' },
   cardTitle: {
     marginTop: 16,
-    fontSize: 21,
-    fontWeight: '700',
+    fontSize: 24,
+    fontWeight: '400',
     color: '#fbefd9',
     textAlign: 'left',
     paddingHorizontal: 4,
     lineHeight: 26,
   },
   badge: {
-    marginTop: 8,
+    marginTop: 15,
     alignSelf: 'flex-start',
     backgroundColor: '#d4621f',
     paddingHorizontal: 14,
@@ -262,7 +262,7 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     fontSize: 15,
-    fontWeight: '800',
+    fontWeight: '400',
     color: '#fff',
     letterSpacing: 1.2,
   },
