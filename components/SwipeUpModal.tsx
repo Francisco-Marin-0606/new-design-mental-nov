@@ -90,17 +90,17 @@ export default function SwipeUpModal({ visible, onClose }: SwipeUpModalProps) {
     textTranslateX.setValue(initialTranslateX);
     textOpacity.setValue(0);
     
-    // Animate content sliding in with smoother, slower animation
+    // Animate content sliding in with faster animation
     Animated.parallel([
       Animated.timing(textTranslateX, {
         toValue: 0,
-        duration: 600,
+        duration: 350,
         easing: Easing.bezier(0.25, 0.46, 0.45, 0.94),
         useNativeDriver: true,
       }),
       Animated.timing(textOpacity, {
         toValue: 1,
-        duration: 550,
+        duration: 320,
         easing: Easing.bezier(0.25, 0.46, 0.45, 0.94),
         useNativeDriver: true,
       }),
