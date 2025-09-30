@@ -16,6 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
 import * as Haptics from 'expo-haptics';
 import SwipeUpModal from '@/components/SwipeUpModal';
+import SoftEdgesImage from '@/components/SoftEdgesImage';
 
 interface HypnosisSession {
   id: string;
@@ -34,11 +35,7 @@ interface CarouselItemProps {
 }
 
 function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrollX, onPress }: CarouselItemProps) {
-  const inputRange = [
-    (index - 1) * snapInterval,
-    index * snapInterval,
-    (index + 1) * snapInterval,
-  ];
+  const inputRange = [(index - 1) * snapInterval, index * snapInterval, (index + 1) * snapInterval];
 
   const scale = scrollX.interpolate({
     inputRange,
@@ -53,40 +50,23 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
   });
 
   const blurOpacity = scrollX.interpolate({
-    inputRange: [
-      (index - 1) * snapInterval,
-      index * snapInterval,
-      (index + 1) * snapInterval,
-    ],
+    inputRange,
     outputRange: [1, 0, 1],
     extrapolate: 'clamp',
   });
 
   const pressScale = useRef(new Animated.Value(1)).current;
-
   const combinedScale = Animated.multiply(scale, pressScale);
 
   const handlePressIn = useCallback(() => {
-    Animated.spring(pressScale, {
-      toValue: 0.9,
-      useNativeDriver: true,
-      speed: 50,
-      bounciness: 0,
-    }).start();
+    Animated.spring(pressScale, { toValue: 0.9, useNativeDriver: true, speed: 50, bounciness: 0 }).start();
   }, [pressScale]);
 
   const handlePressOut = useCallback(() => {
-    Animated.spring(pressScale, {
-      toValue: 1,
-      useNativeDriver: true,
-      speed: 50,
-      bounciness: 0,
-    }).start();
+    Animated.spring(pressScale, { toValue: 1, useNativeDriver: true, speed: 50, bounciness: 0 }).start();
   }, [pressScale]);
 
-  const handlePress = useCallback(() => {
-    onPress(item);
-  }, [item, onPress]);
+  const handlePress = useCallback(() => onPress(item), [item, onPress]);
 
   return (
     <Animated.View
@@ -94,7 +74,7 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
         styles.cardWrapper,
         {
           width: cardWidth,
-          marginRight: index === HYPNOSIS_SESSIONS.length - 1 ? 0 : cardSpacing,
+          marginRight: index === HYPNOSIS_SESSIONS.length - 1 ? 0 : 20,
           transform: [{ scale: combinedScale }, { translateY }],
         },
       ]}
@@ -105,39 +85,50 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.08)' } : undefined}
-        style={({ pressed }) => [
-          styles.cardColumn,
-          pressed && { opacity: 0.2 }
-        ]}
+        style={({ pressed }) => [styles.cardColumn, pressed && { opacity: 0.2 }]}
       >
+        {/* CARD */}
         <View style={styles.card}>
-          <Image source={{ uri: item.imageUri }} style={styles.cardImage} resizeMode="cover" />
+          {/* Imagen con bordes suaves (tipo PowerPoint) */}
+          <SoftEdgesImage
+            uri={item.imageUri}
+            borderRadius={16}
+            featherPct={24} // subí/bajá 18–32 para más/menos suavidad
+            style={{ width: '100%', aspectRatio: 4 / 5 }}
+          />
+
+          {/* Desenfoque para items “no centrados” (recortado: sin recuadros) */}
           {Platform.OS !== 'web' ? (
             <Animated.View pointerEvents="none" style={[styles.blurOverlay, { opacity: blurOpacity }]}>
-              <BlurView intensity={15} tint="dark" style={StyleSheet.absoluteFill} />
+              <BlurView intensity={12} tint="dark" style={StyleSheet.absoluteFill} />
             </Animated.View>
           ) : null}
         </View>
 
+        {/* Título con blur recortado */}
         <View style={styles.textBlurWrapper}>
           <Text style={[styles.cardTitle, { width: cardWidth }]} numberOfLines={3}>
             {item.title}
           </Text>
           {Platform.OS !== 'web' ? (
-            <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { opacity: blurOpacity }]}>
-              <BlurView intensity={15} tint="dark" style={StyleSheet.absoluteFill} />
+            <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { opacity: blurOpacity, borderRadius: 8, overflow: 'hidden' as const }]}>
+              <BlurView intensity={12} tint="dark" style={StyleSheet.absoluteFill} />
             </Animated.View>
           ) : null}
         </View>
 
+        {/* Badge con blur recortado */}
         {index === 0 && (
           <View style={styles.badgeBlurWrapper}>
             <View style={styles.badge} testID="listen-badge">
               <Text style={styles.badgeText}>ESCUCHAR</Text>
             </View>
             {Platform.OS !== 'web' ? (
-              <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { opacity: blurOpacity }]}>
-                <BlurView intensity={15} tint="dark" style={StyleSheet.absoluteFill} />
+              <Animated.View
+                pointerEvents="none"
+                style={[StyleSheet.absoluteFill, { opacity: blurOpacity, borderRadius: 999, overflow: 'hidden' as const }]}
+              >
+                <BlurView intensity={12} tint="dark" style={StyleSheet.absoluteFill} />
               </Animated.View>
             ) : null}
           </View>
@@ -167,7 +158,6 @@ export default function HomeScreen() {
   const [selectedSession, setSelectedSession] = useState<HypnosisSession | null>(null);
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
 
-  // Tamaño/espaciado estilo “foto 1”
   const cardWidth = useMemo(() => Math.min(263.35, screenWidth * 1.725), [screenWidth]);
   const cardSpacing = 20;
   const snapInterval = cardWidth + cardSpacing;
@@ -197,12 +187,9 @@ export default function HomeScreen() {
     try {
       const x = e?.nativeEvent?.contentOffset?.x ?? 0;
       const currentIndex = Math.round(x / snapInterval);
-      
       if (currentIndex !== lastHapticIndexRef.current) {
         lastHapticIndexRef.current = currentIndex;
-        if (Platform.OS !== 'web') {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => {});
-        }
+        if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => {});
       }
     } catch (err) {
       console.log('[Carousel] onScroll error', err);
@@ -290,8 +277,6 @@ export default function HomeScreen() {
               )}
               scrollEventThrottle={16}
             />
-
-
           </View>
         </View>
 
@@ -327,32 +312,20 @@ const styles = StyleSheet.create({
     paddingLeft: 54,
     paddingRight: 54,
   },
-  headerTitle: {
-    fontSize: 32.4,
-    fontWeight: '700',
-    color: '#fbefd9',
-  },
-  headerIcon: {
-    width: 28,
-    height: 28,
-  },
+  headerTitle: { fontSize: 32.4, fontWeight: '700', color: '#fbefd9' },
+  headerIcon: { width: 28, height: 28 },
 
   // Carrusel
-  carouselContainer: {
-    flex: 1,
-    position: 'relative',
-  },
-  cardWrapper: {
-    alignItems: 'flex-start',
-  },
-  cardColumn: {
-    alignSelf: 'stretch',
-  },
+  carouselContainer: { flex: 1, position: 'relative' },
+  cardWrapper: { alignItems: 'flex-start' },
+  cardColumn: { alignSelf: 'stretch' },
+
   card: {
     width: '100%',
     aspectRatio: 4 / 5,
     borderRadius: 16,
-    overflow: 'visible',
+    // 🔑 recorta todo lo interno (imagen + blur) => sin recuadros
+    overflow: 'hidden',
     backgroundColor: '#2a1410',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 10 },
@@ -360,20 +333,22 @@ const styles = StyleSheet.create({
     shadowRadius: 18,
     elevation: 18,
     position: 'relative',
-    justifyContent: 'center'
+    justifyContent: 'center',
   },
+
+  // ya no usamos cardImage (lo reemplaza SoftEdgesImage), lo dejo por compatibilidad
   cardImage: { width: '100%', height: '100%', borderRadius: 16 },
+
+  // 🔑 blur sin radios ni márgenes: absolute fill
   blurOverlay: {
-    position: 'absolute',
-    top: -30,
-    left: -30,
-    right: -30,
-    bottom: -30,
-    borderRadius: 16,
+    ...StyleSheet.absoluteFillObject,
   },
+
   textBlurWrapper: {
     marginTop: 20,
     position: 'relative' as const,
+    borderRadius: 8,
+    overflow: 'hidden', // recorta el blur del título
   },
   cardTitle: {
     fontSize: 26,
@@ -387,6 +362,8 @@ const styles = StyleSheet.create({
     marginTop: 15,
     alignSelf: 'flex-start',
     position: 'relative' as const,
+    borderRadius: 999,
+    overflow: 'hidden', // recorta el blur del badge
   },
   badge: {
     backgroundColor: '#c9841e',
@@ -394,12 +371,7 @@ const styles = StyleSheet.create({
     paddingVertical: 7,
     borderRadius: 999,
   },
-  badgeText: {
-    fontSize: 17,
-    fontWeight: '500',
-    color: '#fbefd9',
-    letterSpacing: 0.2,
-  },
+  badgeText: { fontSize: 17, fontWeight: '500', color: '#fbefd9', letterSpacing: 0.2 },
 
   // Pie
   bottomSection: { paddingHorizontal: 44, paddingBottom: 65, paddingTop: 0 },
