@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
   cardTitle: {
     marginTop: 16,
     fontSize: 24,
-    fontWeight: '400',
+    fontWeight: '600',
     color: '#fbefd9',
     textAlign: 'left',
     paddingHorizontal: 4,
@@ -262,7 +262,7 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     fontSize: 15,
-    fontWeight: '400',
+    fontWeight: '500',
     color: '#fff',
     letterSpacing: 1.2,
   },
