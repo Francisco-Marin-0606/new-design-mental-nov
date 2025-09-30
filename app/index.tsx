@@ -243,7 +243,7 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
   badgeText: {
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: '800',
     color: '#fff',
     letterSpacing: 1.2,
