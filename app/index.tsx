@@ -16,7 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
 import * as Haptics from 'expo-haptics';
 import SwipeUpModal from '@/components/SwipeUpModal';
-import SoftEdgesImage from '@/components/SoftEdgesImage';
+import SoftEdgesMask from '@/components/SoftEdgesMask';
 
 interface HypnosisSession {
   id: string;
@@ -87,22 +87,15 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
         android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.08)' } : undefined}
         style={({ pressed }) => [styles.cardColumn, pressed && { opacity: 0.2 }]}
       >
-        {/* CARD */}
         <View style={styles.card}>
-          {/* Imagen con bordes suaves (tipo PowerPoint) */}
-          <SoftEdgesImage
-            uri={item.imageUri}
-            borderRadius={16}
-            featherPct={24} // subí/bajá 18–32 para más/menos suavidad
-            style={{ width: '100%', aspectRatio: 4 / 5 }}
-          />
-
-          {/* Desenfoque para items “no centrados” (recortado: sin recuadros) */}
-          {Platform.OS !== 'web' ? (
-            <Animated.View pointerEvents="none" style={[styles.blurOverlay, { opacity: blurOpacity }]}>
-              <BlurView intensity={12} tint="dark" style={StyleSheet.absoluteFill} />
-            </Animated.View>
-          ) : null}
+          <SoftEdgesMask borderRadius={16} featherPct={24} style={{ width: '100%', aspectRatio: 4 / 5 }}>
+            <Image source={{ uri: item.imageUri }} style={StyleSheet.absoluteFillObject} resizeMode="cover" />
+            {Platform.OS !== 'web' ? (
+              <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { opacity: blurOpacity }]}>
+                <BlurView intensity={12} tint="dark" style={StyleSheet.absoluteFill} />
+              </Animated.View>
+            ) : null}
+          </SoftEdgesMask>
         </View>
 
         {/* Título con blur recortado */}
