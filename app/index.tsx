@@ -106,7 +106,9 @@ export default function HomeScreen() {
               </View>
             ))}
           </ScrollView>
+        </View>
 
+        <View style={styles.bottomSection}>
           <Pressable
             style={styles.nextButton}
             onPress={handleNextHypnosis}
@@ -134,6 +136,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingTop: 40,
+    paddingBottom: 20,
   },
   headerTitle: {
     fontSize: 40,
@@ -189,10 +192,11 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     letterSpacing: 1.2,
   },
+  bottomSection: {
+    paddingHorizontal: 24,
+    paddingBottom: 20,
+  },
   nextButton: {
-    marginHorizontal: 24,
-    marginTop: 40,
-    marginBottom: 40,
     backgroundColor: 'rgba(212, 98, 31, 0.5)',
     paddingVertical: 18,
     borderRadius: 12,
