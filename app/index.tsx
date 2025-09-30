@@ -53,6 +53,8 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
 
   const pressScale = useRef(new Animated.Value(1)).current;
 
+  const combinedScale = Animated.multiply(scale, pressScale);
+
   const handlePressIn = useCallback(() => {
     Animated.spring(pressScale, {
       toValue: 0.9,
@@ -82,7 +84,7 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
         {
           width: cardWidth,
           marginRight: index === HYPNOSIS_SESSIONS.length - 1 ? 0 : cardSpacing,
-          transform: [{ scale }, { translateY }],
+          transform: [{ scale: combinedScale }, { translateY }],
         },
       ]}
     >
@@ -97,23 +99,19 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
           pressed && { opacity: 0.2 }
         ]}
       >
-        <Animated.View 
-          style={{ transform: [{ scale: pressScale }] }}
-        >
-          <View style={styles.card}>
-            <Image source={{ uri: item.imageUri }} style={styles.cardImage} resizeMode="cover" />
+        <View style={styles.card}>
+          <Image source={{ uri: item.imageUri }} style={styles.cardImage} resizeMode="cover" />
+        </View>
+
+        <Text style={[styles.cardTitle, { width: cardWidth }]} numberOfLines={3}>
+          {item.title}
+        </Text>
+
+        {index === 0 && (
+          <View style={styles.badge} testID="listen-badge">
+            <Text style={styles.badgeText}>ESCUCHAR</Text>
           </View>
-
-          <Text style={[styles.cardTitle, { width: cardWidth }]} numberOfLines={3}>
-            {item.title}
-          </Text>
-
-          {index === 0 && (
-            <View style={styles.badge} testID="listen-badge">
-              <Text style={styles.badgeText}>ESCUCHAR</Text>
-            </View>
-          )}
-        </Animated.View>
+        )}
       </Pressable>
     </Animated.View>
   );
