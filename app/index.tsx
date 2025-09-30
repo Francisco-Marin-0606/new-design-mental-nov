@@ -15,7 +15,6 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import SwipeUpModal from '@/components/SwipeUpModal';
-import { Settings } from 'lucide-react-native';
 
 interface HypnosisSession {
   id: string;
@@ -37,8 +36,7 @@ const HYPNOSIS_SESSIONS: HypnosisSession[] = [
 ];
 
 export default function HomeScreen() {
-  const [modalVisible, setModalVisible] = useState<boolean>(false);
-  const [activeTab, setActiveTab] = useState<'anteriores' | 'nuevas'>('nuevas');
+  const [modalVisible, setModalVisible] = useState(false);
   const { width: screenWidth } = useWindowDimensions();
 
   // Tamaño/espaciado estilo “foto 1”
@@ -51,10 +49,6 @@ export default function HomeScreen() {
   const currentIndexRef = useRef<number>(0);
   const lastHapticIndexRef = useRef<number>(0);
 
-  const underlineX = useRef(new Animated.Value(0)).current;
-  const underlineW = useRef(new Animated.Value(40)).current;
-  const tabLayouts = useRef<{ [K in 'anteriores' | 'nuevas']?: { x: number; width: number } }>({}).current;
-
   const handleOpen = useCallback(async () => {
     if (Platform.OS !== 'web') {
       try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy); } catch {}
@@ -63,26 +57,6 @@ export default function HomeScreen() {
   }, []);
 
   const handleClose = useCallback(() => setModalVisible(false), []);
-
-  const animateUnderline = useCallback((key: 'anteriores' | 'nuevas') => {
-    const layout = tabLayouts[key];
-    if (!layout) return;
-    const desiredWidth = Math.max(28, Math.min(120, layout.width * 0.66));
-    const targetX = layout.x + layout.width / 2 - desiredWidth / 2;
-
-    Animated.parallel([
-      Animated.timing(underlineX, { toValue: targetX, duration: 220, useNativeDriver: false }),
-      Animated.timing(underlineW, { toValue: desiredWidth, duration: 220, useNativeDriver: false }),
-    ]).start();
-  }, [tabLayouts, underlineW, underlineX]);
-
-  const onSelectTab = useCallback((key: 'anteriores' | 'nuevas') => {
-    setActiveTab(key);
-    if (Platform.OS !== 'web') {
-      Haptics.selectionAsync().catch(() => {});
-    }
-    animateUnderline(key);
-  }, [animateUnderline]);
 
   const handleNextHypnosis = useCallback(async () => {
     if (Platform.OS !== 'web') {
@@ -174,39 +148,7 @@ export default function HomeScreen() {
 
       <SafeAreaView style={styles.safe} testID="safe-area">
         <View style={styles.container}>
-          <View style={styles.headerRow} testID="header-row">
-            <Text style={styles.headerTitle} testID="title-hypnosis">Mis hipnosis</Text>
-            <Pressable onPress={() => console.log('open settings')} hitSlop={10} testID="settings-button">
-              <Settings color="#fbefd9" size={28} />
-            </Pressable>
-          </View>
-
-          <View style={styles.tabsContainer} testID="tabs-container">
-            <View style={styles.tabsInner}>
-              <Pressable
-                onLayout={(e) => { tabLayouts['anteriores'] = { x: e.nativeEvent.layout.x, width: e.nativeEvent.layout.width }; animateUnderline(activeTab); }}
-                onPress={() => onSelectTab('anteriores')}
-                style={styles.tabBtn}
-                testID="tab-anteriores"
-              >
-                <Text style={[styles.tabText, activeTab === 'anteriores' ? styles.tabTextActive : styles.tabTextInactive]}>Anteriores</Text>
-              </Pressable>
-
-              <Pressable
-                onLayout={(e) => { tabLayouts['nuevas'] = { x: e.nativeEvent.layout.x, width: e.nativeEvent.layout.width }; animateUnderline(activeTab); }}
-                onPress={() => onSelectTab('nuevas')}
-                style={styles.tabBtn}
-                testID="tab-nuevas"
-              >
-                <Text style={[styles.tabText, activeTab === 'nuevas' ? styles.tabTextActive : styles.tabTextInactive]}>Nuevas</Text>
-              </Pressable>
-
-              <Animated.View
-                style={[styles.underline, { transform: [{ translateX: underlineX }], width: underlineW }]}
-                testID="tabs-underline"
-              />
-            </View>
-          </View>
+          <Text style={styles.headerTitle}>Mis hipnosis</Text>
 
           <Animated.FlatList
             data={HYPNOSIS_SESSIONS}
@@ -220,7 +162,7 @@ export default function HomeScreen() {
             snapToAlignment="start"
             onMomentumScrollEnd={onMomentumScrollEnd}
             testID="hypnosis-carousel"
-            contentContainerStyle={{ paddingLeft: sidePadding, paddingRight: sidePadding, paddingVertical: 0 }}
+            contentContainerStyle={{ paddingLeft: sidePadding, paddingRight: sidePadding, paddingVertical: 18 }}
             onScroll={Animated.event(
               [{ nativeEvent: { contentOffset: { x: scrollX } } }],
               { useNativeDriver: false, listener: onScroll }
@@ -249,27 +191,14 @@ const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#170501' },
   safe: { flex: 1, backgroundColor: '#170501' },
   container: { flex: 1, paddingTop: 24, paddingBottom: 20 },
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingLeft: 54,
-    paddingRight: 24,
-  },
   headerTitle: {
     fontSize: 32.4,
     fontWeight: '700',
     color: '#fbefd9',
-    marginBottom: 8,
+    marginBottom: 120,
+    paddingLeft: 54,
+    paddingRight: 24,
   },
-
-  tabsContainer: { paddingLeft: 54, paddingRight: 24, marginBottom: 24 },
-  tabsInner: { position: 'relative', flexDirection: 'row', gap: 28, alignItems: 'center' },
-  tabBtn: { paddingVertical: 6 },
-  tabText: { fontSize: 18, fontWeight: '700' as const },
-  tabTextActive: { color: '#fbefd9' },
-  tabTextInactive: { color: '#8c8c8c' },
-  underline: { position: 'absolute', height: 4, backgroundColor: '#fbefd9', borderRadius: 999, bottom: -10 },
 
   // Carrusel
   cardWrapper: {
