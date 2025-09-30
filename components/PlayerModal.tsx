@@ -825,7 +825,7 @@ const styles = StyleSheet.create({
   },
   bottomControls: {
     position: 'absolute',
-    bottom: 130,
+    bottom: 115,
     left: 40,
     right: 40,
     alignItems: 'center',
