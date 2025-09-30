@@ -118,7 +118,7 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
             <BlurView
               intensity={blurIntensity}
               tint="dark"
-              style={StyleSheet.absoluteFill}
+              style={styles.blurOverlay}
             />
           ) : null}
         </View>
@@ -360,7 +360,7 @@ const styles = StyleSheet.create({
     width: '100%',
     aspectRatio: 4 / 5,
     borderRadius: 16,
-    overflow: 'hidden',
+    overflow: 'visible',
     backgroundColor: '#2a1410',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 10 },
@@ -370,7 +370,15 @@ const styles = StyleSheet.create({
     position: 'relative',
     justifyContent: 'center'
   },
-  cardImage: { width: '100%', height: '100%' },
+  cardImage: { width: '100%', height: '100%', borderRadius: 16 },
+  blurOverlay: {
+    position: 'absolute',
+    top: -30,
+    left: -30,
+    right: -30,
+    bottom: -30,
+    borderRadius: 16,
+  },
   textBlurWrapper: {
     marginTop: 20,
     position: 'relative' as const,
