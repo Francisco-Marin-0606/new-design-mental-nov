@@ -17,6 +17,7 @@ import { BlurView } from 'expo-blur';
 import * as Haptics from 'expo-haptics';
 import SwipeUpModal from '@/components/SwipeUpModal';
 import { useParallaxHover } from '@/components/useParallaxHover';
+import SoftEdgesImage from '@/components/SoftEdgesImage';
 
 interface HypnosisSession {
   id: string;
@@ -116,27 +117,8 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
       >
         <View ref={parallax.ref} onLayout={parallax.onLayout} style={styles.card}>
           <Animated.View style={[StyleSheet.absoluteFill, parallax.animatedStyle]}>
-            <Image source={{ uri: item.imageUri }} style={[styles.cardImage, { transform: [{ scale: 1.08 }] }]} resizeMode="cover" />
+            <SoftEdgesImage uri={item.imageUri} borderRadius={16} feather={24} style={StyleSheet.absoluteFill} />
           </Animated.View>
-          {Platform.OS !== 'web' ? (
-            <Animated.View pointerEvents="none" style={[styles.blurOverlay, { opacity: blurOpacity }]}> 
-              <BlurView intensity={15} tint="dark" style={StyleSheet.absoluteFill} />
-            </Animated.View>
-          ) : (
-            <Animated.View pointerEvents="none" style={[styles.blurOverlay, { opacity: blurOpacity }]}> 
-              <View
-                style={{
-                  ...(StyleSheet.absoluteFill as {}),
-                  left: -24,
-                  right: -24,
-                  top: -24,
-                  bottom: -24,
-                  backgroundColor: 'transparent',
-                  ...( { backdropFilter: 'blur(15px)', WebkitBackdropFilter: 'blur(15px)' } as any ),
-                }}
-              />
-            </Animated.View>
-          )}
         </View>
 
         <View style={styles.textBlurWrapper}>
@@ -151,7 +133,7 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
             <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { opacity: blurOpacity }]}> 
               <View
                 style={{
-                  ...(StyleSheet.absoluteFill as {}),
+                  position: 'absolute',
                   left: -16,
                   right: -16,
                   top: -8,
