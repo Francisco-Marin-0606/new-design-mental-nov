@@ -183,7 +183,9 @@ export default function HomeScreen() {
             renderItem={renderItem}
             horizontal
             showsHorizontalScrollIndicator={false}
-            bounces={false}
+            bounces
+            alwaysBounceHorizontal
+            overScrollMode={Platform.OS === 'android' ? 'always' : 'auto'}
             decelerationRate="fast"
             snapToInterval={snapInterval}
             snapToAlignment="start"
