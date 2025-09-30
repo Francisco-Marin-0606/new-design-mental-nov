@@ -95,7 +95,7 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
         style={({ pressed }) => [styles.cardColumn, pressed && { opacity: 0.2 }]}
       >
         <View style={styles.card}>
-          <SoftEdgesMask borderRadius={16} featherPct={isCenter ? 0 : 24} style={{ width: '100%', height: '100%' }}>
+          <SoftEdgesMask borderRadius={16} featherPct={isCenter ? 0 : 5} style={{ width: '100%', height: '100%' }}>
             <Image source={{ uri: item.imageUri }} style={StyleSheet.absoluteFillObject} resizeMode="cover" />
             {Platform.OS !== 'web' ? (
               <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { opacity: blurOpacity }]}>
