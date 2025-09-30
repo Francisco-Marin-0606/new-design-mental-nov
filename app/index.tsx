@@ -58,7 +58,7 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
       index * snapInterval,
       (index + 1) * snapInterval,
     ],
-    outputRange: [1, 0, 1],
+    outputRange: [0.7, 0, 0.7],
     extrapolate: 'clamp',
   });
 
