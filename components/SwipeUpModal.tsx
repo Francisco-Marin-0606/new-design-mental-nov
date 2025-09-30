@@ -59,6 +59,10 @@ export default function SwipeUpModal({ visible, onClose }: SwipeUpModalProps) {
 
   const tabIndicatorPosition = useRef(new Animated.Value(0)).current;
   const [indicatorInitialized, setIndicatorInitialized] = useState<boolean>(false);
+  
+  // Text animation values
+  const textTranslateX = useRef(new Animated.Value(0)).current;
+  const textOpacity = useRef(new Animated.Value(1)).current;
 
   const [audioPlayerVisible, setAudioPlayerVisible] = useState<boolean>(false);
 
@@ -77,10 +81,41 @@ export default function SwipeUpModal({ visible, onClose }: SwipeUpModalProps) {
     }).start();
   }, [tabIndicatorPosition]);
 
-  const switchToTabSafe = useCallback((toTab: 'mensaje' | 'respuestas') => {
+  const animateTextTransition = useCallback((direction: 'left' | 'right') => {
+    const slideDistance = screenWidth * 0.3;
+    const initialTranslateX = direction === 'left' ? slideDistance : -slideDistance;
+    
+    // Start with content off-screen in the opposite direction
+    textTranslateX.setValue(initialTranslateX);
+    textOpacity.setValue(0);
+    
+    // Animate content sliding in
+    Animated.parallel([
+      Animated.timing(textTranslateX, {
+        toValue: 0,
+        duration: 350,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      Animated.timing(textOpacity, {
+        toValue: 1,
+        duration: 300,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [textTranslateX, textOpacity, screenWidth]);
+
+  const switchToTabSafe = useCallback((toTab: 'mensaje' | 'respuestas', direction?: 'left' | 'right') => {
+    // Determine direction if not provided
+    const currentTab = activeTabRef.current;
+    const autoDirection = (currentTab === 'mensaje' && toTab === 'respuestas') ? 'left' : 'right';
+    const slideDirection = direction || autoDirection;
+    
     setActiveTab(toTab);
     animateTabIndicator(toTab);
-  }, [animateTabIndicator]);
+    animateTextTransition(slideDirection);
+  }, [animateTabIndicator, animateTextTransition]);
 
   const switchToTab = useCallback((toTab: 'mensaje' | 'respuestas') => {
     switchToTabSafe(toTab);
@@ -158,10 +193,10 @@ export default function SwipeUpModal({ visible, onClose }: SwipeUpModalProps) {
           const isRightSwipe = gestureState.dx > swipeThreshold || gestureState.vx > velocityThreshold;
           const currentTab = activeTabRef.current;
           if (isLeftSwipe && currentTab === 'mensaje') {
-            switchToTabSafe('respuestas');
+            switchToTabSafe('respuestas', 'left');
             return;
           } else if (isRightSwipe && currentTab === 'respuestas') {
-            switchToTabSafe('mensaje');
+            switchToTabSafe('mensaje', 'right');
             return;
           }
         },
@@ -417,33 +452,43 @@ export default function SwipeUpModal({ visible, onClose }: SwipeUpModalProps) {
                 </View>
 
                 <View style={styles.tabContentContainer}>
-                  {activeTab === 'mensaje' ? (
-                    <Text style={styles.longParagraph} testID="universe-paragraph">
-                      Cuando te abras a la posibilidad, el universo te responde con señales sutiles y oportunidades claras.{'\n'}{'\n'} Respira profundo, suelta la prisa y permite que tu confianza marque el ritmo.{'\n'}{'\n'} Cada paso que das desde la calma amplifica tu dirección interior.{'\n'}{'\n'} Estás guiado.{'\n'}{'\n'} Todo lo que buscas también te está buscando a ti.{'\n'}{'\n'}
-                      Permítete escuchar lo que ocurre en el silencio entre pensamientos.{'\n'}{'\n'} Allí se ordena lo que importa y se disuelve lo que pesa.{'\n'}{'\n'} No forces; acompasa.{'\n'}{'\n'} Lo que hoy parece lento, en realidad está madurando con precisión.{'\n'}{'\n'} Cada gesto de gratitud abre caminos invisibles; cada acto de presencia te devuelve a casa.{'\n'}{'\n'}
-                      Si dudas, vuelve al cuerpo: respira largo, suaviza la mandíbula, suelta los hombros.{'\n'}{'\n'} Mira con ternura lo que sientes.{'\n'}{'\n'} Tu sensibilidad no es un obstáculo; es tu brújula.{'\n'}{'\n'} Cuando caminas desde la honestidad, la vida te sale al encuentro con sincronías que confirman tu rumbo.{'\n'}{'\n'}
-                      Honra tus límites, celebra tus avances pequeños y recuerda: lo esencial no grita.{'\n'}{'\n'} Se revela en calma, a su tiempo perfecto.{'\n'}{'\n'} Confía.
-                    </Text>
-                  ) : (
-                    <View style={styles.answersContainer} testID="answers-container">
-                      <View style={styles.questionBlock}>
-                        <Text style={styles.questionText}>1. Dime, ¿qué te caga de tu vida?</Text>
-                        <Text style={styles.answerText}>Ejhshshshshsj</Text>
-                        <View style={styles.separator} />
+                  <Animated.View 
+                    style={[
+                      styles.animatedContentContainer,
+                      {
+                        transform: [{ translateX: textTranslateX }],
+                        opacity: textOpacity,
+                      }
+                    ]}
+                  >
+                    {activeTab === 'mensaje' ? (
+                      <Text style={styles.longParagraph} testID="universe-paragraph">
+                        Cuando te abras a la posibilidad, el universo te responde con señales sutiles y oportunidades claras.{'\n'}{'\n'} Respira profundo, suelta la prisa y permite que tu confianza marque el ritmo.{'\n'}{'\n'} Cada paso que das desde la calma amplifica tu dirección interior.{'\n'}{'\n'} Estás guiado.{'\n'}{'\n'} Todo lo que buscas también te está buscando a ti.{'\n'}{'\n'}
+                        Permítete escuchar lo que ocurre en el silencio entre pensamientos.{'\n'}{'\n'} Allí se ordena lo que importa y se disuelve lo que pesa.{'\n'}{'\n'} No forces; acompasa.{'\n'}{'\n'} Lo que hoy parece lento, en realidad está madurando con precisión.{'\n'}{'\n'} Cada gesto de gratitud abre caminos invisibles; cada acto de presencia te devuelve a casa.{'\n'}{'\n'}
+                        Si dudas, vuelve al cuerpo: respira largo, suaviza la mandíbula, suelta los hombros.{'\n'}{'\n'} Mira con ternura lo que sientes.{'\n'}{'\n'} Tu sensibilidad no es un obstáculo; es tu brújula.{'\n'}{'\n'} Cuando caminas desde la honestidad, la vida te sale al encuentro con sincronías que confirman tu rumbo.{'\n'}{'\n'}
+                        Honra tus límites, celebra tus avances pequeños y recuerda: lo esencial no grita.{'\n'}{'\n'} Se revela en calma, a su tiempo perfecto.{'\n'}{'\n'} Confía.
+                      </Text>
+                    ) : (
+                      <View style={styles.answersContainer} testID="answers-container">
+                        <View style={styles.questionBlock}>
+                          <Text style={styles.questionText}>1. Dime, ¿qué te caga de tu vida?</Text>
+                          <Text style={styles.answerText}>Ejhshshshshsj</Text>
+                          <View style={styles.separator} />
+                        </View>
+                        
+                        <View style={styles.questionBlock}>
+                          <Text style={styles.questionText}>2. Si Dios, o el universo, te estuviera leyendo. Y te dijera: &quot;Pide lo que de verdad quieres y te lo cumplo&quot; Lo que sea. ¿Qué pedirías?</Text>
+                          <Text style={styles.answerText}>Hsjsjsjsjjs</Text>
+                          <View style={styles.separator} />
+                        </View>
+                        
+                        <View style={styles.questionBlock}>
+                          <Text style={styles.questionText}>3. Dime tres cosas o personas que, cuando las piensas, te hacen sentir un agradecimiento profundísimo.</Text>
+                          <Text style={styles.answerText}>Jsjsjsjsjsj</Text>
+                        </View>
                       </View>
-                      
-                      <View style={styles.questionBlock}>
-                        <Text style={styles.questionText}>2. Si Dios, o el universo, te estuviera leyendo. Y te dijera: &quot;Pide lo que de verdad quieres y te lo cumplo&quot; Lo que sea. ¿Qué pedirías?</Text>
-                        <Text style={styles.answerText}>Hsjsjsjsjjs</Text>
-                        <View style={styles.separator} />
-                      </View>
-                      
-                      <View style={styles.questionBlock}>
-                        <Text style={styles.questionText}>3. Dime tres cosas o personas que, cuando las piensas, te hacen sentir un agradecimiento profundísimo.</Text>
-                        <Text style={styles.answerText}>Jsjsjsjsjsj</Text>
-                      </View>
-                    </View>
-                  )}
+                    )}
+                  </Animated.View>
                 </View>
               </View>
             </View>
@@ -531,4 +576,5 @@ const styles = StyleSheet.create({
   downloadProgress: { position: 'absolute', left: 0, top: 0, bottom: 0, backgroundColor: 'rgba(255, 255, 255, 0.4)', borderRadius: 10 },
   downloadText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
   tabContentContainer: { flex: 1 },
+  animatedContentContainer: { flex: 1 },
 });
