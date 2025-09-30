@@ -92,6 +92,19 @@ export default function HomeScreen() {
     }
   }, [snapInterval]);
 
+  const [pressedCardId, setPressedCardId] = useState<string | null>(null);
+
+  const handleCardPress = useCallback(async (cardId: string) => {
+    setPressedCardId(cardId);
+    if (Platform.OS !== 'web') {
+      try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy); } catch {}
+    }
+    setTimeout(() => {
+      handleOpen();
+      setPressedCardId(null);
+    }, 150);
+  }, [handleOpen]);
+
   const renderItem = useCallback(
     ({ item, index }: ListRenderItemInfo<HypnosisSession>) => {
       const inputRange = [
@@ -112,6 +125,8 @@ export default function HomeScreen() {
         extrapolate: 'clamp',
       });
 
+      const isPressed = pressedCardId === item.id;
+
       return (
         <Animated.View
           style={[
@@ -123,22 +138,28 @@ export default function HomeScreen() {
             },
           ]}
         >
-          <Pressable style={styles.card} onPress={handleOpen} android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.08)' } : undefined}>
+          <Pressable 
+            style={[styles.card, isPressed && { opacity: 0.2 }]} 
+            onPress={() => handleCardPress(item.id)} 
+            android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.08)' } : undefined}
+          >
             <Image source={{ uri: item.imageUri }} style={styles.cardImage} resizeMode="cover" />
-
           </Pressable>
 
-          {/* Título alineado al borde izquierdo de la tarjeta */}
           <Text style={[styles.cardTitle, { width: cardWidth }]} numberOfLines={3}>
             {item.title}
           </Text>
-          <View style={styles.badge} testID="listen-badge">
+          <Pressable 
+            style={styles.badge} 
+            testID="listen-badge"
+            onPress={() => handleCardPress(item.id)}
+          >
             <Text style={styles.badgeText}>ESCUCHAR</Text>
-          </View>
+          </Pressable>
         </Animated.View>
       );
     },
-    [cardWidth, cardSpacing, snapInterval, scrollX]
+    [cardWidth, cardSpacing, snapInterval, scrollX, pressedCardId, handleCardPress]
   );
 
   const keyExtractor = useCallback((i: HypnosisSession) => i.id, []);
