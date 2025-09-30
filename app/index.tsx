@@ -284,5 +284,5 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 8,
   },
-  nextButtonText: { fontSize: 20, fontWeight: '700', color: '#ffffff' },
+  nextButtonText: { fontSize: 20, fontWeight: '700', color: '#ffffff', opacity: 0.3 },
 });
