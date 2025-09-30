@@ -65,7 +65,7 @@ export default function HomeScreen() {
     console.log('Next hypnosis button pressed');
   }, []);
 
-  const cardWidth = screenWidth * 0.7;
+  const cardWidth = screenWidth * 0.7 * 0.55;
   const cardSpacing = 12;
   const sidePreview = screenWidth * 0.15;
   const snapInterval = cardWidth + cardSpacing;
