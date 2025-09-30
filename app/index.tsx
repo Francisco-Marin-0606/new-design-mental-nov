@@ -275,7 +275,7 @@ const styles = StyleSheet.create({
     color: '#fbefd9',
     textAlign: 'left',
     paddingHorizontal: 4,
-    lineHeight: 36,
+    lineHeight: 30,
   },
   badge: {
     marginTop: 15,
