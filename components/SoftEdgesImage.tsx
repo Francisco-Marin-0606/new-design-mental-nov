@@ -1,49 +1,64 @@
-import React, { memo } from 'react';
+import React from 'react';
 import { Image, Platform, StyleSheet, View, ViewStyle } from 'react-native';
 import MaskedView from '@react-native-masked-view/masked-view';
-import Svg, { Defs, RadialGradient, Stop, Rect, ClipPath } from 'react-native-svg';
+import Svg, { Defs, RadialGradient, Stop, Rect } from 'react-native-svg';
 
-interface Props {
+type Props = {
   uri: string;
+  /** Radio geométrico de las esquinas (igual que antes en tu card) */
   borderRadius?: number;
-  feather?: number; // 0-100 suggested (percentage of size to keep solid)
+  /** Suavidad del borde (0–50 aprox). 22–30 ≈ PowerPoint */
+  featherPct?: number;
+  /** Ej: { width: '100%', aspectRatio: 4/5 } */
   style?: ViewStyle;
-}
+  /** cover por defecto */
+  resizeMode?: 'cover' | 'contain' | 'stretch' | 'center' | 'repeat';
+};
 
-function SoftEdgesImageBase({ uri, borderRadius = 16, feather = 28, style }: Props) {
+export default function SoftEdgesImage({
+  uri,
+  borderRadius = 16,
+  featherPct = 24,
+  style,
+  resizeMode = 'cover',
+}: Props) {
+  // Web: fallback sin máscara (MaskedView no está soportado en todos los targets web)
   if (Platform.OS === 'web') {
     return (
-      <View style={[style, { borderRadius, overflow: 'hidden' }]}>
-        <Image source={{ uri }} style={[StyleSheet.absoluteFillObject, { borderRadius }]} resizeMode="cover" />
+      <View style={[style, { borderRadius, overflow: 'hidden' }]}
+        testID="soft-edges-image-web"
+      >
+        <Image source={{ uri }} style={StyleSheet.absoluteFillObject} resizeMode={resizeMode} />
       </View>
     );
   }
 
-  const featherClamped = Math.max(0, Math.min(100, feather));
+  // Clamp seguro para el gradiente
+  const innerStop = Math.max(0, Math.min(100, 100 - featherPct));
 
   return (
-    <MaskedView
-      style={style}
-      maskElement={
-        <Svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
-          <Defs>
-            <ClipPath id="clip">
-              <Rect x="0" y="0" width="100" height="100" rx={borderRadius / 2} ry={borderRadius / 2} />
-            </ClipPath>
-            <RadialGradient id="soft" cx="50%" cy="50%" r="50%">
-              <Stop offset="0%" stopColor="#000" stopOpacity={1} />
-              <Stop offset={`${100 - featherClamped}%`} stopColor="#000" stopOpacity={1} />
-              <Stop offset="100%" stopColor="#000" stopOpacity={0} />
-            </RadialGradient>
-          </Defs>
-          <Rect x="0" y="0" width="100" height="100" clipPath="url(#clip)" fill="url(#soft)" />
-        </Svg>
-      }
-    >
-      <Image source={{ uri }} style={[StyleSheet.absoluteFillObject, { borderRadius }]} resizeMode="cover" />
-    </MaskedView>
+    <View style={[style, { borderRadius, overflow: 'hidden' }]} testID="soft-edges-image-native">
+      <MaskedView
+        style={StyleSheet.absoluteFillObject}
+        maskElement={
+          <Svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <Defs>
+              <RadialGradient id="soft" cx="50%" cy="50%" r="50%">
+                {/* Centro: opaco */}
+                <Stop offset="0%" stopColor="#000" stopOpacity={1} />
+                {/* Mantiene nítido hasta innerStop% */}
+                <Stop offset={`${innerStop}%`} stopColor="#000" stopOpacity={1} />
+                {/* Se desvanece a transparente en el borde */}
+                <Stop offset="100%" stopColor="#000" stopOpacity={0} />
+              </RadialGradient>
+            </Defs>
+            {/* El rect usa el gradiente como alfa del mask */}
+            <Rect x="0" y="0" width="100" height="100" fill="url(#soft)" />
+          </Svg>
+        }
+      >
+        <Image source={{ uri }} style={StyleSheet.absoluteFillObject} resizeMode={resizeMode} />
+      </MaskedView>
+    </View>
   );
 }
-
-export const SoftEdgesImage = memo(SoftEdgesImageBase);
-export default SoftEdgesImage;
