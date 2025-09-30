@@ -385,7 +385,6 @@ const styles = StyleSheet.create({
     width: '100%',
     aspectRatio: 4 / 5,
     borderRadius: 16,
-    overflow: 'hidden', // clave para que el blur no se vea como "bloque"
     backgroundColor: '#2a1410',
     position: 'relative',
     justifyContent: 'center',
