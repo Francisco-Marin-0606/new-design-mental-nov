@@ -76,7 +76,7 @@ export default function SwipeUpModal({ visible, onClose }: SwipeUpModalProps) {
     const targetX = tabPositionsRef.current[toTab] ?? 0;
     Animated.timing(tabIndicatorPosition, {
       toValue: targetX,
-      duration: 600,
+      duration: 350,
       easing: Easing.bezier(0.25, 0.46, 0.45, 0.94),
       useNativeDriver: false,
     }).start();
