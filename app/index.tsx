@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef } from 'react';
-import { StyleSheet, View, Pressable, Platform, Text, ScrollView, Image, useWindowDimensions } from 'react-native';
+import { StyleSheet, View, Pressable, Platform, Text, ScrollView, Image, useWindowDimensions, Animated, NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
@@ -33,6 +33,7 @@ export default function HomeScreen() {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const { width: screenWidth } = useWindowDimensions();
   const scrollViewRef = useRef<ScrollView>(null);
+  const scrollX = useRef(new Animated.Value(0)).current;
 
   const handleOpen = useCallback(async () => {
     console.log('[HomeScreen] Opening SwipeUpModal via card press');
@@ -67,6 +68,13 @@ export default function HomeScreen() {
   const cardWidth = screenWidth * 0.7;
   const cardSpacing = 20;
 
+  const handleScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    Animated.event(
+      [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+      { useNativeDriver: false }
+    )(event);
+  }, [scrollX]);
+
   return (
     <View style={styles.root} testID="root-fullscreen">
       <StatusBar style="light" translucent backgroundColor="transparent" />
@@ -85,26 +93,48 @@ export default function HomeScreen() {
             snapToAlignment="center"
             contentContainerStyle={[styles.carouselContent, { paddingHorizontal: (screenWidth - cardWidth) / 2 }]}
             style={styles.carousel}
+            onScroll={handleScroll}
+            scrollEventThrottle={16}
           >
-            {HYPNOSIS_SESSIONS.map((session) => (
-              <View key={session.id} style={[styles.cardWrapper, { width: cardWidth }]}>
-                <Pressable
-                  style={styles.card}
-                  onPress={handleOpen}
-                  android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.08)' } : undefined}
+            {HYPNOSIS_SESSIONS.map((session, index) => {
+              const inputRange = [
+                (index - 1) * (cardWidth + cardSpacing),
+                index * (cardWidth + cardSpacing),
+                (index + 1) * (cardWidth + cardSpacing),
+              ];
+
+              const scale = scrollX.interpolate({
+                inputRange,
+                outputRange: [0.8, 1, 0.8],
+                extrapolate: 'clamp',
+              });
+
+              return (
+                <Animated.View
+                  key={session.id}
+                  style={[
+                    styles.cardWrapper,
+                    { width: cardWidth, transform: [{ scale }] },
+                  ]}
                 >
-                  <Image
-                    source={{ uri: session.imageUri }}
-                    style={styles.cardImage}
-                    resizeMode="cover"
-                  />
-                  <View style={styles.badge}>
-                    <Text style={styles.badgeText}>ESCUCHAR</Text>
-                  </View>
-                </Pressable>
-                <Text style={styles.cardTitle}>{session.title}</Text>
-              </View>
-            ))}
+                  <Pressable
+                    style={styles.card}
+                    onPress={handleOpen}
+                    android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.08)' } : undefined}
+                  >
+                    <Image
+                      source={{ uri: session.imageUri }}
+                      style={styles.cardImage}
+                      resizeMode="cover"
+                    />
+                    <View style={styles.badge}>
+                      <Text style={styles.badgeText}>ESCUCHAR</Text>
+                    </View>
+                  </Pressable>
+                  <Text style={styles.cardTitle}>{session.title}</Text>
+                </Animated.View>
+              );
+            })}
           </ScrollView>
         </View>
 
