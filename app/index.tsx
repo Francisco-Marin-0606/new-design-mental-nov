@@ -191,7 +191,7 @@ export default function HomeScreen() {
               offset: sidePadding + index * snapInterval,
               index,
             })}
-            contentContainerStyle={{ paddingLeft: sidePadding, paddingRight: sidePadding, paddingTop: 18 + topShift, paddingBottom: 18 }}
+            contentContainerStyle={{ paddingLeft: sidePadding, paddingRight: sidePadding, paddingTop: topShift, paddingBottom: 18 }}
             onScroll={Animated.event(
               [{ nativeEvent: { contentOffset: { x: scrollX } } }],
               { useNativeDriver: false, listener: onScroll }
