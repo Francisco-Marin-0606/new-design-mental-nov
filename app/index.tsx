@@ -40,7 +40,7 @@ export default function HomeScreen() {
   const { width: screenWidth } = useWindowDimensions();
 
   // Tamaño/espaciado estilo “foto 1”
-  const cardWidth = useMemo(() => Math.min(320, screenWidth * 0.56), [screenWidth]);
+  const cardWidth = useMemo(() => Math.min(176, screenWidth * 0.31), [screenWidth]);
   const cardSpacing = 20;
   const snapInterval = cardWidth + cardSpacing;
   const sidePadding = (screenWidth - cardWidth) / 2;
