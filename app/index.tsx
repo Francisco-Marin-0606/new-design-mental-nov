@@ -46,7 +46,7 @@ export default function HomeScreen() {
   const sidePadding = (screenWidth - cardWidth) / 2;
 
   const scrollX = useRef(new Animated.Value(0)).current;
-  const topShift = useMemo(() => Math.round(screenHeight * 0.15), [screenHeight]);
+  const topShift = useMemo(() => Math.round(screenHeight * 0.10), [screenHeight]);
   const currentIndexRef = useRef<number>(0);
   const lastHapticIndexRef = useRef<number>(0);
 
