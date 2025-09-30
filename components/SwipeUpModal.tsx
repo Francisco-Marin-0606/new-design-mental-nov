@@ -615,11 +615,11 @@ const styles = StyleSheet.create({
   scroll: { flex: 1, backgroundColor: 'transparent' },
   scrollContent: { paddingBottom: 120, position: 'relative' },
   content: { paddingHorizontal: 24, paddingTop: 56, marginTop: 40 },
-  imageContainer: { alignItems: 'center', marginBottom: 24, alignSelf: 'center', width: '80%', maxWidth: 344, height: 200, position: 'relative' },
+  imageContainer: { alignItems: 'center', marginBottom: 24, alignSelf: 'center', width: '80%', maxWidth: 344, aspectRatio: 4 / 5, position: 'relative' },
   imageShadowContainer: {
-    width: '100%', height: 200, shadowColor: '#000000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.45, shadowRadius: 12.5, elevation: 12.5, borderRadius: 8,
+    width: '100%', aspectRatio: 4 / 5, shadowColor: '#000000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.45, shadowRadius: 12.5, elevation: 12.5, borderRadius: 16,
   },
-  image: { width: '100%', height: 200, borderRadius: 8 },
+  image: { width: '100%', height: '100%', borderRadius: 16 },
   textContainer: { alignItems: 'center', alignSelf: 'center', width: '80%', maxWidth: 344 },
   title: { fontSize: 32, fontWeight: '600', color: '#ffffff', textAlign: 'center', marginBottom: 0, lineHeight: 38 },
   card: {
