@@ -51,7 +51,7 @@ export default function HomeScreen() {
 
   const handleOpen = useCallback(async () => {
     if (Platform.OS !== 'web') {
-      try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); } catch {}
+      try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy); } catch {}
     }
     setModalVisible(true);
   }, []);
@@ -60,7 +60,7 @@ export default function HomeScreen() {
 
   const handleNextHypnosis = useCallback(async () => {
     if (Platform.OS !== 'web') {
-      try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
+      try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy); } catch {}
     }
   }, []);
 
