@@ -16,6 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
 import * as Haptics from 'expo-haptics';
 import SwipeUpModal from '@/components/SwipeUpModal';
+import { useParallaxHover } from '@/components/useParallaxHover';
 
 interface HypnosisSession {
   id: string;
@@ -88,6 +89,9 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
     onPress(item);
   }, [item, onPress]);
 
+  // Parallax hover only on web; clamp with maxOffsetX/Y and intensity
+  const parallax = useParallaxHover({ intensity: 10, maxOffsetX: 400, maxOffsetY: 2000, enabled: Platform.OS === 'web' });
+
   return (
     <Animated.View
       style={[
@@ -110,8 +114,10 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
           pressed && { opacity: 0.2 }
         ]}
       >
-        <View style={styles.card}>
-          <Image source={{ uri: item.imageUri }} style={styles.cardImage} resizeMode="cover" />
+        <View ref={parallax.ref} onLayout={parallax.onLayout} style={styles.card}>
+          <Animated.View style={[StyleSheet.absoluteFill, parallax.animatedStyle]}>
+            <Image source={{ uri: item.imageUri }} style={[styles.cardImage, { transform: [{ scale: 1.08 }] }]} resizeMode="cover" />
+          </Animated.View>
           {Platform.OS !== 'web' ? (
             <Animated.View pointerEvents="none" style={[styles.blurOverlay, { opacity: blurOpacity }]}> 
               <BlurView intensity={15} tint="dark" style={StyleSheet.absoluteFill} />
