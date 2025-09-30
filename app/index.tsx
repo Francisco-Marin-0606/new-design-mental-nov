@@ -289,7 +289,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '500',
     color: '#fff',
-    letterSpacing: 1.2,
+    letterSpacing: 0.2,
   },
 
   // Pie
