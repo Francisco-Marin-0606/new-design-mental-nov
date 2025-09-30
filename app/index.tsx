@@ -32,9 +32,10 @@ interface CarouselItemProps {
   snapInterval: number;
   scrollX: Animated.Value;
   onPress: (session: HypnosisSession) => void;
+  isCenter: boolean;
 }
 
-function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrollX, onPress }: CarouselItemProps) {
+function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrollX, onPress, isCenter }: CarouselItemProps) {
   const inputRange = [(index - 1) * snapInterval, index * snapInterval, (index + 1) * snapInterval];
 
   const scale = scrollX.interpolate({
@@ -88,14 +89,25 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
         style={({ pressed }) => [styles.cardColumn, pressed && { opacity: 0.2 }]}
       >
         <View style={styles.card}>
-          <SoftEdgesMask borderRadius={16} featherPct={24} style={{ width: '100%', aspectRatio: 4 / 5 }}>
-            <Image source={{ uri: item.imageUri }} style={StyleSheet.absoluteFillObject} resizeMode="cover" />
-            {Platform.OS !== 'web' ? (
-              <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { opacity: blurOpacity }]}>
-                <BlurView intensity={12} tint="dark" style={StyleSheet.absoluteFill} />
-              </Animated.View>
-            ) : null}
-          </SoftEdgesMask>
+          {isCenter ? (
+            <>
+              <Image source={{ uri: item.imageUri }} style={StyleSheet.absoluteFillObject} resizeMode="cover" />
+              {Platform.OS !== 'web' ? (
+                <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { opacity: blurOpacity }]}>
+                  <BlurView intensity={12} tint="dark" style={StyleSheet.absoluteFill} />
+                </Animated.View>
+              ) : null}
+            </>
+          ) : (
+            <SoftEdgesMask borderRadius={16} featherPct={14} style={{ width: '100%', aspectRatio: 4 / 5 }}>
+              <Image source={{ uri: item.imageUri }} style={StyleSheet.absoluteFillObject} resizeMode="cover" />
+              {Platform.OS !== 'web' ? (
+                <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { opacity: blurOpacity }]}>
+                  <BlurView intensity={12} tint="dark" style={StyleSheet.absoluteFill} />
+                </Animated.View>
+              ) : null}
+            </SoftEdgesMask>
+          )}
         </View>
 
         {/* Título con blur recortado */}
@@ -159,6 +171,7 @@ export default function HomeScreen() {
   const scrollX = useRef(new Animated.Value(0)).current;
   const topShift = useMemo(() => Math.round(screenHeight * 0.10), [screenHeight]);
   const currentIndexRef = useRef<number>(0);
+  const [currentIndex, setCurrentIndex] = useState<number>(0);
   const lastHapticIndexRef = useRef<number>(0);
 
   const handleOpen = useCallback(async () => {
@@ -194,6 +207,7 @@ export default function HomeScreen() {
       const x = e?.nativeEvent?.contentOffset?.x ?? 0;
       const nextIndex = Math.round(x / snapInterval);
       currentIndexRef.current = nextIndex;
+      setCurrentIndex(nextIndex);
       console.log('[Carousel] momentum end x:', x, 'nextIndex:', nextIndex);
     } catch (err) {
       console.log('[Carousel] onMomentumScrollEnd error', err);
@@ -218,9 +232,10 @@ export default function HomeScreen() {
         snapInterval={snapInterval}
         scrollX={scrollX}
         onPress={handleCardPress}
+        isCenter={index === currentIndex}
       />
     ),
-    [cardWidth, cardSpacing, snapInterval, scrollX, handleCardPress]
+    [cardWidth, cardSpacing, snapInterval, scrollX, handleCardPress, currentIndex]
   );
 
   const keyExtractor = useCallback((i: HypnosisSession) => i.id, []);
