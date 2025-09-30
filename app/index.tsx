@@ -23,16 +23,16 @@ interface HypnosisSession {
 }
 
 const HYPNOSIS_SESSIONS: HypnosisSession[] = [
-  { id: '1', title: 'Calma en los Colomos', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarrusel1.png' },
-  { id: '2', title: 'Célula de sanación', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarrusel1.png' },
-  { id: '3', title: 'El reloj quieto en la mesa', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarrusel1.png' },
-  { id: '4', title: 'Respiración profunda', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarrusel1.png' },
-  { id: '5', title: 'Meditación guiada', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarrusel1.png' },
-  { id: '6', title: 'Sueño reparador', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarrusel1.png' },
-  { id: '7', title: 'Paz interior', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarrusel1.png' },
-  { id: '8', title: 'Energía positiva', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarrusel1.png' },
-  { id: '9', title: 'Liberación emocional', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarrusel1.png' },
-  { id: '10', title: 'Conexión espiritual', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarrusel1.png' },
+  { id: '1', title: 'Calma profunda en los Colomos', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarrusel1.png' },
+  { id: '2', title: 'Célula de sanación y calma', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarrusel1.png' },
+  { id: '3', title: 'El reloj quieto sobre la mesa', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarrusel1.png' },
+  { id: '4', title: 'Respiración profunda para relajarte', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarrusel1.png' },
+  { id: '5', title: 'Meditación guiada para la noche', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarrusel1.png' },
+  { id: '6', title: 'Sueño reparador y tranquilo hoy', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarrusel1.png' },
+  { id: '7', title: 'Paz interior en cada respiración', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarrusel1.png' },
+  { id: '8', title: 'Energía positiva para tu día', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarrusel1.png' },
+  { id: '9', title: 'Liberación emocional suave y guiada', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarrusel1.png' },
+  { id: '10', title: 'Conexión espiritual serena y profunda', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarrusel1.png' },
 ];
 
 export default function HomeScreen() {
@@ -95,15 +95,16 @@ export default function HomeScreen() {
         >
           <Pressable style={styles.card} onPress={handleOpen} android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.08)' } : undefined}>
             <Image source={{ uri: item.imageUri }} style={styles.cardImage} resizeMode="cover" />
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>ESCUCHAR</Text>
-            </View>
+
           </Pressable>
 
           {/* Título alineado al borde izquierdo de la tarjeta */}
           <Text style={[styles.cardTitle, { width: cardWidth }]} numberOfLines={2}>
             {item.title}
           </Text>
+          <View style={styles.badge} testID="listen-badge">
+            <Text style={styles.badgeText}>ESCUCHAR</Text>
+          </View>
         </Animated.View>
       );
     },
@@ -195,9 +196,8 @@ const styles = StyleSheet.create({
     lineHeight: 26,
   },
   badge: {
-    position: 'absolute',
-    bottom: 18,
-    alignSelf: 'center',
+    marginTop: 8,
+    alignSelf: 'flex-start',
     backgroundColor: '#d4621f',
     paddingHorizontal: 18,
     paddingVertical: 9,
