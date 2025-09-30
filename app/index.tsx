@@ -243,12 +243,12 @@ const styles = StyleSheet.create({
   },
 
   // Pie
-  bottomSection: { paddingHorizontal: 24, paddingBottom: 32, paddingTop: 12 },
+  bottomSection: { paddingHorizontal: 44, paddingBottom: 55, paddingTop: 12 },
   nextButton: {
     backgroundColor: 'rgba(212, 98, 31, 0.5)',
     paddingVertical: 18,
-    borderRadius: 16,
+    borderRadius: 10,
     alignItems: 'center',
   },
-  nextButtonText: { fontSize: 16, fontWeight: '600', color: '#ffffff' },
+  nextButtonText: { fontSize: 18, fontWeight: '600', color: '#ffffff' },
 });
