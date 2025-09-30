@@ -117,18 +117,6 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
         <View style={styles.cardShadow}>
           <View style={styles.cardInner}>
             <Image source={{ uri: item.imageUri }} style={styles.cardImage} resizeMode="cover" />
-
-            {Platform.OS !== 'web' ? (
-              <Animated.View pointerEvents="none" style={[styles.blurOverlay, { opacity: blurOpacity }]}>
-                <BlurView
-                  intensity={15}
-                  tint="dark"
-                  // Fondo transparente para no verse como bloque; si querés,
-                  // cambiá a '#170501' para que funda con el root.
-                  style={[StyleSheet.absoluteFill, { backgroundColor: '170501' }]}
-                />
-              </Animated.View>
-            ) : null}
           </View>
         </View>
 
