@@ -16,7 +16,7 @@ export default function SoftEdgesMask({
   children,
   borderRadius = 16,
   featherPct = 24,
-  featherPx,
+  featherPx = 5,
   style,
   testID,
 }: Props) {
