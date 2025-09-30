@@ -87,24 +87,23 @@ export default function HomeScreen() {
             style={styles.carousel}
           >
             {HYPNOSIS_SESSIONS.map((session) => (
-              <Pressable
-                key={session.id}
-                style={[styles.card, { width: cardWidth }]}
-                onPress={handleOpen}
-                android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.08)' } : undefined}
-              >
-                <Image
-                  source={{ uri: session.imageUri }}
-                  style={styles.cardImage}
-                  resizeMode="cover"
-                />
-                <View style={styles.cardContent}>
-                  <Text style={styles.cardTitle}>{session.title}</Text>
+              <View key={session.id} style={[styles.cardWrapper, { width: cardWidth }]}>
+                <Pressable
+                  style={styles.card}
+                  onPress={handleOpen}
+                  android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.08)' } : undefined}
+                >
+                  <Image
+                    source={{ uri: session.imageUri }}
+                    style={styles.cardImage}
+                    resizeMode="cover"
+                  />
                   <View style={styles.badge}>
                     <Text style={styles.badgeText}>ESCUCHAR</Text>
                   </View>
-                </View>
-              </Pressable>
+                </Pressable>
+                <Text style={styles.cardTitle}>{session.title}</Text>
+              </View>
             ))}
           </ScrollView>
 
@@ -150,35 +149,35 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
     gap: 20,
   },
+  cardWrapper: {
+    marginHorizontal: 10,
+  },
   card: {
-    height: 480,
+    aspectRatio: 4 / 5,
     borderRadius: 16,
     overflow: 'hidden',
     backgroundColor: '#2a1410',
-    marginHorizontal: 10,
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.5,
     shadowRadius: 16,
     elevation: 16,
+    position: 'relative',
   },
   cardImage: {
     width: '100%',
-    height: '75%',
-  },
-  cardContent: {
-    flex: 1,
-    padding: 20,
-    justifyContent: 'space-between',
+    height: '100%',
   },
   cardTitle: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#ffffff',
-    marginBottom: 12,
+    color: '#f9eedd',
+    marginTop: 16,
   },
   badge: {
-    alignSelf: 'flex-start',
+    position: 'absolute',
+    bottom: 16,
+    left: 16,
     backgroundColor: '#d4621f',
     paddingHorizontal: 16,
     paddingVertical: 8,
