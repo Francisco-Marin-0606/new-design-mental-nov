@@ -52,6 +52,7 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
     extrapolate: 'clamp',
   });
 
+  // Opacidad del blur solo para ítems NO centrales
   const blurOpacity = scrollX.interpolate({
     inputRange: [
       (index - 1) * snapInterval,
@@ -63,7 +64,6 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
   });
 
   const pressScale = useRef(new Animated.Value(1)).current;
-
   const combinedScale = Animated.multiply(scale, pressScale);
 
   const handlePressIn = useCallback(() => {
@@ -110,35 +110,56 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
           pressed && { opacity: 0.2 }
         ]}
       >
-        <View style={styles.card}>
-          <Image source={{ uri: item.imageUri }} style={styles.cardImage} resizeMode="cover" />
-          {Platform.OS !== 'web' ? (
-            <Animated.View pointerEvents="none" style={[styles.blurOverlay, { opacity: blurOpacity }]}>
-              <BlurView intensity={15} tint="dark" style={StyleSheet.absoluteFill} />
-            </Animated.View>
-          ) : null}
+        {/*
+          Sombra y contenedor exterior (mantiene sombras sin recortar)
+          y contenedor interior con overflow:hidden para recortar el BlurView
+        */}
+        <View style={styles.cardShadow}>
+          <View style={styles.cardInner}>
+            <Image source={{ uri: item.imageUri }} style={styles.cardImage} resizeMode="cover" />
+
+            {Platform.OS !== 'web' ? (
+              <Animated.View pointerEvents="none" style={[styles.blurOverlay, { opacity: blurOpacity }]}>
+                <BlurView
+                  intensity={15}
+                  tint="dark"
+                  // Fondo transparente para no verse como bloque; si querés,
+                  // cambiá a '#170501' para que funda con el root.
+                  style={[StyleSheet.absoluteFill, { backgroundColor: 'transparent' }]}
+                />
+              </Animated.View>
+            ) : null}
+          </View>
         </View>
 
+        {/* Título con recorte sutil y blur opcional */}
         <View style={styles.textBlurWrapper}>
           <Text style={[styles.cardTitle, { width: cardWidth }]} numberOfLines={3}>
             {item.title}
           </Text>
+
           {Platform.OS !== 'web' ? (
-            <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { opacity: blurOpacity }]}>
-              <BlurView intensity={15} tint="dark" style={StyleSheet.absoluteFill} />
-            </Animated.View>
+            <View style={styles.textBlurClip}>
+              <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { opacity: blurOpacity }]}>
+                <BlurView intensity={12} tint="dark" style={StyleSheet.absoluteFill} />
+              </Animated.View>
+            </View>
           ) : null}
         </View>
 
+        {/* Badge ESCUCHAR solamente en el primer ítem */}
         {index === 0 && (
           <View style={styles.badgeBlurWrapper}>
             <View style={styles.badge} testID="listen-badge">
               <Text style={styles.badgeText}>ESCUCHAR</Text>
             </View>
+
             {Platform.OS !== 'web' ? (
-              <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { opacity: blurOpacity }]}>
-                <BlurView intensity={15} tint="dark" style={StyleSheet.absoluteFill} />
-              </Animated.View>
+              <View style={styles.badgeBlurClip}>
+                <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { opacity: blurOpacity }]}>
+                  <BlurView intensity={12} tint="dark" style={StyleSheet.absoluteFill} />
+                </Animated.View>
+              </View>
             ) : null}
           </View>
         )}
@@ -290,8 +311,6 @@ export default function HomeScreen() {
               )}
               scrollEventThrottle={16}
             />
-
-
           </View>
         </View>
 
@@ -348,33 +367,51 @@ const styles = StyleSheet.create({
   cardColumn: {
     alignSelf: 'stretch',
   },
-  card: {
+
+  // Contenedor de sombra (no recorta sombras)
+  cardShadow: {
     width: '100%',
-    aspectRatio: 4 / 5,
     borderRadius: 16,
-    overflow: 'visible',
-    backgroundColor: '#2a1410',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.45,
     shadowRadius: 18,
     elevation: 18,
-    position: 'relative',
-    justifyContent: 'center'
+    backgroundColor: 'transparent',
   },
-  cardImage: { width: '100%', height: '100%', borderRadius: 16 },
+
+  // Contenedor interior que recorta la imagen + blur
+  cardInner: {
+    width: '100%',
+    aspectRatio: 4 / 5,
+    borderRadius: 16,
+    overflow: 'hidden', // clave para que el blur no se vea como "bloque"
+    backgroundColor: '#2a1410',
+    position: 'relative',
+    justifyContent: 'center',
+  },
+
+  cardImage: { width: '100%', height: '100%' },
+
+  // Overlay de blur: ocupa el área exacta del cardInner (sin márgenes negativos)
   blurOverlay: {
-    position: 'absolute',
-    top: -30,
-    left: -30,
-    right: -30,
-    bottom: -30,
+    ...StyleSheet.absoluteFillObject,
     borderRadius: 16,
   },
+
   textBlurWrapper: {
     marginTop: 20,
     position: 'relative' as const,
   },
+  // Clip pequeño para el blur del título (opcional)
+  textBlurClip: {
+    ...StyleSheet.absoluteFillObject,
+    top: -4,
+    bottom: -4,
+    borderRadius: 10,
+    overflow: 'hidden',
+  },
+
   cardTitle: {
     fontSize: 26,
     fontWeight: '600',
@@ -383,6 +420,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
     lineHeight: 30,
   },
+
   badgeBlurWrapper: {
     marginTop: 15,
     alignSelf: 'flex-start',
@@ -399,6 +437,12 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#fbefd9',
     letterSpacing: 0.2,
+  },
+  // Clip del blur para el badge (opcional)
+  badgeBlurClip: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 999,
+    overflow: 'hidden',
   },
 
   // Pie
