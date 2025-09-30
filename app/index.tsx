@@ -102,7 +102,7 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
                 <BlurView intensity={12} tint="dark" style={StyleSheet.absoluteFill} />
               </Animated.View>
               <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { opacity: maskOpacity }]}>
-                <SoftEdgesMask borderRadius={16} featherPct={5} style={{ width: '100%', height: '100%' }}>
+                <SoftEdgesMask borderRadius={16} featherPct={15} style={{ width: '100%', height: '100%' }}>
                   <View style={{ width: '100%', height: '100%', backgroundColor: 'transparent' }} />
                 </SoftEdgesMask>
               </Animated.View>
