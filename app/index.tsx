@@ -196,7 +196,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#170501' },
   safe: { flex: 1, backgroundColor: '#170501' },
-  container: { flex: 1, paddingTop: 24, paddingBottom: 20 },
+  container: { flex: 1, paddingTop: 24, paddingBottom: 20, justifyContent: 'center' },
   headerTitle: {
     fontSize: 32.4,
     fontWeight: '700',
