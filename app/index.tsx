@@ -149,7 +149,16 @@ export default function HomeScreen() {
 
       <SafeAreaView style={styles.safe} testID="safe-area">
         <View style={styles.container}>
-          <Text style={styles.headerTitle}>Mis hipnosis</Text>
+          <View style={styles.headerRow} testID="header-row">
+            <Text style={styles.headerTitle}>Mis hipnosis</Text>
+            <Image
+              source={{ uri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/TuercaConfig.png' }}
+              style={styles.headerIcon}
+              resizeMode="contain"
+              testID="header-settings-icon"
+              accessibilityLabel="Configuración"
+            />
+          </View>
 
           <Animated.FlatList
             data={HYPNOSIS_SESSIONS}
@@ -198,12 +207,21 @@ const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#170501' },
   safe: { flex: 1, backgroundColor: '#170501' },
   container: { flex: 1, paddingTop: 24, paddingBottom: 20, justifyContent: 'center' },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingLeft: 54,
+    paddingRight: 24,
+  },
   headerTitle: {
     fontSize: 32.4,
     fontWeight: '700',
     color: '#fbefd9',
-    paddingLeft: 54,
-    paddingRight: 24,
+  },
+  headerIcon: {
+    width: 28,
+    height: 28,
   },
 
   // Carrusel
