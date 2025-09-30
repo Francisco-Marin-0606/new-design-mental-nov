@@ -46,6 +46,7 @@ export default function HomeScreen() {
   const sidePadding = (screenWidth - cardWidth) / 2;
 
   const scrollX = useRef(new Animated.Value(0)).current;
+  const currentIndexRef = useRef<number>(0);
 
   const handleOpen = useCallback(async () => {
     if (Platform.OS !== 'web') {
@@ -61,6 +62,29 @@ export default function HomeScreen() {
       try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
     }
   }, []);
+
+  const onMomentumScrollEnd = useCallback(async (e: { nativeEvent: { contentOffset: { x: number } } }) => {
+    try {
+      const x = e?.nativeEvent?.contentOffset?.x ?? 0;
+      const nextIndex = Math.round(x / snapInterval);
+      const prevIndex = currentIndexRef.current;
+      console.log('[Carousel] momentum end x:', x, 'nextIndex:', nextIndex, 'prevIndex:', prevIndex);
+      if (nextIndex !== prevIndex) {
+        currentIndexRef.current = nextIndex;
+        if (Platform.OS !== 'web') {
+          try {
+            await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          } catch (err) {
+            console.log('[Haptics] error on page change', err);
+          }
+        } else {
+          console.log('[Haptics] Skipped on web');
+        }
+      }
+    } catch (err) {
+      console.log('[Carousel] onMomentumScrollEnd error', err);
+    }
+  }, [snapInterval]);
 
   const renderItem = useCallback(
     ({ item, index }: ListRenderItemInfo<HypnosisSession>) => {
@@ -131,6 +155,8 @@ export default function HomeScreen() {
             decelerationRate="fast"
             snapToInterval={snapInterval}
             snapToAlignment="start"
+            onMomentumScrollEnd={onMomentumScrollEnd}
+            testID="hypnosis-carousel"
             contentContainerStyle={{ paddingLeft: sidePadding, paddingRight: sidePadding, paddingVertical: 18 }}
             onScroll={Animated.event(
               [{ nativeEvent: { contentOffset: { x: scrollX } } }],
