@@ -22,9 +22,11 @@ import PlayerModal from './PlayerModal';
 interface SwipeUpModalProps {
   visible: boolean;
   onClose: () => void;
+  imageUri?: string;
+  title?: string;
 }
 
-export default function SwipeUpModal({ visible, onClose }: SwipeUpModalProps) {
+export default function SwipeUpModal({ visible, onClose, imageUri, title }: SwipeUpModalProps) {
   const { height: screenHeight, width: screenWidth } = useWindowDimensions();
   const [isClient, setIsClient] = useState(Platform.OS !== 'web');
   
@@ -323,6 +325,13 @@ export default function SwipeUpModal({ visible, onClose }: SwipeUpModalProps) {
           ]}
           pointerEvents="none"
         >
+          {imageUri ? (
+            <Animated.Image
+              source={{ uri: imageUri }}
+              style={styles.modalBgImage}
+              resizeMode="cover"
+            />
+          ) : null}
           <Svg width={screenWidth} height={screenHeight * 1.8}>
             <Defs>
               <SvgLinearGradient id="modalBg" x1="0%" y1="0%" x2="86.6%" y2="50%">
@@ -366,7 +375,7 @@ export default function SwipeUpModal({ visible, onClose }: SwipeUpModalProps) {
                 <View style={styles.imageShadowContainer}>
                   <Image
                     source={{
-                      uri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Netflix/ImagenPrueba.png',
+                      uri: imageUri || 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Netflix/ImagenPrueba.png',
                     }}
                     style={styles.image}
                     resizeMode="cover"
@@ -375,7 +384,7 @@ export default function SwipeUpModal({ visible, onClose }: SwipeUpModalProps) {
               </View>
 
               <View style={styles.textContainer}>
-                <Text style={styles.title}>El reloj quieto{"\n"}en la mesa</Text>
+                <Text style={styles.title}>{title || 'El reloj quieto\nen la mesa'}</Text>
                 <Text style={styles.durationText}>Duración: <Text style={styles.durationLight}>22:53</Text></Text>
               </View>
             </View>
@@ -585,7 +594,7 @@ export default function SwipeUpModal({ visible, onClose }: SwipeUpModalProps) {
         visible={audioPlayerVisible}
         onClose={() => setAudioPlayerVisible(false)}
         mode="audio"
-        title="El reloj quieto en la mesa"
+        title={title || 'El reloj quieto en la mesa'}
         mediaUri="https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Para%20ti/Hombre/Del%20miedo%20al%20amor%20-%20Unisex%20Version2.mp3"
       />
     </View>
@@ -597,6 +606,7 @@ const styles = StyleSheet.create({
   backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: '#000000' },
   modalContainer: { position: 'absolute', bottom: 0, left: 0, right: 0, borderTopLeftRadius: 0, borderTopRightRadius: 0, overflow: 'hidden' },
   modalGradientBg: { ...StyleSheet.absoluteFillObject, height: '150%' },
+  modalBgImage: { ...StyleSheet.absoluteFillObject, opacity: 0.22 },
   gradientFill: { flex: 1 },
   innerShift: { flex: 1, position: 'relative' },
   dragArea: { paddingTop: 12, paddingBottom: 8, alignItems: 'center' },

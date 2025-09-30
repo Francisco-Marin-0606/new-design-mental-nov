@@ -36,7 +36,8 @@ const HYPNOSIS_SESSIONS: HypnosisSession[] = [
 ];
 
 export default function HomeScreen() {
-  const [modalVisible, setModalVisible] = useState(false);
+  const [modalVisible, setModalVisible] = useState<boolean>(false);
+  const [selectedSession, setSelectedSession] = useState<HypnosisSession | null>(null);
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
 
   // Tamaño/espaciado estilo “foto 1”
@@ -92,10 +93,11 @@ export default function HomeScreen() {
     }
   }, [snapInterval]);
 
-  const handleCardPress = useCallback(async (_cardId: string) => {
+  const handleCardPress = useCallback(async (session: HypnosisSession) => {
     if (Platform.OS !== 'web') {
       try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy); } catch {}
     }
+    setSelectedSession(session);
     handleOpen();
   }, [handleOpen]);
 
@@ -132,7 +134,7 @@ export default function HomeScreen() {
         >
           <Pressable
             testID="carousel-card"
-            onPress={() => handleCardPress(item.id)}
+            onPress={() => handleCardPress(item)}
             android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.08)' } : undefined}
             style={({ pressed }) => [styles.cardColumn, pressed && { opacity: 0.2 }]}
           >
@@ -213,7 +215,12 @@ export default function HomeScreen() {
         </View>
       </SafeAreaView>
 
-      <SwipeUpModal visible={modalVisible} onClose={handleClose} />
+      <SwipeUpModal
+        visible={modalVisible}
+        onClose={handleClose}
+        imageUri={selectedSession?.imageUri ?? ''}
+        title={selectedSession?.title ?? ''}
+      />
     </View>
   );
 }
