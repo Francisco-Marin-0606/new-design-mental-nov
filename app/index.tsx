@@ -27,6 +27,41 @@ const HYPNOSIS_SESSIONS: HypnosisSession[] = [
     title: 'El reloj quieto en la mesa',
     imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarrusel1.png',
   },
+  {
+    id: '4',
+    title: 'Respiración profunda',
+    imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarrusel1.png',
+  },
+  {
+    id: '5',
+    title: 'Meditación guiada',
+    imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarrusel1.png',
+  },
+  {
+    id: '6',
+    title: 'Sueño reparador',
+    imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarrusel1.png',
+  },
+  {
+    id: '7',
+    title: 'Paz interior',
+    imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarrusel1.png',
+  },
+  {
+    id: '8',
+    title: 'Energía positiva',
+    imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarrusel1.png',
+  },
+  {
+    id: '9',
+    title: 'Liberación emocional',
+    imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarrusel1.png',
+  },
+  {
+    id: '10',
+    title: 'Conexión espiritual',
+    imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarrusel1.png',
+  },
 ];
 
 export default function HomeScreen() {
@@ -65,9 +100,9 @@ export default function HomeScreen() {
     console.log('Next hypnosis button pressed');
   }, []);
 
-  const cardWidth = screenWidth * 0.7 * 0.55;
-  const cardSpacing = 12;
-  const sidePreview = screenWidth * 0.15;
+  const cardWidth = screenWidth * 0.55;
+  const cardSpacing = 16;
+  const sideCardPadding = (screenWidth - cardWidth) / 2;
   const snapInterval = cardWidth + cardSpacing;
 
   const handleScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -92,8 +127,8 @@ export default function HomeScreen() {
             showsHorizontalScrollIndicator={false}
             decelerationRate="fast"
             snapToInterval={snapInterval}
-            snapToAlignment="start"
-            contentContainerStyle={[styles.carouselContent, { paddingLeft: sidePreview, paddingRight: sidePreview }]}
+            snapToAlignment="center"
+            contentContainerStyle={[styles.carouselContent, { paddingLeft: sideCardPadding, paddingRight: sideCardPadding }]}
             style={styles.carousel}
             onScroll={handleScroll}
             scrollEventThrottle={16}
@@ -107,7 +142,7 @@ export default function HomeScreen() {
 
               const scale = scrollX.interpolate({
                 inputRange,
-                outputRange: [0.8, 1, 0.8],
+                outputRange: [0.75, 1, 0.75],
                 extrapolate: 'clamp',
               });
 
