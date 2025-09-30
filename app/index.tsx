@@ -273,7 +273,7 @@ const styles = StyleSheet.create({
   badge: {
     marginTop: 15,
     alignSelf: 'flex-start',
-    backgroundColor: '#d4621f',
+    backgroundColor: '#c9841e',
     paddingHorizontal: 14,
     paddingVertical: 7,
     borderRadius: 999,
