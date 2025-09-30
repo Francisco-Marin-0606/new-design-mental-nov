@@ -113,38 +113,41 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
         ]}
       >
         <View style={styles.card}>
+          <Image source={{ uri: item.imageUri }} style={styles.cardImage} resizeMode="cover" />
           {Platform.OS !== 'web' && blurIntensity > 0 ? (
             <BlurView
               intensity={blurIntensity}
+              tint="dark"
               style={StyleSheet.absoluteFill}
             />
           ) : null}
-          <Image source={{ uri: item.imageUri }} style={styles.cardImage} resizeMode="cover" />
         </View>
 
         <View style={styles.textBlurWrapper}>
-          {Platform.OS !== 'web' && blurIntensity > 0 ? (
-            <BlurView
-              intensity={blurIntensity}
-              style={StyleSheet.absoluteFill}
-            />
-          ) : null}
           <Text style={[styles.cardTitle, { width: cardWidth }]} numberOfLines={3}>
             {item.title}
           </Text>
+          {Platform.OS !== 'web' && blurIntensity > 0 ? (
+            <BlurView
+              intensity={blurIntensity}
+              tint="dark"
+              style={StyleSheet.absoluteFill}
+            />
+          ) : null}
         </View>
 
         {index === 0 && (
           <View style={styles.badgeBlurWrapper}>
-            {Platform.OS !== 'web' && blurIntensity > 0 ? (
-              <BlurView
-                intensity={blurIntensity}
-                style={StyleSheet.absoluteFill}
-              />
-            ) : null}
             <View style={styles.badge} testID="listen-badge">
               <Text style={styles.badgeText}>ESCUCHAR</Text>
             </View>
+            {Platform.OS !== 'web' && blurIntensity > 0 ? (
+              <BlurView
+                intensity={blurIntensity}
+                tint="dark"
+                style={StyleSheet.absoluteFill}
+              />
+            ) : null}
           </View>
         )}
       </Pressable>
