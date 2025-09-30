@@ -144,9 +144,11 @@ export default function HomeScreen() {
               {item.title}
             </Text>
 
-            <View style={styles.badge} testID="listen-badge">
-              <Text style={styles.badgeText}>ESCUCHAR</Text>
-            </View>
+            {index === HYPNOSIS_SESSIONS.length - 1 && (
+              <View style={styles.badge} testID="listen-badge">
+                <Text style={styles.badgeText}>ESCUCHAR</Text>
+              </View>
+            )}
           </Pressable>
         </Animated.View>
       );
