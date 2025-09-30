@@ -16,8 +16,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
 import * as Haptics from 'expo-haptics';
 import SwipeUpModal from '@/components/SwipeUpModal';
-import { useParallaxHover } from '@/components/useParallaxHover';
-import SoftEdgesImage from '@/components/SoftEdgesImage';
 
 interface HypnosisSession {
   id: string;
@@ -60,7 +58,7 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
       index * snapInterval,
       (index + 1) * snapInterval,
     ],
-    outputRange: [0.7, 0, 0.7],
+    outputRange: [1, 0, 1],
     extrapolate: 'clamp',
   });
 
@@ -90,9 +88,6 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
     onPress(item);
   }, [item, onPress]);
 
-  // Parallax hover only on web; clamp with maxOffsetX/Y and intensity
-  const parallax = useParallaxHover({ intensity: 10, maxOffsetX: 400, maxOffsetY: 2000, enabled: Platform.OS === 'web' });
-
   return (
     <Animated.View
       style={[
@@ -115,10 +110,13 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
           pressed && { opacity: 0.2 }
         ]}
       >
-        <View ref={parallax.ref} onLayout={parallax.onLayout} style={styles.card}>
-          <Animated.View style={[StyleSheet.absoluteFill, parallax.animatedStyle]}>
-            <SoftEdgesImage uri={item.imageUri} borderRadius={16} feather={24} style={StyleSheet.absoluteFill} />
-          </Animated.View>
+        <View style={styles.card}>
+          <Image source={{ uri: item.imageUri }} style={styles.cardImage} resizeMode="cover" />
+          {Platform.OS !== 'web' ? (
+            <Animated.View pointerEvents="none" style={[styles.blurOverlay, { opacity: blurOpacity }]}>
+              <BlurView intensity={15} tint="dark" style={StyleSheet.absoluteFill} />
+            </Animated.View>
+          ) : null}
         </View>
 
         <View style={styles.textBlurWrapper}>
@@ -126,24 +124,10 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
             {item.title}
           </Text>
           {Platform.OS !== 'web' ? (
-            <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { opacity: blurOpacity }]}> 
+            <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { opacity: blurOpacity }]}>
               <BlurView intensity={15} tint="dark" style={StyleSheet.absoluteFill} />
             </Animated.View>
-          ) : (
-            <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { opacity: blurOpacity }]}> 
-              <View
-                style={{
-                  position: 'absolute',
-                  left: -16,
-                  right: -16,
-                  top: -8,
-                  bottom: -8,
-                  backgroundColor: 'transparent',
-                  ...( { backdropFilter: 'blur(15px)', WebkitBackdropFilter: 'blur(15px)' } as any ),
-                }}
-              />
-            </Animated.View>
-          )}
+          ) : null}
         </View>
 
         {index === 0 && (
@@ -152,24 +136,10 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
               <Text style={styles.badgeText}>ESCUCHAR</Text>
             </View>
             {Platform.OS !== 'web' ? (
-              <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { opacity: blurOpacity }]}> 
+              <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { opacity: blurOpacity }]}>
                 <BlurView intensity={15} tint="dark" style={StyleSheet.absoluteFill} />
               </Animated.View>
-            ) : (
-              <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { opacity: blurOpacity }]}> 
-                <View
-                  style={{
-                    ...(StyleSheet.absoluteFill as {}),
-                    left: -12,
-                    right: -12,
-                    top: -6,
-                    bottom: -6,
-                    backgroundColor: 'transparent',
-                    ...( { backdropFilter: 'blur(15px)', WebkitBackdropFilter: 'blur(15px)' } as any ),
-                  }}
-                />
-              </Animated.View>
-            )}
+            ) : null}
           </View>
         )}
       </Pressable>
@@ -382,7 +352,7 @@ const styles = StyleSheet.create({
     width: '100%',
     aspectRatio: 4 / 5,
     borderRadius: 16,
-    overflow: 'hidden',
+    overflow: 'visible',
     backgroundColor: '#2a1410',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 10 },
@@ -394,7 +364,12 @@ const styles = StyleSheet.create({
   },
   cardImage: { width: '100%', height: '100%', borderRadius: 16 },
   blurOverlay: {
-    ...StyleSheet.absoluteFillObject,
+    position: 'absolute',
+    top: -30,
+    left: -30,
+    right: -30,
+    bottom: -30,
+    borderRadius: 16,
   },
   textBlurWrapper: {
     marginTop: 20,
