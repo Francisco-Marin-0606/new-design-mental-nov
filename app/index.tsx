@@ -244,7 +244,7 @@ const styles = StyleSheet.create({
   },
   cardImage: { width: '100%', height: '100%' },
   cardTitle: {
-    marginTop: 16,
+    marginTop: 20,
     fontSize: 32,
     fontWeight: '600',
     color: '#fbefd9',
