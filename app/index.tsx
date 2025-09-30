@@ -66,7 +66,9 @@ export default function HomeScreen() {
   }, []);
 
   const cardWidth = screenWidth * 0.7;
-  const cardSpacing = 20;
+  const cardSpacing = 12;
+  const sidePreview = screenWidth * 0.15;
+  const snapInterval = cardWidth + cardSpacing;
 
   const handleScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
     Animated.event(
@@ -89,18 +91,18 @@ export default function HomeScreen() {
             pagingEnabled={false}
             showsHorizontalScrollIndicator={false}
             decelerationRate="fast"
-            snapToInterval={cardWidth + cardSpacing}
-            snapToAlignment="center"
-            contentContainerStyle={[styles.carouselContent, { paddingHorizontal: (screenWidth - cardWidth) / 2 }]}
+            snapToInterval={snapInterval}
+            snapToAlignment="start"
+            contentContainerStyle={[styles.carouselContent, { paddingLeft: sidePreview, paddingRight: sidePreview }]}
             style={styles.carousel}
             onScroll={handleScroll}
             scrollEventThrottle={16}
           >
             {HYPNOSIS_SESSIONS.map((session, index) => {
               const inputRange = [
-                (index - 1) * (cardWidth + cardSpacing),
-                index * (cardWidth + cardSpacing),
-                (index + 1) * (cardWidth + cardSpacing),
+                (index - 1) * snapInterval,
+                index * snapInterval,
+                (index + 1) * snapInterval,
               ];
 
               const scale = scrollX.interpolate({
@@ -114,7 +116,11 @@ export default function HomeScreen() {
                   key={session.id}
                   style={[
                     styles.cardWrapper,
-                    { width: cardWidth, transform: [{ scale }] },
+                    { 
+                      width: cardWidth,
+                      marginRight: index < HYPNOSIS_SESSIONS.length - 1 ? cardSpacing : 0,
+                      transform: [{ scale }],
+                    },
                   ]}
                 >
                   <Pressable
@@ -180,10 +186,9 @@ const styles = StyleSheet.create({
   },
   carouselContent: {
     paddingVertical: 20,
-    gap: 20,
   },
   cardWrapper: {
-    marginHorizontal: 10,
+    alignItems: 'center',
   },
   card: {
     aspectRatio: 4 / 5,
