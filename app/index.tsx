@@ -52,26 +52,15 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
     extrapolate: 'clamp',
   });
 
-  const [blurIntensity, setBlurIntensity] = React.useState<number>(index === 0 ? 0 : 15);
-
-  const computeIntensity = React.useCallback(
-    (position: number) => {
-      const distance = Math.abs(position - index);
-      return distance < 0.5 ? 0 : 15;
-    },
-    [index]
-  );
-
-  React.useEffect(() => {
-    setBlurIntensity(computeIntensity(0));
-
-    const listenerId = scrollX.addListener(({ value }) => {
-      const position = value / snapInterval;
-      const next = computeIntensity(position);
-      setBlurIntensity(next);
-    });
-    return () => scrollX.removeListener(listenerId);
-  }, [scrollX, snapInterval, computeIntensity]);
+  const blurOpacity = scrollX.interpolate({
+    inputRange: [
+      (index - 1) * snapInterval,
+      index * snapInterval,
+      (index + 1) * snapInterval,
+    ],
+    outputRange: [1, 0, 1],
+    extrapolate: 'clamp',
+  });
 
   const pressScale = useRef(new Animated.Value(1)).current;
 
@@ -123,12 +112,10 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
       >
         <View style={styles.card}>
           <Image source={{ uri: item.imageUri }} style={styles.cardImage} resizeMode="cover" />
-          {Platform.OS !== 'web' && blurIntensity > 0 ? (
-            <BlurView
-              intensity={15}
-              tint="dark"
-              style={styles.blurOverlay}
-            />
+          {Platform.OS !== 'web' ? (
+            <Animated.View pointerEvents="none" style={[styles.blurOverlay, { opacity: blurOpacity }]}>
+              <BlurView intensity={15} tint="dark" style={StyleSheet.absoluteFill} />
+            </Animated.View>
           ) : null}
         </View>
 
@@ -136,12 +123,10 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
           <Text style={[styles.cardTitle, { width: cardWidth }]} numberOfLines={3}>
             {item.title}
           </Text>
-          {Platform.OS !== 'web' && blurIntensity > 0 ? (
-            <BlurView
-              intensity={blurIntensity}
-              tint="dark"
-              style={StyleSheet.absoluteFill}
-            />
+          {Platform.OS !== 'web' ? (
+            <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { opacity: blurOpacity }]}>
+              <BlurView intensity={15} tint="dark" style={StyleSheet.absoluteFill} />
+            </Animated.View>
           ) : null}
         </View>
 
@@ -150,12 +135,10 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
             <View style={styles.badge} testID="listen-badge">
               <Text style={styles.badgeText}>ESCUCHAR</Text>
             </View>
-            {Platform.OS !== 'web' && blurIntensity > 0 ? (
-              <BlurView
-                intensity={blurIntensity}
-                tint="dark"
-                style={StyleSheet.absoluteFill}
-              />
+            {Platform.OS !== 'web' ? (
+              <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { opacity: blurOpacity }]}>
+                <BlurView intensity={15} tint="dark" style={StyleSheet.absoluteFill} />
+              </Animated.View>
             ) : null}
           </View>
         )}
