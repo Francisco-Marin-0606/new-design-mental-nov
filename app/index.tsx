@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { BlurView } from 'expo-blur';
 import * as Haptics from 'expo-haptics';
 import SwipeUpModal from '@/components/SwipeUpModal';
 
@@ -232,33 +233,55 @@ export default function HomeScreen() {
             />
           </View>
 
-          <Animated.FlatList
-            data={HYPNOSIS_SESSIONS}
-            keyExtractor={keyExtractor}
-            renderItem={renderItem}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            bounces
-            alwaysBounceHorizontal
-            overScrollMode={Platform.OS === 'android' ? 'always' : 'auto'}
-            decelerationRate="fast"
-            snapToInterval={snapInterval}
-            snapToAlignment="start"
-            onMomentumScrollEnd={onMomentumScrollEnd}
-            testID="hypnosis-carousel"
-            initialScrollIndex={0}
-            getItemLayout={(data: ArrayLike<HypnosisSession> | null | undefined, index: number) => ({
-              length: snapInterval,
-              offset: sidePadding + index * snapInterval,
-              index,
-            })}
-            contentContainerStyle={{ paddingLeft: sidePadding, paddingRight: sidePadding, paddingTop: 18 + topShift, paddingBottom: 18 }}
-            onScroll={Animated.event(
-              [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-              { useNativeDriver: false, listener: onScroll }
+          <View style={styles.carouselContainer}>
+            <Animated.FlatList
+              data={HYPNOSIS_SESSIONS}
+              keyExtractor={keyExtractor}
+              renderItem={renderItem}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              bounces
+              alwaysBounceHorizontal
+              overScrollMode={Platform.OS === 'android' ? 'always' : 'auto'}
+              decelerationRate="fast"
+              snapToInterval={snapInterval}
+              snapToAlignment="start"
+              onMomentumScrollEnd={onMomentumScrollEnd}
+              testID="hypnosis-carousel"
+              initialScrollIndex={0}
+              getItemLayout={(data: ArrayLike<HypnosisSession> | null | undefined, index: number) => ({
+                length: snapInterval,
+                offset: sidePadding + index * snapInterval,
+                index,
+              })}
+              contentContainerStyle={{ paddingLeft: sidePadding, paddingRight: sidePadding, paddingTop: 18 + topShift, paddingBottom: 18 }}
+              onScroll={Animated.event(
+                [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+                { useNativeDriver: false, listener: onScroll }
+              )}
+              scrollEventThrottle={16}
+            />
+
+            {Platform.OS !== 'web' ? (
+              <>
+                <BlurView
+                  intensity={40}
+                  style={styles.blurLeft}
+                  pointerEvents="none"
+                />
+                <BlurView
+                  intensity={40}
+                  style={styles.blurRight}
+                  pointerEvents="none"
+                />
+              </>
+            ) : (
+              <>
+                <View style={[styles.blurLeft, styles.blurWeb]} pointerEvents="none" />
+                <View style={[styles.blurRight, styles.blurWeb]} pointerEvents="none" />
+              </>
             )}
-            scrollEventThrottle={16}
-          />
+          </View>
         </View>
 
         <View style={styles.bottomSection}>
@@ -304,6 +327,32 @@ const styles = StyleSheet.create({
   },
 
   // Carrusel
+  carouselContainer: {
+    flex: 1,
+    position: 'relative',
+  },
+  blurLeft: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 80,
+    zIndex: 10,
+  },
+  blurRight: {
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    bottom: 0,
+    width: 80,
+    zIndex: 10,
+  },
+  blurWeb: {
+    backgroundColor: 'rgba(23, 5, 1, 0.3)',
+    ...(Platform.OS === 'web' && {
+      backdropFilter: 'blur(10px)',
+    }),
+  },
   cardWrapper: {
     alignItems: 'flex-start',
   },
