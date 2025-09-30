@@ -125,7 +125,7 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
                   tint="dark"
                   // Fondo transparente para no verse como bloque; si querés,
                   // cambiá a '#170501' para que funda con el root.
-                  style={[StyleSheet.absoluteFill, { backgroundColor: 'transparent' }]}
+                  style={[StyleSheet.absoluteFill, { backgroundColor: '170501' }]}
                 />
               </Animated.View>
             ) : null}
