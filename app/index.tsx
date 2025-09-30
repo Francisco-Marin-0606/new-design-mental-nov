@@ -37,7 +37,7 @@ const HYPNOSIS_SESSIONS: HypnosisSession[] = [
 
 export default function HomeScreen() {
   const [modalVisible, setModalVisible] = useState(false);
-  const { width: screenWidth } = useWindowDimensions();
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
 
   // Tamaño/espaciado estilo “foto 1”
   const cardWidth = useMemo(() => Math.min(263.35, screenWidth * 1.725), [screenWidth]);
@@ -46,6 +46,7 @@ export default function HomeScreen() {
   const sidePadding = (screenWidth - cardWidth) / 2;
 
   const scrollX = useRef(new Animated.Value(0)).current;
+  const topShift = useMemo(() => Math.round(screenHeight * 0.25), [screenHeight]);
   const currentIndexRef = useRef<number>(0);
   const lastHapticIndexRef = useRef<number>(0);
 
@@ -163,12 +164,12 @@ export default function HomeScreen() {
             onMomentumScrollEnd={onMomentumScrollEnd}
             testID="hypnosis-carousel"
             initialScrollIndex={HYPNOSIS_SESSIONS.length - 1}
-            getItemLayout={(_data: HypnosisSession[] | null, index: number) => ({
+            getItemLayout={(data: ArrayLike<HypnosisSession> | null | undefined, index: number) => ({
               length: snapInterval,
               offset: sidePadding + index * snapInterval,
               index,
             })}
-            contentContainerStyle={{ paddingLeft: sidePadding, paddingRight: sidePadding, paddingVertical: 18 }}
+            contentContainerStyle={{ paddingLeft: sidePadding, paddingRight: sidePadding, paddingTop: 18 + topShift, paddingBottom: 18 }}
             onScroll={Animated.event(
               [{ nativeEvent: { contentOffset: { x: scrollX } } }],
               { useNativeDriver: false, listener: onScroll }
