@@ -113,10 +113,24 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
         <View style={styles.card}>
           <Image source={{ uri: item.imageUri }} style={styles.cardImage} resizeMode="cover" />
           {Platform.OS !== 'web' ? (
-            <Animated.View pointerEvents="none" style={[styles.blurOverlay, { opacity: blurOpacity }]}>
+            <Animated.View pointerEvents="none" style={[styles.blurOverlay, { opacity: blurOpacity }]}> 
               <BlurView intensity={15} tint="dark" style={StyleSheet.absoluteFill} />
             </Animated.View>
-          ) : null}
+          ) : (
+            <Animated.View pointerEvents="none" style={[styles.blurOverlay, { opacity: blurOpacity }]}> 
+              <View
+                style={{
+                  ...(StyleSheet.absoluteFill as {}),
+                  left: -24,
+                  right: -24,
+                  top: -24,
+                  bottom: -24,
+                  backgroundColor: 'transparent',
+                  ...( { backdropFilter: 'blur(15px)', WebkitBackdropFilter: 'blur(15px)' } as any ),
+                }}
+              />
+            </Animated.View>
+          )}
         </View>
 
         <View style={styles.textBlurWrapper}>
@@ -124,10 +138,24 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
             {item.title}
           </Text>
           {Platform.OS !== 'web' ? (
-            <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { opacity: blurOpacity }]}>
+            <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { opacity: blurOpacity }]}> 
               <BlurView intensity={15} tint="dark" style={StyleSheet.absoluteFill} />
             </Animated.View>
-          ) : null}
+          ) : (
+            <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { opacity: blurOpacity }]}> 
+              <View
+                style={{
+                  ...(StyleSheet.absoluteFill as {}),
+                  left: -16,
+                  right: -16,
+                  top: -8,
+                  bottom: -8,
+                  backgroundColor: 'transparent',
+                  ...( { backdropFilter: 'blur(15px)', WebkitBackdropFilter: 'blur(15px)' } as any ),
+                }}
+              />
+            </Animated.View>
+          )}
         </View>
 
         {index === 0 && (
@@ -136,10 +164,24 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
               <Text style={styles.badgeText}>ESCUCHAR</Text>
             </View>
             {Platform.OS !== 'web' ? (
-              <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { opacity: blurOpacity }]}>
+              <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { opacity: blurOpacity }]}> 
                 <BlurView intensity={15} tint="dark" style={StyleSheet.absoluteFill} />
               </Animated.View>
-            ) : null}
+            ) : (
+              <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { opacity: blurOpacity }]}> 
+                <View
+                  style={{
+                    ...(StyleSheet.absoluteFill as {}),
+                    left: -12,
+                    right: -12,
+                    top: -6,
+                    bottom: -6,
+                    backgroundColor: 'transparent',
+                    ...( { backdropFilter: 'blur(15px)', WebkitBackdropFilter: 'blur(15px)' } as any ),
+                  }}
+                />
+              </Animated.View>
+            )}
           </View>
         )}
       </Pressable>
