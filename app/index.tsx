@@ -92,17 +92,11 @@ export default function HomeScreen() {
     }
   }, [snapInterval]);
 
-  const [pressedCardId, setPressedCardId] = useState<string | null>(null);
-
-  const handleCardPress = useCallback(async (cardId: string) => {
-    setPressedCardId(cardId);
+  const handleCardPress = useCallback(async (_cardId: string) => {
     if (Platform.OS !== 'web') {
       try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy); } catch {}
     }
-    setTimeout(() => {
-      handleOpen();
-      setPressedCardId(null);
-    }, 150);
+    handleOpen();
   }, [handleOpen]);
 
   const renderItem = useCallback(
@@ -125,8 +119,6 @@ export default function HomeScreen() {
         extrapolate: 'clamp',
       });
 
-      const isPressed = pressedCardId === item.id;
-
       return (
         <Animated.View
           style={[
@@ -138,28 +130,28 @@ export default function HomeScreen() {
             },
           ]}
         >
-          <Pressable 
-            style={[styles.card, isPressed && { opacity: 0.2 }]} 
-            onPress={() => handleCardPress(item.id)} 
-            android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.08)' } : undefined}
-          >
-            <Image source={{ uri: item.imageUri }} style={styles.cardImage} resizeMode="cover" />
-          </Pressable>
-
-          <Text style={[styles.cardTitle, { width: cardWidth }]} numberOfLines={3}>
-            {item.title}
-          </Text>
-          <Pressable 
-            style={styles.badge} 
-            testID="listen-badge"
+          <Pressable
+            testID="carousel-card"
             onPress={() => handleCardPress(item.id)}
+            android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.08)' } : undefined}
+            style={({ pressed }) => [styles.cardColumn, pressed && { opacity: 0.2 }]}
           >
-            <Text style={styles.badgeText}>ESCUCHAR</Text>
+            <View style={styles.card}>
+              <Image source={{ uri: item.imageUri }} style={styles.cardImage} resizeMode="cover" />
+            </View>
+
+            <Text style={[styles.cardTitle, { width: cardWidth }]} numberOfLines={3}>
+              {item.title}
+            </Text>
+
+            <View style={styles.badge} testID="listen-badge">
+              <Text style={styles.badgeText}>ESCUCHAR</Text>
+            </View>
           </Pressable>
         </Animated.View>
       );
     },
-    [cardWidth, cardSpacing, snapInterval, scrollX, pressedCardId, handleCardPress]
+    [cardWidth, cardSpacing, snapInterval, scrollX, handleCardPress]
   );
 
   const keyExtractor = useCallback((i: HypnosisSession) => i.id, []);
@@ -247,7 +239,10 @@ const styles = StyleSheet.create({
 
   // Carrusel
   cardWrapper: {
-    alignItems: 'flex-start', // título alineado a la izquierda de la tarjeta
+    alignItems: 'flex-start',
+  },
+  cardColumn: {
+    alignSelf: 'stretch',
   },
   card: {
     width: '100%',
@@ -261,7 +256,7 @@ const styles = StyleSheet.create({
     shadowRadius: 18,
     elevation: 18,
     position: 'relative',
-    justifyContent: 'center' 
+    justifyContent: 'center'
   },
   cardImage: { width: '100%', height: '100%' },
   cardTitle: {
