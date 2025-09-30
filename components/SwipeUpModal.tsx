@@ -76,7 +76,7 @@ export default function SwipeUpModal({ visible, onClose }: SwipeUpModalProps) {
     const targetX = tabPositionsRef.current[toTab] ?? 0;
     Animated.timing(tabIndicatorPosition, {
       toValue: targetX,
-      duration: 300,
+      duration: 600,
       easing: Easing.bezier(0.25, 0.46, 0.45, 0.94),
       useNativeDriver: false,
     }).start();
@@ -90,17 +90,17 @@ export default function SwipeUpModal({ visible, onClose }: SwipeUpModalProps) {
     textTranslateX.setValue(initialTranslateX);
     textOpacity.setValue(0);
     
-    // Animate content sliding in with smoother, faster animation
+    // Animate content sliding in with smoother, slower animation
     Animated.parallel([
       Animated.timing(textTranslateX, {
         toValue: 0,
-        duration: 300,
+        duration: 600,
         easing: Easing.bezier(0.25, 0.46, 0.45, 0.94),
         useNativeDriver: true,
       }),
       Animated.timing(textOpacity, {
         toValue: 1,
-        duration: 275,
+        duration: 550,
         easing: Easing.bezier(0.25, 0.46, 0.45, 0.94),
         useNativeDriver: true,
       }),
