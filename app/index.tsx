@@ -352,7 +352,7 @@ const styles = StyleSheet.create({
     width: '100%',
     aspectRatio: 4 / 5,
     borderRadius: 16,
-    overflow: 'visible',
+    overflow: 'hidden',
     backgroundColor: '#2a1410',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 10 },
@@ -364,12 +364,7 @@ const styles = StyleSheet.create({
   },
   cardImage: { width: '100%', height: '100%', borderRadius: 16 },
   blurOverlay: {
-    position: 'absolute',
-    top: -30,
-    left: -30,
-    right: -30,
-    bottom: -30,
-    borderRadius: 16,
+    ...StyleSheet.absoluteFillObject,
   },
   textBlurWrapper: {
     marginTop: 20,
