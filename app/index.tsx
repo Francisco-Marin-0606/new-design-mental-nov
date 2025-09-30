@@ -53,20 +53,22 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
   });
 
   const [blurIntensity, setBlurIntensity] = React.useState<number>(0);
+  const blurIntensityRef = useRef<number>(0);
 
   React.useEffect(() => {
     const listenerId = scrollX.addListener(({ value }) => {
       const position = value / snapInterval;
       const distance = Math.abs(position - index);
       const blur = Math.min(8, distance * 8);
-      setBlurIntensity(blur);
+      blurIntensityRef.current = blur;
+      requestAnimationFrame(() => {
+        setBlurIntensity(blur);
+      });
     });
     return () => scrollX.removeListener(listenerId);
   }, [scrollX, index, snapInterval]);
 
   const pressScale = useRef(new Animated.Value(1)).current;
-
-  const combinedScale = Animated.multiply(scale, pressScale);
 
   const handlePressIn = useCallback(() => {
     Animated.spring(pressScale, {
@@ -97,7 +99,7 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
         {
           width: cardWidth,
           marginRight: index === HYPNOSIS_SESSIONS.length - 1 ? 0 : cardSpacing,
-          transform: [{ scale: combinedScale }, { translateY }],
+          transform: [{ scale }, { translateY }],
         },
       ]}
     >
@@ -112,35 +114,22 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
           pressed && { opacity: 0.2 }
         ]}
       >
-        <View style={styles.card}>
-          <Image source={{ uri: item.imageUri }} style={styles.cardImage} resizeMode="cover" />
-          {Platform.OS !== 'web' && blurIntensity > 0 ? (
-            <BlurView
-              intensity={blurIntensity}
-              tint="dark"
-              style={styles.blurOverlay}
-            />
-          ) : null}
-        </View>
+        <Animated.View style={{ transform: [{ scale: pressScale }] }}>
+          <View style={styles.card}>
+            <Image source={{ uri: item.imageUri }} style={styles.cardImage} resizeMode="cover" />
+            {Platform.OS !== 'web' && blurIntensity > 0 ? (
+              <BlurView
+                intensity={blurIntensity}
+                tint="dark"
+                style={styles.blurOverlay}
+              />
+            ) : null}
+          </View>
 
-        <View style={styles.textBlurWrapper}>
-          <Text style={[styles.cardTitle, { width: cardWidth }]} numberOfLines={3}>
-            {item.title}
-          </Text>
-          {Platform.OS !== 'web' && blurIntensity > 0 ? (
-            <BlurView
-              intensity={blurIntensity}
-              tint="dark"
-              style={StyleSheet.absoluteFill}
-            />
-          ) : null}
-        </View>
-
-        {index === 0 && (
-          <View style={styles.badgeBlurWrapper}>
-            <View style={styles.badge} testID="listen-badge">
-              <Text style={styles.badgeText}>ESCUCHAR</Text>
-            </View>
+          <View style={styles.textBlurWrapper}>
+            <Text style={[styles.cardTitle, { width: cardWidth }]} numberOfLines={3}>
+              {item.title}
+            </Text>
             {Platform.OS !== 'web' && blurIntensity > 0 ? (
               <BlurView
                 intensity={blurIntensity}
@@ -149,7 +138,22 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
               />
             ) : null}
           </View>
-        )}
+
+          {index === 0 && (
+            <View style={styles.badgeBlurWrapper}>
+              <View style={styles.badge} testID="listen-badge">
+                <Text style={styles.badgeText}>ESCUCHAR</Text>
+              </View>
+              {Platform.OS !== 'web' && blurIntensity > 0 ? (
+                <BlurView
+                  intensity={blurIntensity}
+                  tint="dark"
+                  style={StyleSheet.absoluteFill}
+                />
+              ) : null}
+            </View>
+          )}
+        </Animated.View>
       </Pressable>
     </Animated.View>
   );
