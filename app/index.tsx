@@ -99,8 +99,6 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
       >
         <Animated.View 
           style={{ transform: [{ scale: pressScale }] }}
-          renderToHardwareTextureAndroid
-          shouldRasterizeIOS
         >
           <View style={styles.card}>
             <Image source={{ uri: item.imageUri }} style={styles.cardImage} resizeMode="cover" />
