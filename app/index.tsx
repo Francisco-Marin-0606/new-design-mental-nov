@@ -221,6 +221,7 @@ const styles = StyleSheet.create({
     shadowRadius: 18,
     elevation: 18,
     position: 'relative',
+    justifyContent: 'center' 
   },
   cardImage: { width: '100%', height: '100%' },
   cardTitle: {
