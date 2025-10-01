@@ -15,6 +15,7 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MoreVertical, Play, Download, MessageCircle, Edit3, Settings } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
+import Svg, { Defs, LinearGradient as SvgLinearGradient, Stop, Rect } from 'react-native-svg';
 import SwipeUpModal from '@/components/SwipeUpModal';
 import PlayerModal from '@/components/PlayerModal';
 
@@ -767,82 +768,96 @@ export default function HomeScreen() {
         <View style={styles.menuOverlay}>
           <Pressable style={styles.menuBackdrop} onPress={handleMenuClose} />
           <View style={styles.menuContainer}>
-            <View style={styles.sheetHandle} />
-            <Text style={styles.menuTitle} numberOfLines={2}>{menuSession?.title}</Text>
+            <View style={styles.menuGradientBg}>
+              <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject}>
+                <Defs>
+                  <SvgLinearGradient id="menuBg" x1="0%" y1="0%" x2="86.6%" y2="50%">
+                    <Stop offset="0%" stopColor="#a2380e" stopOpacity={1} />
+                    <Stop offset="100%" stopColor="#7c2709" stopOpacity={1} />
+                  </SvgLinearGradient>
+                </Defs>
+                <Rect x={0} y={0} width="100%" height="100%" fill="url(#menuBg)" />
+              </Svg>
+            </View>
+            
+            <View style={styles.menuContent}>
+              <View style={styles.sheetHandle} />
+              <Text style={styles.menuTitle} numberOfLines={2}>{menuSession?.title}</Text>
 
-            <Pressable
-              style={styles.menuPrimary}
-              onPress={() => handleMenuAction('play')}
-              android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.12)' } : undefined}
-              testID="menu-primary-play"
-              accessibilityLabel="Reproducir"
-            >
-              <Play color="#1a0d08" size={20} fill="#1a0d08" />
-              <Text style={styles.menuPrimaryText}>Reproducir ahora</Text>
-            </Pressable>
+              <Pressable
+                style={styles.menuPrimary}
+                onPress={() => handleMenuAction('play')}
+                android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.15)' } : undefined}
+                testID="menu-primary-play"
+                accessibilityLabel="Reproducir"
+              >
+                <Play color="#1a0d08" size={22} fill="#1a0d08" />
+                <Text style={styles.menuPrimaryText}>Reproducir ahora</Text>
+              </Pressable>
 
-            <View style={styles.menuDivider} />
+              <View style={styles.menuDivider} />
 
-            <Pressable
-              style={styles.menuItem}
-              onPress={() => handleMenuAction('download')}
-              android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.08)' } : undefined}
-              testID="menu-download"
-              accessibilityLabel="Descargar"
-            >
-              <View style={[styles.menuIconContainer, styles.menuIconAccent]}>
-                <Download color="#fbefd9" size={18} />
-              </View>
-              <Text style={styles.menuItemText}>Descargar</Text>
-              {menuDownload?.state === 'downloading' && (
-                <Text style={styles.menuItemMeta}>{Math.max(0, Math.min(100, Math.round(menuDownload.progress)))}%</Text>
+              <Pressable
+                style={styles.menuItem}
+                onPress={() => handleMenuAction('download')}
+                android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.1)' } : undefined}
+                testID="menu-download"
+                accessibilityLabel="Descargar"
+              >
+                <View style={[styles.menuIconContainer, styles.menuIconAccent]}>
+                  <Download color="#ffffff" size={20} />
+                </View>
+                <Text style={styles.menuItemText}>Descargar</Text>
+                {menuDownload?.state === 'downloading' && (
+                  <Text style={styles.menuItemMeta}>{Math.max(0, Math.min(100, Math.round(menuDownload.progress)))}%</Text>
+                )}
+                {menuDownload?.state === 'completed' && (
+                  <Text style={styles.menuItemMeta}>Lista</Text>
+                )}
+              </Pressable>
+
+              {menuViewMode === 'previous' && (
+                <>
+                  <View style={styles.menuDivider} />
+                  <Pressable
+                    style={styles.menuItem}
+                    onPress={() => handleMenuAction('qa')}
+                    android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.1)' } : undefined}
+                    testID="menu-qa"
+                    accessibilityLabel="Preguntas y respuestas"
+                  >
+                    <View style={styles.menuIconContainer}>
+                      <MessageCircle color="#ffffff" size={20} />
+                    </View>
+                    <Text style={styles.menuItemText}>Preguntas y respuestas</Text>
+                  </Pressable>
+
+                  <Pressable
+                    style={styles.menuItem}
+                    onPress={() => handleMenuAction('rename')}
+                    android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.1)' } : undefined}
+                    testID="menu-rename"
+                    accessibilityLabel="Cambiar nombre"
+                  >
+                    <View style={styles.menuIconContainer}>
+                      <Edit3 color="#ffffff" size={20} />
+                    </View>
+                    <Text style={styles.menuItemText}>Cambiar nombre</Text>
+                  </Pressable>
+                </>
               )}
-              {menuDownload?.state === 'completed' && (
-                <Text style={styles.menuItemMeta}>Lista</Text>
-              )}
-            </Pressable>
 
-            {menuViewMode === 'previous' && (
-              <>
-                <View style={styles.menuDivider} />
-                <Pressable
-                  style={styles.menuItem}
-                  onPress={() => handleMenuAction('qa')}
-                  android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.08)' } : undefined}
-                  testID="menu-qa"
-                  accessibilityLabel="Preguntas y respuestas"
-                >
-                  <View style={styles.menuIconContainer}>
-                    <MessageCircle color="#fbefd9" size={18} />
-                  </View>
-                  <Text style={styles.menuItemText}>Preguntas y respuestas</Text>
-                </Pressable>
-
-                <Pressable
-                  style={styles.menuItem}
-                  onPress={() => handleMenuAction('rename')}
-                  android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.08)' } : undefined}
-                  testID="menu-rename"
-                  accessibilityLabel="Cambiar nombre"
-                >
-                  <View style={styles.menuIconContainer}>
-                    <Edit3 color="#fbefd9" size={18} />
-                  </View>
-                  <Text style={styles.menuItemText}>Cambiar nombre</Text>
-                </Pressable>
-              </>
-            )}
-
-            <View style={styles.menuSpacer} />
-            <Pressable
-              style={styles.menuCancel}
-              onPress={handleMenuClose}
-              android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.12)' } : undefined}
-              testID="menu-cancel"
-              accessibilityLabel="Cancelar"
-            >
-              <Text style={styles.menuCancelText}>Cancelar</Text>
-            </Pressable>
+              <View style={styles.menuSpacer} />
+              <Pressable
+                style={styles.menuCancel}
+                onPress={handleMenuClose}
+                android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.15)' } : undefined}
+                testID="menu-cancel"
+                accessibilityLabel="Cancelar"
+              >
+                <Text style={styles.menuCancelText}>Cancelar</Text>
+              </Pressable>
+            </View>
           </View>
         </View>
       )}
@@ -1154,99 +1169,117 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
   },
   menuContainer: {
-    backgroundColor: '#1e0f0b',
-    borderRadius: 18,
+    borderRadius: 20,
     width: '92%',
     maxWidth: 440,
-    paddingVertical: 16,
-    paddingHorizontal: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.5,
-    shadowRadius: 20,
-    elevation: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(251,239,217,0.08)'
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.6,
+    shadowRadius: 24,
+    elevation: 24,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  menuGradientBg: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  menuContent: {
+    paddingVertical: 20,
+    paddingHorizontal: 20,
+    position: 'relative',
+    zIndex: 1,
   },
   sheetHandle: {
     alignSelf: 'center',
-    width: 40,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: 'rgba(251,239,217,0.25)',
-    marginBottom: 12,
+    width: 48,
+    height: 5,
+    borderRadius: 3,
+    backgroundColor: 'rgba(255,255,255,0.35)',
+    marginBottom: 16,
   },
   menuTitle: {
-    fontSize: 18,
+    fontSize: 22,
     fontWeight: '700',
-    color: '#fbefd9',
+    color: '#ffffff',
     textAlign: 'center',
-    marginBottom: 12,
+    marginBottom: 20,
     paddingHorizontal: 8,
+    lineHeight: 28,
   },
   menuPrimary: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 14,
-    backgroundColor: '#c9841e',
-    borderRadius: 12,
+    paddingVertical: 16,
+    backgroundColor: '#ffffff',
+    borderRadius: 14,
     gap: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
   },
   menuPrimaryText: {
     color: '#1a0d08',
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '800',
+    letterSpacing: 0.2,
   },
   menuDivider: {
     height: 1,
-    backgroundColor: 'rgba(251,239,217,0.08)',
-    marginVertical: 12,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    marginVertical: 16,
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 14,
-    paddingHorizontal: 8,
-    gap: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 12,
+    gap: 14,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.08)',
   },
   menuIconContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: 'rgba(251, 239, 217, 0.08)',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   menuIconAccent: {
-    backgroundColor: 'rgba(201, 132, 30, 0.18)'
+    backgroundColor: 'rgba(255, 255, 255, 0.25)'
   },
   menuItemText: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '700',
-    color: '#fbefd9',
+    color: '#ffffff',
     flex: 1,
+    letterSpacing: 0.1,
   },
   menuItemMeta: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#c9841e',
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#ffffff',
+    opacity: 0.9,
   },
   menuSpacer: {
-    height: 8,
+    height: 12,
   },
   menuCancel: {
     alignSelf: 'stretch',
-    paddingVertical: 12,
-    borderRadius: 10,
-    backgroundColor: 'rgba(251,239,217,0.06)',
+    paddingVertical: 16,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.12)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   menuCancelText: {
-    color: '#fbefd9',
-    fontSize: 16,
-    fontWeight: '700',
+    color: '#ffffff',
+    fontSize: 17,
+    fontWeight: '800',
+    letterSpacing: 0.2,
   },
   emptyText: {
     textAlign: 'center',
