@@ -16,6 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { MoreVertical, Play, Download, MessageCircle, Edit3 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import SwipeUpModal from '@/components/SwipeUpModal';
+import PlayerModal from '@/components/PlayerModal';
 
 interface HypnosisSession {
   id: string;
@@ -218,6 +219,8 @@ export default function HomeScreen() {
   const [menuModalVisible, setMenuModalVisible] = useState<boolean>(false);
   const [menuSession, setMenuSession] = useState<HypnosisSession | null>(null);
   const [menuViewMode, setMenuViewMode] = useState<ViewMode>('carousel');
+  const [playerModalVisible, setPlayerModalVisible] = useState<boolean>(false);
+  const [playerSession, setPlayerSession] = useState<HypnosisSession | null>(null);
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
 
   const fadeAnim = useRef(new Animated.Value(1)).current;
@@ -409,13 +412,32 @@ export default function HomeScreen() {
     }
     console.log(`Action: ${action} for session:`, menuSession?.title);
     setMenuModalVisible(false);
+    
+    if (action === 'play' && menuSession) {
+      setPlayerSession(menuSession);
+      setPlayerModalVisible(true);
+    }
   }, [menuSession]);
+
+  const handleListItemPress = useCallback(async (session: HypnosisSession) => {
+    if (Platform.OS !== 'web') {
+      try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy); } catch {}
+    }
+    
+    if (viewMode === 'previous') {
+      setPlayerSession(session);
+      setPlayerModalVisible(true);
+    } else {
+      setSelectedSession(session);
+      handleOpen();
+    }
+  }, [viewMode, handleOpen]);
 
   const renderListItem = useCallback(
     ({ item }: ListRenderItemInfo<HypnosisSession>) => (
-      <ListItem item={item} onPress={handleCardPress} onMenuPress={(session) => handleMenuPress(session, viewMode)} viewMode={viewMode} />
+      <ListItem item={item} onPress={handleListItemPress} onMenuPress={(session) => handleMenuPress(session, viewMode)} viewMode={viewMode} />
     ),
-    [handleCardPress, handleMenuPress, viewMode]
+    [handleListItemPress, handleMenuPress, viewMode]
   );
 
   const onListScroll = useCallback((e: { nativeEvent: { contentOffset: { y: number } } }) => {
@@ -675,6 +697,14 @@ export default function HomeScreen() {
           </View>
         </View>
       )}
+
+      <PlayerModal
+        visible={playerModalVisible}
+        onClose={() => setPlayerModalVisible(false)}
+        mode="audio"
+        title={playerSession?.title}
+        mediaUri="https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Netflix/Mental%20Login%20Background.mp4"
+      />
     </View>
   );
 }
