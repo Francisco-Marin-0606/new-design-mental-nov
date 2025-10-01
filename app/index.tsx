@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback, useRef, useMemo } from 'react';
 import {
   StyleSheet,
@@ -52,8 +53,6 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
     extrapolate: 'clamp',
   });
 
-
-
   const pressScale = useRef(new Animated.Value(1)).current;
   const combinedScale = Animated.multiply(scale, pressScale);
 
@@ -101,10 +100,8 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
           pressed && { opacity: 0.2 }
         ]}
       >
-        {/*
-          Sombra y contenedor exterior (mantiene sombras sin recortar)
-          y contenedor interior con overflow:hidden para recortar el BlurView
-        */}
+        {/* Sombra y contenedor exterior (mantiene sombras sin recortar) */}
+        {/* y contenedor interior con overflow:hidden para recortar la imagen */}
         <View style={styles.cardShadow}>
           <View style={styles.cardInner}>
             <Image source={{ uri: item.imageUri }} style={styles.cardImage} resizeMode="cover" />
@@ -146,7 +143,7 @@ export default function HomeScreen() {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [selectedSession, setSelectedSession] = useState<HypnosisSession | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('carousel');
-  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
+  const { width: screenWidth } = useWindowDimensions();
 
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const slideAnim = useRef(new Animated.Value(0)).current;
@@ -161,15 +158,15 @@ export default function HomeScreen() {
   const currentIndexRef = useRef<number>(0);
   const lastHapticIndexRef = useRef<number>(0);
 
+  // Guardamos offsets de cada vista
   const carouselScrollOffsetRef = useRef<number>(0);
   const listScrollOffsetRef = useRef<number>(0);
   const previousScrollOffsetRef = useRef<number>(0);
 
+  // Refs de listas
   const carouselFlatListRef = useRef<FlatList<HypnosisSession>>(null);
   const listFlatListRef = useRef<FlatList<HypnosisSession>>(null);
   const previousFlatListRef = useRef<FlatList<HypnosisSession>>(null);
-
-  const isFirstLoadRef = useRef<boolean>(true);
 
   const handleOpen = useCallback(async () => {
     if (Platform.OS !== 'web') {
@@ -191,7 +188,6 @@ export default function HomeScreen() {
       const x = e?.nativeEvent?.contentOffset?.x ?? 0;
       carouselScrollOffsetRef.current = x;
       const currentIndex = Math.round(x / snapInterval);
-      
       if (currentIndex !== lastHapticIndexRef.current) {
         lastHapticIndexRef.current = currentIndex;
         if (Platform.OS !== 'web') {
@@ -257,8 +253,6 @@ export default function HomeScreen() {
       }),
     ]).start(() => {
       setViewMode(mode);
-      isFirstLoadRef.current = false;
-      slideAnim.setValue(50);
       Animated.parallel([
         Animated.timing(fadeAnim, {
           toValue: 1,
@@ -270,30 +264,7 @@ export default function HomeScreen() {
           duration: 200,
           useNativeDriver: true,
         }),
-      ]).start(() => {
-        if (mode === 'carousel' && carouselScrollOffsetRef.current > 0) {
-          setTimeout(() => {
-            carouselFlatListRef.current?.scrollToOffset({
-              offset: carouselScrollOffsetRef.current,
-              animated: false,
-            });
-          }, 50);
-        } else if (mode === 'list' && listScrollOffsetRef.current > 0) {
-          setTimeout(() => {
-            listFlatListRef.current?.scrollToOffset({
-              offset: listScrollOffsetRef.current,
-              animated: false,
-            });
-          }, 50);
-        } else if (mode === 'previous' && previousScrollOffsetRef.current > 0) {
-          setTimeout(() => {
-            previousFlatListRef.current?.scrollToOffset({
-              offset: previousScrollOffsetRef.current,
-              animated: false,
-            });
-          }, 50);
-        }
-      });
+      ]).start();
     });
   }, [fadeAnim, slideAnim]);
 
@@ -382,8 +353,18 @@ export default function HomeScreen() {
             </View>
           )}
 
-          {viewMode === 'carousel' ? (
-            <Animated.View style={[styles.carouselContainer, { opacity: fadeAnim, transform: [{ translateX: slideAnim }] }]}>
+          {/* --- Siempre montadas: tres capas apiladas --- */}
+          <View style={{ flex: 1, position: 'relative' }}>
+            {/* CAROUSEL */}
+            <Animated.View
+              style={[
+                styles.carouselContainer,
+                styles.layerAbsolute,
+                viewMode === 'carousel' ? styles.layerVisible : styles.layerHidden,
+                viewMode === 'carousel' && { opacity: fadeAnim, transform: [{ translateX: slideAnim }] },
+              ]}
+              pointerEvents={viewMode === 'carousel' ? 'auto' : 'none'}
+            >
               <Animated.FlatList
                 ref={carouselFlatListRef}
                 data={HYPNOSIS_SESSIONS}
@@ -399,7 +380,6 @@ export default function HomeScreen() {
                 snapToAlignment="start"
                 onMomentumScrollEnd={onMomentumScrollEnd}
                 testID="hypnosis-carousel"
-                initialScrollIndex={isFirstLoadRef.current ? 0 : undefined}
                 getItemLayout={(data: ArrayLike<HypnosisSession> | null | undefined, index: number) => ({
                   length: snapInterval,
                   offset: index * snapInterval,
@@ -411,10 +391,20 @@ export default function HomeScreen() {
                   { useNativeDriver: false, listener: onScroll }
                 )}
                 scrollEventThrottle={16}
+                removeClippedSubviews={false}
               />
             </Animated.View>
-          ) : viewMode === 'list' ? (
-            <Animated.View style={[styles.listContainer, { opacity: fadeAnim, transform: [{ translateX: slideAnim }] }]}>
+
+            {/* LIST */}
+            <Animated.View
+              style={[
+                styles.listContainer,
+                styles.layerAbsolute,
+                viewMode === 'list' ? styles.layerVisible : styles.layerHidden,
+                viewMode === 'list' && { opacity: fadeAnim, transform: [{ translateX: slideAnim }] },
+              ]}
+              pointerEvents={viewMode === 'list' ? 'auto' : 'none'}
+            >
               <FlatList
                 ref={listFlatListRef}
                 data={HYPNOSIS_SESSIONS}
@@ -425,10 +415,20 @@ export default function HomeScreen() {
                 testID="hypnosis-list"
                 onScroll={onListScroll}
                 scrollEventThrottle={16}
+                removeClippedSubviews={false}
               />
             </Animated.View>
-          ) : (
-            <Animated.View style={[styles.listContainer, { opacity: fadeAnim, transform: [{ translateX: slideAnim }] }]}>
+
+            {/* PREVIOUS */}
+            <Animated.View
+              style={[
+                styles.listContainer,
+                styles.layerAbsolute,
+                viewMode === 'previous' ? styles.layerVisible : styles.layerHidden,
+                viewMode === 'previous' && { opacity: fadeAnim, transform: [{ translateX: slideAnim }] },
+              ]}
+              pointerEvents={viewMode === 'previous' ? 'auto' : 'none'}
+            >
               <FlatList
                 ref={previousFlatListRef}
                 data={HYPNOSIS_SESSIONS.slice(Math.floor(HYPNOSIS_SESSIONS.length / 2))}
@@ -440,9 +440,10 @@ export default function HomeScreen() {
                 ListEmptyComponent={<Text style={styles.emptyText}>Sin anteriores</Text>}
                 onScroll={onPreviousScroll}
                 scrollEventThrottle={16}
+                removeClippedSubviews={false}
               />
             </Animated.View>
-          )}
+          </View>
         </View>
 
         <View style={styles.bottomSection}>
@@ -602,8 +603,6 @@ const styles = StyleSheet.create({
 
   cardImage: { width: '100%', height: '100%' },
 
-
-
   cardTitle: {
     marginTop: 20,
     fontSize: 26,
@@ -690,5 +689,20 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: 'rgba(251, 239, 217, 0.6)',
     marginTop: 24,
+  },
+
+  // Capas apiladas para no desmontar listas
+  layerAbsolute: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  layerHidden: {
+    opacity: 0,
+  },
+  layerVisible: {
+    opacity: 1,
   },
 });
