@@ -1380,6 +1380,10 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   footerNav: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
     paddingHorizontal: 44,
     paddingBottom: 20,
     paddingTop: 10,
