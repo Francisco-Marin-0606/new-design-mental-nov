@@ -394,7 +394,7 @@ export default function HomeScreen() {
           {viewMode === 'carousel' ? (
             <Animated.View style={[styles.carouselContainer, { opacity: fadeAnim, transform: [{ translateX: slideAnim }] }]}>
               {!isCarouselReady && (
-                <View style={[styles.skeletonContainer, { paddingLeft: sidePadding, paddingRight: sidePadding }]}>
+                <View style={styles.skeletonContainer}>
                   <View style={styles.skeletonCarouselWrapper}>
                     <View style={[styles.skeletonCard, styles.skeletonCardSide, { width: cardWidth * 0.9 }]} />
                     <View style={[styles.skeletonCard, styles.skeletonCardCenter, { width: cardWidth }]}>
@@ -721,14 +721,13 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     justifyContent: 'center',
-    alignItems: 'center',
+    paddingTop: 48,
   },
   skeletonCarouselWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 20,
-    paddingHorizontal: 0,
   },
   skeletonCard: {
     alignItems: 'flex-start',
