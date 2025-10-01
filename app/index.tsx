@@ -203,18 +203,17 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
         <View style={styles.cardShadow}>
           <View style={styles.cardInner}>
             <Image source={{ uri: item.imageUri }} style={styles.cardImage} resizeMode="cover" />
+            {index === 0 && (
+              <View style={styles.badge} testID="listen-badge">
+                <Text style={styles.badgeText}>NUEVA</Text>
+              </View>
+            )}
           </View>
         </View>
 
         <Text style={[styles.cardTitle, { width: cardWidth }]} numberOfLines={3}>
           {item.title}
         </Text>
-
-        {index === 0 && (
-          <View style={styles.badge} testID="listen-badge">
-            <Text style={styles.badgeText}>NUEVA</Text>
-          </View>
-        )}
       </Pressable>
     </Animated.View>
   );
@@ -1121,12 +1120,14 @@ const styles = StyleSheet.create({
   },
 
   badge: {
-    marginTop: 15,
-    alignSelf: 'flex-start',
+    position: 'absolute',
+    top: -17.5,
+    left: 16,
     backgroundColor: '#c9841e',
     paddingHorizontal: 14,
     paddingVertical: 7,
     borderRadius: 999,
+    zIndex: 10,
   },
   badgeText: {
     fontSize: 17,
