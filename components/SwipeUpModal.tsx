@@ -418,7 +418,7 @@ export default function SwipeUpModal({ visible, onClose, imageUri, title }: Swip
                         isDownloading && styles.downloadBtnLoading,
                         isDownloaded && styles.downloadBtnCompleted
                       ]}
-                      activeOpacity={isDownloading || isDownloaded ? 1 : 0.1}
+                      activeOpacity={isDownloading || isDownloaded ? 1 : 0.2}
                       onPress={startDownload}
                       testID="download-button"
                       accessibilityRole="button"
@@ -456,7 +456,7 @@ export default function SwipeUpModal({ visible, onClose, imageUri, title }: Swip
 
                   <TouchableOpacity
                     style={styles.explainBtnWide}
-                    activeOpacity={0.1}
+                    activeOpacity={0.2}
                     onPress={async () => {
                       // Add haptic feedback
                       if (Platform.OS !== 'web') {
