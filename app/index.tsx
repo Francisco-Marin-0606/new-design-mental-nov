@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
+import { MoreVertical, Play, Download, MessageCircle, Edit3 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import SwipeUpModal from '@/components/SwipeUpModal';
 
@@ -36,9 +36,10 @@ interface CarouselItemProps {
 interface ListItemProps {
   item: HypnosisSession;
   onPress: (session: HypnosisSession) => void;
+  onMenuPress: (session: HypnosisSession) => void;
 }
 
-function ListItem({ item, onPress }: ListItemProps) {
+function ListItem({ item, onPress, onMenuPress }: ListItemProps) {
   const pressScale = useRef(new Animated.Value(1)).current;
 
   const handlePressIn = useCallback(() => {
@@ -63,6 +64,14 @@ function ListItem({ item, onPress }: ListItemProps) {
     onPress(item);
   }, [item, onPress]);
 
+  const handleMenuPress = useCallback(async (e: any) => {
+    e.stopPropagation();
+    if (Platform.OS !== 'web') {
+      try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
+    }
+    onMenuPress(item);
+  }, [item, onMenuPress]);
+
   return (
     <Animated.View style={{ transform: [{ scale: pressScale }] }}>
       <Pressable
@@ -78,6 +87,13 @@ function ListItem({ item, onPress }: ListItemProps) {
             <View style={[styles.listItemContent, pressed && { opacity: 0.2 }]}>
               <Text style={styles.listItemTitle} numberOfLines={2}>{item.title}</Text>
             </View>
+            <Pressable
+              style={styles.menuButton}
+              onPress={handleMenuPress}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <MoreVertical color="#fbefd9" size={20} />
+            </Pressable>
           </>
         )}
       </Pressable>
@@ -198,6 +214,8 @@ export default function HomeScreen() {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [selectedSession, setSelectedSession] = useState<HypnosisSession | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('carousel');
+  const [menuModalVisible, setMenuModalVisible] = useState<boolean>(false);
+  const [menuSession, setMenuSession] = useState<HypnosisSession | null>(null);
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
 
   const fadeAnim = useRef(new Animated.Value(1)).current;
@@ -373,11 +391,28 @@ export default function HomeScreen() {
     });
   }, [fadeAnim, slideAnim, toggleIndicatorAnim]);
 
+  const handleMenuPress = useCallback((session: HypnosisSession) => {
+    setMenuSession(session);
+    setMenuModalVisible(true);
+  }, []);
+
+  const handleMenuClose = useCallback(() => {
+    setMenuModalVisible(false);
+  }, []);
+
+  const handleMenuAction = useCallback(async (action: string) => {
+    if (Platform.OS !== 'web') {
+      try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy); } catch {}
+    }
+    console.log(`Action: ${action} for session:`, menuSession?.title);
+    setMenuModalVisible(false);
+  }, [menuSession]);
+
   const renderListItem = useCallback(
     ({ item }: ListRenderItemInfo<HypnosisSession>) => (
-      <ListItem item={item} onPress={handleCardPress} />
+      <ListItem item={item} onPress={handleCardPress} onMenuPress={handleMenuPress} />
     ),
-    [handleCardPress]
+    [handleCardPress, handleMenuPress]
   );
 
   const onListScroll = useCallback((e: { nativeEvent: { contentOffset: { y: number } } }) => {
@@ -580,6 +615,59 @@ export default function HomeScreen() {
         imageUri={selectedSession?.imageUri ?? ''}
         title={selectedSession?.title ?? ''}
       />
+
+      {menuModalVisible && (
+        <View style={styles.menuOverlay}>
+          <Pressable style={styles.menuBackdrop} onPress={handleMenuClose} />
+          <View style={styles.menuContainer}>
+            <Text style={styles.menuTitle}>{menuSession?.title}</Text>
+            
+            <Pressable
+              style={styles.menuItem}
+              onPress={() => handleMenuAction('play')}
+              android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.08)' } : undefined}
+            >
+              <View style={styles.menuIconContainer}>
+                <Play color="#fbefd9" size={20} fill="#fbefd9" />
+              </View>
+              <Text style={styles.menuItemText}>Reproducir</Text>
+            </Pressable>
+
+            <Pressable
+              style={styles.menuItem}
+              onPress={() => handleMenuAction('download')}
+              android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.08)' } : undefined}
+            >
+              <View style={styles.menuIconContainer}>
+                <Download color="#fbefd9" size={20} />
+              </View>
+              <Text style={styles.menuItemText}>Descargar</Text>
+            </Pressable>
+
+            <Pressable
+              style={styles.menuItem}
+              onPress={() => handleMenuAction('qa')}
+              android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.08)' } : undefined}
+            >
+              <View style={styles.menuIconContainer}>
+                <MessageCircle color="#fbefd9" size={20} />
+              </View>
+              <Text style={styles.menuItemText}>Preguntas y respuestas</Text>
+            </Pressable>
+
+            <Pressable
+              style={styles.menuItem}
+              onPress={() => handleMenuAction('rename')}
+              android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.08)' } : undefined}
+            >
+              <View style={styles.menuIconContainer}>
+                <Edit3 color="#fbefd9" size={20} />
+              </View>
+              <Text style={styles.menuItemText}>Cambiar nombre</Text>
+            </Pressable>
+          </View>
+        </View>
+      )}
     </View>
   );
 }
@@ -809,7 +897,70 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#fbefd9',
     lineHeight: 24,
-    paddingRight: 20,
+    paddingRight: 40,
+  },
+  menuButton: {
+    position: 'absolute',
+    right: 12,
+    top: '50%',
+    transform: [{ translateY: -10 }],
+    padding: 4,
+  },
+  menuOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 2000,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  menuBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+  },
+  menuContainer: {
+    backgroundColor: '#2a1410',
+    borderRadius: 16,
+    width: '85%',
+    maxWidth: 400,
+    paddingVertical: 20,
+    paddingHorizontal: 0,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.5,
+    shadowRadius: 20,
+    elevation: 20,
+  },
+  menuTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#fbefd9',
+    textAlign: 'center',
+    marginBottom: 20,
+    paddingHorizontal: 20,
+  },
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    gap: 16,
+  },
+  menuIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(251, 239, 217, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  menuItemText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#fbefd9',
+    flex: 1,
   },
   emptyText: {
     textAlign: 'center',
