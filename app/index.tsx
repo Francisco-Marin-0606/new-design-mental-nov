@@ -260,27 +260,6 @@ export default function HomeScreen() {
           <View style={styles.headerRow} testID="header-row">
             <Text style={styles.headerTitle}>Mis hipnosis</Text>
             <View style={styles.headerRight}>
-              {showToggle && (
-                <Pressable
-                  style={styles.toggleButton}
-                  onPress={toggleViewMode}
-                  android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.08)', borderless: true } : undefined}
-                  testID="view-toggle-button"
-                >
-                  <View style={styles.toggleContainer}>
-                    <View style={[styles.toggleOption, viewMode === 'carousel' && styles.toggleOptionActive]}>
-                      <View style={[styles.toggleIconCarousel, viewMode === 'carousel' && styles.toggleIconActive]} />
-                    </View>
-                    <View style={[styles.toggleOption, viewMode === 'list' && styles.toggleOptionActive]}>
-                      <View style={styles.toggleIconList}>
-                        <View style={[styles.toggleIconListLine, viewMode === 'list' && styles.toggleIconActive]} />
-                        <View style={[styles.toggleIconListLine, viewMode === 'list' && styles.toggleIconActive]} />
-                        <View style={[styles.toggleIconListLine, viewMode === 'list' && styles.toggleIconActive]} />
-                      </View>
-                    </View>
-                  </View>
-                </Pressable>
-              )}
               <Image
                 source={{ uri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/TuercaConfig.png' }}
                 style={styles.headerIcon}
@@ -290,6 +269,30 @@ export default function HomeScreen() {
               />
             </View>
           </View>
+
+          {showToggle && (
+            <View style={styles.toggleRow}>
+              <Pressable
+                style={styles.toggleButton}
+                onPress={toggleViewMode}
+                android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.08)', borderless: true } : undefined}
+                testID="view-toggle-button"
+              >
+                <View style={styles.toggleContainer}>
+                  <View style={[styles.toggleOption, viewMode === 'carousel' && styles.toggleOptionActive]}>
+                    <View style={[styles.toggleIconCarousel, viewMode === 'carousel' && styles.toggleIconActive]} />
+                  </View>
+                  <View style={[styles.toggleOption, viewMode === 'list' && styles.toggleOptionActive]}>
+                    <View style={styles.toggleIconList}>
+                      <View style={[styles.toggleIconListLine, viewMode === 'list' && styles.toggleIconActive]} />
+                      <View style={[styles.toggleIconListLine, viewMode === 'list' && styles.toggleIconActive]} />
+                      <View style={[styles.toggleIconListLine, viewMode === 'list' && styles.toggleIconActive]} />
+                    </View>
+                  </View>
+                </View>
+              </Pressable>
+            </View>
+          )}
 
           {viewMode === 'carousel' ? (
             <View style={styles.carouselContainer}>
@@ -366,6 +369,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingLeft: 54,
     paddingRight: 54,
+    marginBottom: 16,
   },
   headerTitle: {
     fontSize: 32.4,
@@ -375,11 +379,17 @@ const styles = StyleSheet.create({
   headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
   },
   headerIcon: {
     width: 28,
     height: 28,
+  },
+  toggleRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    paddingLeft: 54,
+    paddingRight: 54,
+    marginBottom: 8,
   },
   toggleButton: {
     padding: 4,
