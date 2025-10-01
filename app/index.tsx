@@ -240,13 +240,13 @@ export default function HomeScreen() {
         useNativeDriver: true,
       }),
       Animated.timing(slideAnim, {
-        toValue: -20,
+        toValue: -50,
         duration: 150,
         useNativeDriver: true,
       }),
     ]).start(() => {
       setViewMode(mode);
-      slideAnim.setValue(20);
+      slideAnim.setValue(50);
       Animated.parallel([
         Animated.timing(fadeAnim, {
           toValue: 1,
@@ -340,7 +340,7 @@ export default function HomeScreen() {
           )}
 
           {viewMode === 'carousel' ? (
-            <Animated.View style={[styles.carouselContainer, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
+            <Animated.View style={[styles.carouselContainer, { opacity: fadeAnim, transform: [{ translateX: slideAnim }] }]}>
               <Animated.FlatList
                 data={HYPNOSIS_SESSIONS}
                 keyExtractor={keyExtractor}
@@ -370,7 +370,7 @@ export default function HomeScreen() {
               />
             </Animated.View>
           ) : viewMode === 'list' ? (
-            <Animated.View style={[styles.listContainer, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
+            <Animated.View style={[styles.listContainer, { opacity: fadeAnim, transform: [{ translateX: slideAnim }] }]}>
               <FlatList
                 data={HYPNOSIS_SESSIONS}
                 keyExtractor={keyExtractor}
@@ -381,7 +381,7 @@ export default function HomeScreen() {
               />
             </Animated.View>
           ) : (
-            <Animated.View style={[styles.listContainer, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
+            <Animated.View style={[styles.listContainer, { opacity: fadeAnim, transform: [{ translateX: slideAnim }] }]}>
               <FlatList
                 data={HYPNOSIS_SESSIONS.slice(Math.floor(HYPNOSIS_SESSIONS.length / 2))}
                 keyExtractor={keyExtractor}
