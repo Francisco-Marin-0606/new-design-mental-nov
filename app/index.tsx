@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { MoreVertical, Play, Download, MessageCircle, Edit3, Settings } from 'lucide-react-native';
+import { MoreVertical, Play, Download, MessageCircle, Edit3, Settings, Check } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import Svg, { Defs, LinearGradient as SvgLinearGradient, Stop, Rect } from 'react-native-svg';
 import SwipeUpModal from '@/components/SwipeUpModal';
@@ -892,14 +892,17 @@ export default function HomeScreen() {
                   />
                 )}
                 <View style={[styles.menuIconContainer, styles.menuIconAccent]}>
-                  <Download color="#ffffff" size={20} />
+                  {menuDownload?.state === 'completed' ? (
+                    <Check color="#ffffff" size={20} />
+                  ) : (
+                    <Download color="#ffffff" size={20} />
+                  )}
                 </View>
-                <Text style={styles.menuItemText}>Descargar</Text>
+                <Text style={styles.menuItemText}>
+                  {menuDownload?.state === 'completed' ? 'Descargada' : 'Descargar'}
+                </Text>
                 {menuDownload?.state === 'downloading' && (
                   <Text style={styles.menuItemMeta}>{Math.max(0, Math.min(100, Math.round(menuDownload.progress)))}%</Text>
-                )}
-                {menuDownload?.state === 'completed' && (
-                  <Text style={styles.menuItemMeta}>Lista</Text>
                 )}
               </Pressable>
 
