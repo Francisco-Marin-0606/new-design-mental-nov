@@ -117,7 +117,7 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
 
         {index === 0 && (
           <View style={styles.badge} testID="listen-badge">
-            <Text style={styles.badgeText}>ESCUCHAR</Text>
+            <Text style={styles.badgeText}>NUEVA</Text>
           </View>
         )}
       </Pressable>
