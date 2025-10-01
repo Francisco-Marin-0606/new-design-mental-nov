@@ -50,7 +50,7 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
 }
 
 const BACKGROUND_URI =
-  'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/Mental%20Login%20Background%20V3.mp4';
+  'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/Mental%20Login%20Background_1.mp4';
 
 // Speed zones configuration - exactly 2 levels
 const SPEED_ZONES = {
