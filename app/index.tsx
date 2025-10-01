@@ -379,7 +379,7 @@ export default function HomeScreen() {
 
   const handleNavSectionChange = useCallback(async (section: NavSection) => {
     if (Platform.OS !== 'web') {
-      try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); } catch {}
+      try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy); } catch {}
     }
 
     const targetPosition = section === 'hipnosis' ? 0 : 1;
@@ -824,7 +824,11 @@ export default function HomeScreen() {
                 setNavButtonLayouts(prev => ({ ...prev, hipnosis: { x, width } }));
               }}
             >
-              <Text style={[styles.navToggleText, navSection === 'hipnosis' && styles.navToggleTextActive]}>Hipnosis</Text>
+              <Image
+                source={{ uri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/FooterHipnosis.png' }}
+                style={styles.navIconImage}
+                resizeMode="contain"
+              />
             </Pressable>
             <Pressable
               style={styles.navToggleOption}
@@ -837,7 +841,11 @@ export default function HomeScreen() {
                 setNavButtonLayouts(prev => ({ ...prev, aura: { x, width } }));
               }}
             >
-              <Text style={[styles.navToggleText, navSection === 'aura' && styles.navToggleTextActive]}>Aura</Text>
+              <Image
+                source={{ uri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/icono_aura.png' }}
+                style={styles.navIconImage}
+                resizeMode="contain"
+              />
             </Pressable>
           </View>
         </View>
@@ -1440,6 +1448,10 @@ const styles = StyleSheet.create({
   },
   navToggleTextActive: {
     color: '#fbefd9',
+  },
+  navIconImage: {
+    width: 28,
+    height: 28,
   },
   skeletonContainer: {
     position: 'absolute',
