@@ -285,8 +285,7 @@ export default function HomeScreen() {
                 <View style={styles.toggleContainer}>
                   <View style={[styles.toggleOption, viewMode === 'carousel' && styles.toggleOptionActive]} testID="toggle-carousel">
                     <View style={styles.toggleIconCarouselVertical}>
-                      <View style={[styles.toggleIconBar, viewMode === 'carousel' && styles.toggleIconActiveBg]} />
-                      <View style={[styles.toggleIconBar, viewMode === 'carousel' && styles.toggleIconActiveBg]} />
+                      <View style={[styles.toggleIconBarSingle, viewMode === 'carousel' && styles.toggleIconActiveBg]} />
                     </View>
                   </View>
                   <View style={[styles.toggleOption, viewMode === 'list' && styles.toggleOptionActive]} testID="toggle-list">
@@ -296,8 +295,8 @@ export default function HomeScreen() {
                       <View style={[styles.toggleIconListLine, viewMode === 'list' && styles.toggleIconActiveBg]} />
                     </View>
                   </View>
-                  <View style={[styles.toggleOption, viewMode === 'previous' && styles.toggleOptionActive]} testID="toggle-previous">
-                    <Text style={[styles.toggleText, viewMode === 'previous' && styles.toggleTextActive]}>Anteriores</Text>
+                  <View style={[styles.toggleOption, styles.toggleOptionText, viewMode === 'previous' && styles.toggleOptionActive]} testID="toggle-previous">
+                    <Text numberOfLines={1} style={[styles.toggleText, viewMode === 'previous' && styles.toggleTextActive]}>Anteriores</Text>
                   </View>
                 </View>
               </Pressable>
@@ -420,30 +419,40 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: 'rgba(251, 239, 217, 0.15)',
     borderRadius: 8,
-    padding: 4,
-    gap: 4,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    gap: 6,
+    alignItems: 'center',
   },
   toggleOption: {
-    width: 32,
+    minWidth: 32,
     height: 32,
     borderRadius: 6,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'transparent',
   },
+  toggleOptionText: {
+    paddingHorizontal: 10,
+  },
   toggleOptionActive: {
     backgroundColor: '#c9841e',
   },
   toggleIconCarouselVertical: {
-    width: 16,
-    height: 16,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    width: 10,
+    height: 20,
+    justifyContent: 'center',
     alignItems: 'center',
   },
   toggleIconBar: {
     width: 5,
     height: 14,
+    backgroundColor: 'rgba(251, 239, 217, 0.6)',
+    borderRadius: 2,
+  },
+  toggleIconBarSingle: {
+    width: 10,
+    height: 20,
     backgroundColor: 'rgba(251, 239, 217, 0.6)',
     borderRadius: 2,
   },
