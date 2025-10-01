@@ -454,57 +454,30 @@ export default function SwipeUpModal({ visible, onClose, imageUri, title }: Swip
                     </TouchableOpacity>
                   </View>
 
-                  <View style={styles.secondaryActionsRow}>
-                    <TouchableOpacity
-                      style={styles.secondaryBtn}
-                      activeOpacity={0.1}
-                      onPress={async () => {
-                        // Add haptic feedback
-                        if (Platform.OS !== 'web') {
-                          try {
-                            await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-                          } catch (error) {
-                            console.log('Haptic feedback error:', error);
-                          }
+                  <TouchableOpacity
+                    style={styles.explainBtnWide}
+                    activeOpacity={0.1}
+                    onPress={async () => {
+                      // Add haptic feedback
+                      if (Platform.OS !== 'web') {
+                        try {
+                          await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+                        } catch (error) {
+                          console.log('Haptic feedback error:', error);
                         }
-                        console.log('Preguntas y respuestas pressed');
-                      }}
-                      testID="qa-button"
-                      accessibilityRole="button"
-                      accessibilityLabel="Preguntas y respuestas"
-                    >
-                      <Image
-                        source={{ uri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Netflix/Explicacion.png' }}
-                        style={styles.icon}
-                      />
-                      <Text style={styles.secondaryBtnText}>Preguntas y respuestas</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                      style={styles.secondaryBtn}
-                      activeOpacity={0.1}
-                      onPress={async () => {
-                        // Add haptic feedback
-                        if (Platform.OS !== 'web') {
-                          try {
-                            await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-                          } catch (error) {
-                            console.log('Haptic feedback error:', error);
-                          }
-                        }
-                        console.log('Cambiar nombre pressed');
-                      }}
-                      testID="rename-button"
-                      accessibilityRole="button"
-                      accessibilityLabel="Cambiar nombre"
-                    >
-                      <Image
-                        source={{ uri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Netflix/Explicacion.png' }}
-                        style={styles.icon}
-                      />
-                      <Text style={styles.secondaryBtnText}>Cambiar nombre</Text>
-                    </TouchableOpacity>
-                  </View>
+                      }
+                      console.log('Explicación pressed');
+                    }}
+                    testID="explain-button"
+                    accessibilityRole="button"
+                    accessibilityLabel="Ver explicación"
+                  >
+                    <Image
+                      source={{ uri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Netflix/Explicacion.png' }}
+                      style={styles.icon}
+                    />
+                    <Text style={styles.explainText}>Ver explicación</Text>
+                  </TouchableOpacity>
                 </View>
               </View>
             </View>
@@ -649,17 +622,15 @@ const styles = StyleSheet.create({
   infoRow: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center' },
   infoTextCenter: { color: '#FFFFFF', fontSize: 16, fontWeight: '700', textAlign: 'center', alignSelf: 'center', width: '100%' },
   actionsRow: { flexDirection: 'row', gap: 12 },
-  secondaryActionsRow: { flexDirection: 'row', gap: 16 },
-  secondaryBtn: {
-    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255, 255, 255, 0.2)', paddingVertical: 10, borderRadius: 10, gap: 8,
+  explainBtnWide: {
+    width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#b36017', paddingVertical: 10, borderRadius: 10, gap: 8,
     shadowColor: '#000000', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.1, shadowRadius: 8, elevation: 8,
   },
-  secondaryBtnText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
   downloadBtnSmall: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255, 255, 255, 0.2)', paddingVertical: 10, borderRadius: 10, gap: 8,
     shadowColor: '#000000', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.1, shadowRadius: 8, elevation: 8, position: 'relative', overflow: 'hidden',
   },
-
+  explainText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
   playBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF', paddingVertical: 10, borderRadius: 10, gap: 8,
     shadowColor: '#000000', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.1, shadowRadius: 8, elevation: 8,
