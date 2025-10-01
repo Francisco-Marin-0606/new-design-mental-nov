@@ -203,12 +203,12 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
         <View style={styles.cardShadow}>
           <View style={styles.cardInner}>
             <Image source={{ uri: item.imageUri }} style={styles.cardImage} resizeMode="cover" />
-            {index === 0 && (
-              <View style={styles.badge} testID="listen-badge">
-                <Text style={styles.badgeText}>NUEVA</Text>
-              </View>
-            )}
           </View>
+          {index === 0 && (
+            <View style={styles.badge} testID="listen-badge">
+              <Text style={styles.badgeText}>NUEVA</Text>
+            </View>
+          )}
         </View>
 
         <Text style={[styles.cardTitle, { width: cardWidth }]} numberOfLines={3}>
@@ -1092,6 +1092,7 @@ const styles = StyleSheet.create({
     shadowRadius: 18,
     elevation: 18,
     backgroundColor: 'transparent',
+    position: 'relative',
   },
 
   // Contenedor interior que recorta la imagen + blur
