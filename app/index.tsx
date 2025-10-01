@@ -1387,6 +1387,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 44,
     paddingBottom: 20,
     paddingTop: 10,
+    marginBottom: 45,
   },
   navToggleContainer: {
     flexDirection: 'row',
