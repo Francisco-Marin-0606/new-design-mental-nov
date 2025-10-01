@@ -1381,7 +1381,7 @@ const styles = StyleSheet.create({
   footerNav: {
     paddingHorizontal: 44,
     paddingBottom: 20,
-    paddingTop: 20,
+    paddingTop: 10,
   },
   navToggleContainer: {
     flexDirection: 'row',
