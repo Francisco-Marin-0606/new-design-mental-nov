@@ -524,9 +524,9 @@ export default function HomeScreen() {
                   }}
                 >
                   <View style={styles.toggleIconList}>
-                    <View style={[styles.toggleIconListLine, viewMode === 'list' && styles.toggleIconActiveBg]} />
-                    <View style={[styles.toggleIconListLine, viewMode === 'list' && styles.toggleIconActiveBg]} />
-                    <View style={[styles.toggleIconListLine, viewMode === 'list' && styles.toggleIconActiveBg]} />
+                    <View style={[styles.toggleIconListLine, viewMode === 'list' && styles.toggleIconActiveListLine]} />
+                    <View style={[styles.toggleIconListLine, viewMode === 'list' && styles.toggleIconActiveListLine]} />
+                    <View style={[styles.toggleIconListLine, viewMode === 'list' && styles.toggleIconActiveListLine]} />
                   </View>
                 </Pressable>
                 <Pressable
@@ -793,6 +793,9 @@ const styles = StyleSheet.create({
   },
   toggleIconActiveBg: {
     borderColor: '#fbefd9',
+  },
+  toggleIconActiveListLine: {
+    backgroundColor: '#fbefd9',
   },
   toggleIconList: {
     width: 16,
