@@ -721,7 +721,7 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     justifyContent: 'center',
-    paddingTop: 0,
+    paddingTop: -80,
   },
   skeletonCarouselWrapper: {
     flexDirection: 'row',
