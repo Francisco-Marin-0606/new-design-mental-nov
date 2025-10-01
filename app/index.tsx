@@ -443,8 +443,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#c9841e',
   },
   toggleIconCarouselVertical: {
-    width: 10,
-    height: 20,
+    width: 12,
+    height: 14,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -455,13 +455,15 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
   toggleIconBarSingle: {
-    width: 10,
-    height: 20,
-    backgroundColor: 'rgba(251, 239, 217, 0.6)',
+    width: 12,
+    height: 14,
+    borderWidth: 1.5,
+    borderColor: 'rgba(251, 239, 217, 0.6)',
     borderRadius: 2,
+    backgroundColor: 'transparent',
   },
   toggleIconActiveBg: {
-    backgroundColor: '#fbefd9',
+    borderColor: '#fbefd9',
   },
   toggleIconList: {
     width: 16,
