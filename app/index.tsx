@@ -612,7 +612,7 @@ export default function HomeScreen() {
             <View style={styles.headerRight}>
               <Settings
                 color="#fbefd9"
-                size={24}
+                size={28}
                 strokeWidth={1.5}
                 testID="header-settings-icon"
                 accessibilityLabel="Configuración"
