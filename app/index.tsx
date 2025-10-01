@@ -399,7 +399,7 @@ export default function HomeScreen() {
                 initialScrollIndex={0}
                 getItemLayout={(data: ArrayLike<HypnosisSession> | null | undefined, index: number) => ({
                   length: snapInterval,
-                  offset: sidePadding + index * snapInterval,
+                  offset: index * snapInterval,
                   index,
                 })}
                 contentContainerStyle={{ paddingLeft: sidePadding, paddingRight: sidePadding, paddingTop: 48, paddingBottom: 48 }}
