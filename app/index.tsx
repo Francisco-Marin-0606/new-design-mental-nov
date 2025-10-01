@@ -155,7 +155,6 @@ export default function HomeScreen() {
   const sidePadding = (screenWidth - cardWidth) / 2;
 
   const scrollX = useRef(new Animated.Value(0)).current;
-  const topShift = useMemo(() => Math.round(screenHeight * 0.10), [screenHeight]);
   const currentIndexRef = useRef<number>(0);
   const lastHapticIndexRef = useRef<number>(0);
 
@@ -316,7 +315,7 @@ export default function HomeScreen() {
                   offset: sidePadding + index * snapInterval,
                   index,
                 })}
-                contentContainerStyle={{ paddingLeft: sidePadding, paddingRight: sidePadding, paddingTop: 18 + topShift, paddingBottom: 18 }}
+                contentContainerStyle={{ paddingLeft: sidePadding, paddingRight: sidePadding, paddingTop: 18, paddingBottom: 18 }}
                 onScroll={Animated.event(
                   [{ nativeEvent: { contentOffset: { x: scrollX } } }],
                   { useNativeDriver: false, listener: onScroll }
