@@ -549,8 +549,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingLeft: 54,
-    paddingRight: 54,
+    paddingLeft: 44,
+    paddingRight: 44,
     marginBottom: 16,
   },
   headerTitle: {
@@ -569,8 +569,8 @@ const styles = StyleSheet.create({
   toggleRow: {
     flexDirection: 'row',
     justifyContent: 'flex-start',
-    paddingLeft: 54,
-    paddingRight: 54,
+    paddingLeft: 44,
+    paddingRight: 44,
     marginBottom: 8,
   },
 
