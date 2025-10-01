@@ -822,6 +822,11 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     marginTop: 8,
     marginBottom: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
 
   titleContainer: {
@@ -843,6 +848,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 0,
     lineHeight: 34,
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
   },
   subtitle: {
     fontSize: 18,
@@ -850,6 +858,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontWeight: '400',
     marginTop: 15,
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
   },
   bottomControls: {
     position: 'absolute',
@@ -868,6 +879,11 @@ const styles = StyleSheet.create({
     position: 'relative',
     marginBottom: 8,
     justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.22,
+    shadowRadius: 2.22,
+    elevation: 3,
   },
   timelineTrack: {
     width: '100%',
@@ -889,6 +905,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     borderRadius: 6,
     marginLeft: -6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   timeRow: {
     flexDirection: 'row',
@@ -899,6 +920,9 @@ const styles = StyleSheet.create({
   timeText: {
     fontSize: 12,
     color: 'rgba(255, 255, 255, 0.8)',
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
   },
   navigationControls: {
     flexDirection: 'row',
@@ -913,6 +937,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   playPauseButton: {
     width: 80,
@@ -921,6 +950,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   playPauseIcon: {
     width: 40,
@@ -937,5 +971,8 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     textAlign: 'center',
     marginTop: 4,
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
   },
 });
