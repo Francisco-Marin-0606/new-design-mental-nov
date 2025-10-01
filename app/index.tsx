@@ -140,7 +140,7 @@ const HYPNOSIS_SESSIONS_RAW: HypnosisSession[] = [
 
 const HYPNOSIS_SESSIONS: HypnosisSession[] = [...HYPNOSIS_SESSIONS_RAW].reverse();
 
-type ViewMode = 'carousel' | 'list';
+type ViewMode = 'carousel' | 'list' | 'previous';
 
 export default function HomeScreen() {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
@@ -229,7 +229,11 @@ export default function HomeScreen() {
     if (Platform.OS !== 'web') {
       try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
     }
-    setViewMode(prev => prev === 'carousel' ? 'list' : 'carousel');
+    setViewMode(prev => {
+      if (prev === 'carousel') return 'list';
+      if (prev === 'list') return 'previous';
+      return 'carousel';
+    });
   }, []);
 
   const renderListItem = useCallback(
@@ -270,23 +274,30 @@ export default function HomeScreen() {
           </View>
 
           {showToggle && (
-            <View style={styles.toggleRow}>
+            <View style={styles.toggleRow} testID="toggle-under-title">
               <Pressable
                 style={styles.toggleButton}
                 onPress={toggleViewMode}
                 android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.08)', borderless: true } : undefined}
                 testID="view-toggle-button"
+                accessibilityLabel={viewMode === 'carousel' ? 'Vista carrusel' : viewMode === 'list' ? 'Vista lista' : 'Anteriores'}
               >
                 <View style={styles.toggleContainer}>
-                  <View style={[styles.toggleOption, viewMode === 'carousel' && styles.toggleOptionActive]}>
-                    <View style={[styles.toggleIconCarousel, viewMode === 'carousel' && styles.toggleIconActive]} />
-                  </View>
-                  <View style={[styles.toggleOption, viewMode === 'list' && styles.toggleOptionActive]}>
-                    <View style={styles.toggleIconList}>
-                      <View style={[styles.toggleIconListLine, viewMode === 'list' && styles.toggleIconActive]} />
-                      <View style={[styles.toggleIconListLine, viewMode === 'list' && styles.toggleIconActive]} />
-                      <View style={[styles.toggleIconListLine, viewMode === 'list' && styles.toggleIconActive]} />
+                  <View style={[styles.toggleOption, viewMode === 'carousel' && styles.toggleOptionActive]} testID="toggle-carousel">
+                    <View style={styles.toggleIconCarouselVertical}>
+                      <View style={[styles.toggleIconBar, viewMode === 'carousel' && styles.toggleIconActiveBg]} />
+                      <View style={[styles.toggleIconBar, viewMode === 'carousel' && styles.toggleIconActiveBg]} />
                     </View>
+                  </View>
+                  <View style={[styles.toggleOption, viewMode === 'list' && styles.toggleOptionActive]} testID="toggle-list">
+                    <View style={styles.toggleIconList}>
+                      <View style={[styles.toggleIconListLine, viewMode === 'list' && styles.toggleIconActiveBg]} />
+                      <View style={[styles.toggleIconListLine, viewMode === 'list' && styles.toggleIconActiveBg]} />
+                      <View style={[styles.toggleIconListLine, viewMode === 'list' && styles.toggleIconActiveBg]} />
+                    </View>
+                  </View>
+                  <View style={[styles.toggleOption, viewMode === 'previous' && styles.toggleOptionActive]} testID="toggle-previous">
+                    <Text style={[styles.toggleText, viewMode === 'previous' && styles.toggleTextActive]}>Anteriores</Text>
                   </View>
                 </View>
               </Pressable>
@@ -323,7 +334,7 @@ export default function HomeScreen() {
                 scrollEventThrottle={16}
               />
             </View>
-          ) : (
+          ) : viewMode === 'list' ? (
             <View style={styles.listContainer}>
               <FlatList
                 data={HYPNOSIS_SESSIONS}
@@ -334,7 +345,19 @@ export default function HomeScreen() {
                 testID="hypnosis-list"
               />
             </View>
-          )}
+          ) : (
+            <View style={styles.listContainer}>
+              <FlatList
+                data={HYPNOSIS_SESSIONS.slice(Math.floor(HYPNOSIS_SESSIONS.length / 2))}
+                keyExtractor={keyExtractor}
+                renderItem={renderListItem}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={styles.listContentContainer}
+                testID="hypnosis-previous-list"
+                ListEmptyComponent={<Text style={styles.emptyText}>Sin anteriores</Text>}
+              />
+            </View>
+          )
         </View>
 
         <View style={styles.bottomSection}>
@@ -385,7 +408,7 @@ const styles = StyleSheet.create({
   },
   toggleRow: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
+    justifyContent: 'flex-start',
     paddingLeft: 54,
     paddingRight: 54,
     marginBottom: 8,
@@ -411,15 +434,21 @@ const styles = StyleSheet.create({
   toggleOptionActive: {
     backgroundColor: '#c9841e',
   },
-  toggleIconCarousel: {
+  toggleIconCarouselVertical: {
     width: 16,
-    height: 12,
-    borderRadius: 2,
-    borderWidth: 2,
-    borderColor: 'rgba(251, 239, 217, 0.6)',
+    height: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
-  toggleIconActive: {
-    borderColor: '#fbefd9',
+  toggleIconBar: {
+    width: 5,
+    height: 14,
+    backgroundColor: 'rgba(251, 239, 217, 0.6)',
+    borderRadius: 2,
+  },
+  toggleIconActiveBg: {
+    backgroundColor: '#fbefd9',
   },
   toggleIconList: {
     width: 16,
@@ -431,6 +460,14 @@ const styles = StyleSheet.create({
     height: 2,
     backgroundColor: 'rgba(251, 239, 217, 0.6)',
     borderRadius: 1,
+  },
+  toggleText: {
+    color: 'rgba(251, 239, 217, 0.6)',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  toggleTextActive: {
+    color: '#fbefd9',
   },
 
   // Carrusel
@@ -553,5 +590,10 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#fbefd9',
     lineHeight: 24,
+  },
+  emptyText: {
+    textAlign: 'center',
+    color: 'rgba(251, 239, 217, 0.6)',
+    marginTop: 24,
   },
 });
