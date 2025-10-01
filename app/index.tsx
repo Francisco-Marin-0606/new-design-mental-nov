@@ -245,55 +245,14 @@ export default function HomeScreen() {
     }
 
     Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 0,
-        duration: 150,
-        useNativeDriver: true,
-      }),
-      Animated.timing(slideAnim, {
-        toValue: -50,
-        duration: 150,
-        useNativeDriver: true,
-      }),
+      Animated.timing(fadeAnim, { toValue: 0, duration: 150, useNativeDriver: true }),
+      Animated.timing(slideAnim, { toValue: -50, duration: 150, useNativeDriver: true }),
     ]).start(() => {
       setViewMode(mode);
-      isFirstLoadRef.current = false;
-      slideAnim.setValue(50);
       Animated.parallel([
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-        Animated.timing(slideAnim, {
-          toValue: 0,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-      ]).start(() => {
-        if (mode === 'carousel' && carouselScrollOffsetRef.current > 0) {
-          setTimeout(() => {
-            carouselFlatListRef.current?.scrollToOffset({
-              offset: carouselScrollOffsetRef.current,
-              animated: false,
-            });
-          }, 50);
-        } else if (mode === 'list' && listScrollOffsetRef.current > 0) {
-          setTimeout(() => {
-            listFlatListRef.current?.scrollToOffset({
-              offset: listScrollOffsetRef.current,
-              animated: false,
-            });
-          }, 50);
-        } else if (mode === 'previous' && previousScrollOffsetRef.current > 0) {
-          setTimeout(() => {
-            previousFlatListRef.current?.scrollToOffset({
-              offset: previousScrollOffsetRef.current,
-              animated: false,
-            });
-          }, 50);
-        }
-      });
+        Animated.timing(fadeAnim, { toValue: 1, duration: 200, useNativeDriver: true }),
+        Animated.timing(slideAnim, { toValue: 0, duration: 200, useNativeDriver: true }),
+      ]).start();
     });
   }, [fadeAnim, slideAnim]);
 
@@ -382,8 +341,17 @@ export default function HomeScreen() {
             </View>
           )}
 
-          {viewMode === 'carousel' ? (
-            <Animated.View style={[styles.carouselContainer, { opacity: fadeAnim, transform: [{ translateX: slideAnim }] }]}>
+          <View style={{ flex: 1, position: 'relative' }}>
+            {/* CAROUSEL */}
+            <Animated.View
+              style={[
+                styles.carouselContainer,
+                styles.layerAbsolute,
+                viewMode === 'carousel' ? styles.layerVisible : styles.layerHidden,
+                viewMode === 'carousel' && { opacity: fadeAnim, transform: [{ translateX: slideAnim }] },
+              ]}
+              pointerEvents={viewMode === 'carousel' ? 'auto' : 'none'}
+            >
               <Animated.FlatList
                 ref={carouselFlatListRef}
                 data={HYPNOSIS_SESSIONS}
@@ -399,8 +367,7 @@ export default function HomeScreen() {
                 snapToAlignment="start"
                 onMomentumScrollEnd={onMomentumScrollEnd}
                 testID="hypnosis-carousel"
-                initialScrollIndex={isFirstLoadRef.current ? 0 : undefined}
-                getItemLayout={(data: ArrayLike<HypnosisSession> | null | undefined, index: number) => ({
+                getItemLayout={(data, index) => ({
                   length: snapInterval,
                   offset: index * snapInterval,
                   index,
@@ -411,10 +378,20 @@ export default function HomeScreen() {
                   { useNativeDriver: false, listener: onScroll }
                 )}
                 scrollEventThrottle={16}
+                removeClippedSubviews={false}
               />
             </Animated.View>
-          ) : viewMode === 'list' ? (
-            <Animated.View style={[styles.listContainer, { opacity: fadeAnim, transform: [{ translateX: slideAnim }] }]}>
+
+            {/* LIST */}
+            <Animated.View
+              style={[
+                styles.listContainer,
+                styles.layerAbsolute,
+                viewMode === 'list' ? styles.layerVisible : styles.layerHidden,
+                viewMode === 'list' && { opacity: fadeAnim, transform: [{ translateX: slideAnim }] },
+              ]}
+              pointerEvents={viewMode === 'list' ? 'auto' : 'none'}
+            >
               <FlatList
                 ref={listFlatListRef}
                 data={HYPNOSIS_SESSIONS}
@@ -425,10 +402,20 @@ export default function HomeScreen() {
                 testID="hypnosis-list"
                 onScroll={onListScroll}
                 scrollEventThrottle={16}
+                removeClippedSubviews={false}
               />
             </Animated.View>
-          ) : (
-            <Animated.View style={[styles.listContainer, { opacity: fadeAnim, transform: [{ translateX: slideAnim }] }]}>
+
+            {/* PREVIOUS */}
+            <Animated.View
+              style={[
+                styles.listContainer,
+                styles.layerAbsolute,
+                viewMode === 'previous' ? styles.layerVisible : styles.layerHidden,
+                viewMode === 'previous' && { opacity: fadeAnim, transform: [{ translateX: slideAnim }] },
+              ]}
+              pointerEvents={viewMode === 'previous' ? 'auto' : 'none'}
+            >
               <FlatList
                 ref={previousFlatListRef}
                 data={HYPNOSIS_SESSIONS.slice(Math.floor(HYPNOSIS_SESSIONS.length / 2))}
@@ -440,9 +427,10 @@ export default function HomeScreen() {
                 ListEmptyComponent={<Text style={styles.emptyText}>Sin anteriores</Text>}
                 onScroll={onPreviousScroll}
                 scrollEventThrottle={16}
+                removeClippedSubviews={false}
               />
             </Animated.View>
-          )}
+          </View>
         </View>
 
         <View style={styles.bottomSection}>
@@ -690,5 +678,19 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: 'rgba(251, 239, 217, 0.6)',
     marginTop: 24,
+  },
+
+  layerAbsolute: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  layerHidden: {
+    opacity: 0,
+  },
+  layerVisible: {
+    opacity: 1,
   },
 });
