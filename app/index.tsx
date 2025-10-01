@@ -1381,11 +1381,11 @@ const styles = StyleSheet.create({
   footerNav: {
     paddingHorizontal: 44,
     paddingBottom: 20,
-    paddingTop: 12,
+    paddingTop: 20,
   },
   navToggleContainer: {
     flexDirection: 'row',
-    gap: 24,
+    gap: 60,
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
@@ -1405,8 +1405,8 @@ const styles = StyleSheet.create({
     color: '#fbefd9',
   },
   navIconImage: {
-    width: 33.6,
-    height: 33.6,
+    width: 52.5,
+    height: 52.5,
   },
   skeletonContainer: {
     position: 'absolute',
