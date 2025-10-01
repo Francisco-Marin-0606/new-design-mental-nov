@@ -395,10 +395,14 @@ export default function HomeScreen() {
             <Animated.View style={[styles.carouselContainer, { opacity: fadeAnim, transform: [{ translateX: slideAnim }] }]}>
               {!isCarouselReady && (
                 <View style={styles.skeletonContainer}>
-                  <View style={[styles.skeletonCard, { width: cardWidth, marginLeft: sidePadding }]}>
-                    <View style={styles.skeletonImage} />
-                    <View style={styles.skeletonTitle} />
-                    <View style={styles.skeletonTitleShort} />
+                  <View style={styles.skeletonCarouselWrapper}>
+                    <View style={[styles.skeletonCard, styles.skeletonCardSide, { width: cardWidth * 0.9 }]} />
+                    <View style={[styles.skeletonCard, styles.skeletonCardCenter, { width: cardWidth }]}>
+                      <View style={styles.skeletonImage} />
+                      <View style={styles.skeletonTitle} />
+                      <View style={styles.skeletonTitleShort} />
+                    </View>
+                    <View style={[styles.skeletonCard, styles.skeletonCardSide, { width: cardWidth * 0.9 }]} />
                   </View>
                 </View>
               )}
@@ -719,7 +723,22 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingTop: 48,
   },
+  skeletonCarouselWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 20,
+  },
   skeletonCard: {
+    alignItems: 'flex-start',
+  },
+  skeletonCardSide: {
+    aspectRatio: 4 / 5,
+    borderRadius: 16,
+    backgroundColor: 'rgba(251, 239, 217, 0.05)',
+    opacity: 0.5,
+  },
+  skeletonCardCenter: {
     alignItems: 'flex-start',
   },
   skeletonImage: {
