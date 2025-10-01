@@ -107,7 +107,7 @@ function ListItem({ item, onPress, onMenuPress, viewMode, downloadInfo }: ListIt
                 )}
                 {downloadInfo?.state === 'completed' && (
                   <View style={[styles.durationIconCircle, styles.durationIconCircleCompleted]}>
-                    <Download size={12} color="#ffffff" />
+                    <Check size={12} color="#ffffff" />
                   </View>
                 )}
                 <Text style={styles.durationText}>Duración {formatDuration(item.durationSec)}</Text>
