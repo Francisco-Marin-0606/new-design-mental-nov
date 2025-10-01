@@ -148,6 +148,9 @@ export default function HomeScreen() {
   const [viewMode, setViewMode] = useState<ViewMode>('carousel');
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
 
+  const fadeAnim = useRef(new Animated.Value(1)).current;
+  const slideAnim = useRef(new Animated.Value(0)).current;
+
   // Tamaño/espaciado estilo “foto 1”
   const cardWidth = useMemo(() => Math.min(263.35, screenWidth * 1.725), [screenWidth]);
   const cardSpacing = 20;
@@ -229,8 +232,35 @@ export default function HomeScreen() {
     if (Platform.OS !== 'web') {
       try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
     }
-    setViewMode(mode);
-  }, []);
+
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 150,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: -20,
+        duration: 150,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setViewMode(mode);
+      slideAnim.setValue(20);
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(slideAnim, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    });
+  }, [fadeAnim, slideAnim]);
 
   const renderListItem = useCallback(
     ({ item }: ListRenderItemInfo<HypnosisSession>) => (
@@ -310,7 +340,7 @@ export default function HomeScreen() {
           )}
 
           {viewMode === 'carousel' ? (
-            <View style={styles.carouselContainer}>
+            <Animated.View style={[styles.carouselContainer, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
               <Animated.FlatList
                 data={HYPNOSIS_SESSIONS}
                 keyExtractor={keyExtractor}
@@ -338,9 +368,9 @@ export default function HomeScreen() {
                 )}
                 scrollEventThrottle={16}
               />
-            </View>
+            </Animated.View>
           ) : viewMode === 'list' ? (
-            <View style={styles.listContainer}>
+            <Animated.View style={[styles.listContainer, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
               <FlatList
                 data={HYPNOSIS_SESSIONS}
                 keyExtractor={keyExtractor}
@@ -349,9 +379,9 @@ export default function HomeScreen() {
                 contentContainerStyle={styles.listContentContainer}
                 testID="hypnosis-list"
               />
-            </View>
+            </Animated.View>
           ) : (
-            <View style={styles.listContainer}>
+            <Animated.View style={[styles.listContainer, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
               <FlatList
                 data={HYPNOSIS_SESSIONS.slice(Math.floor(HYPNOSIS_SESSIONS.length / 2))}
                 keyExtractor={keyExtractor}
@@ -361,7 +391,7 @@ export default function HomeScreen() {
                 testID="hypnosis-previous-list"
                 ListEmptyComponent={<Text style={styles.emptyText}>Sin anteriores</Text>}
               />
-            </View>
+            </Animated.View>
           )}
         </View>
 
