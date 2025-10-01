@@ -809,7 +809,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#fbefd9',
     lineHeight: 24,
-    paddingRight: 12,
+    paddingRight: 20,
   },
   emptyText: {
     textAlign: 'center',
