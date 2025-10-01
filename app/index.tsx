@@ -103,17 +103,21 @@ function ListItem({ item, onPress, onMenuPress, viewMode, downloadInfo }: ListIt
               )}
               <Text style={styles.listItemTitle} numberOfLines={2}>{item.title}</Text>
               <View style={styles.durationRow}>
-                <View style={[styles.durationIconCircle, (downloadInfo?.state === 'completed') && styles.durationIconCircleCompleted]}>
-                  <Download size={12} color={downloadInfo?.state === 'completed' ? '#ffffff' : 'rgba(251, 239, 217, 0.6)'} />
-                </View>
+                {downloadInfo?.state === 'downloading' && (
+                  <View style={styles.downloadingIconContainer}>
+                    <Download size={12} color="#ff9a2e" />
+                    <Text style={styles.downloadingPercentage}>{Math.max(0, Math.min(100, Math.round(downloadInfo.progress)))}%</Text>
+                  </View>
+                )}
+                {downloadInfo?.state === 'completed' && (
+                  <View style={[styles.durationIconCircle, styles.durationIconCircleCompleted]}>
+                    <Download size={12} color="#ffffff" />
+                  </View>
+                )}
                 <Text style={styles.durationText}>Duración {formatDuration(item.durationSec)}</Text>
               </View>
             </View>
-            {downloadInfo?.state === 'downloading' && (
-              <View style={styles.progressBar} accessibilityLabel="Progreso de descarga">
-                <View style={[styles.progressFill, { width: `${Math.max(0, Math.min(100, downloadInfo.progress))}%` }]} />
-              </View>
-            )}
+
             <Pressable
               style={styles.menuButton}
               onPress={handleMenuPress}
@@ -1087,19 +1091,19 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     marginBottom: 4,
   },
-  progressBar: {
-    position: 'absolute',
-    left: 12,
-    right: 12,
-    bottom: 12,
-    height: 3,
-    backgroundColor: 'rgba(251, 239, 217, 0.12)',
-    borderRadius: 2,
+  downloadingIconContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: 'rgba(255, 154, 46, 0.15)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
   },
-  progressFill: {
-    height: 3,
-    backgroundColor: '#ff9a2e',
-    borderRadius: 2,
+  downloadingPercentage: {
+    color: '#ff9a2e',
+    fontSize: 12,
+    fontWeight: '700',
   },
   menuButton: {
     position: 'absolute',
