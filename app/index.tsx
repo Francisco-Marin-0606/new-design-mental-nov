@@ -335,66 +335,98 @@ export default function HomeScreen() {
       friction: 10,
     }).start();
 
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 0,
-        duration: 150,
-        useNativeDriver: true,
-      }),
-      Animated.timing(slideAnim, {
-        toValue: -50,
-        duration: 150,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
+    const isChangingToPrevious = mode === 'previous';
+    const isChangingFromPrevious = viewMode === 'previous';
+    const shouldAnimate = isChangingToPrevious || isChangingFromPrevious;
+
+    if (shouldAnimate) {
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 0,
+          duration: 150,
+          useNativeDriver: true,
+        }),
+        Animated.timing(slideAnim, {
+          toValue: -50,
+          duration: 150,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        if (mode === 'carousel' && !isFirstLoadRef.current && carouselScrollOffsetRef.current > 0) {
+          setIsCarouselReady(false);
+        }
+        
+        setViewMode(mode);
+        isFirstLoadRef.current = false;
+        slideAnim.setValue(50);
+        
+        Animated.parallel([
+          Animated.timing(fadeAnim, {
+            toValue: 1,
+            duration: 200,
+            useNativeDriver: true,
+          }),
+          Animated.timing(slideAnim, {
+            toValue: 0,
+            duration: 200,
+            useNativeDriver: true,
+          }),
+        ]).start(() => {
+          if (mode === 'carousel' && carouselScrollOffsetRef.current > 0) {
+            requestAnimationFrame(() => {
+              carouselFlatListRef.current?.scrollToOffset({
+                offset: carouselScrollOffsetRef.current,
+                animated: false,
+              });
+              setTimeout(() => {
+                setIsCarouselReady(true);
+              }, 100);
+            });
+          } else if (mode === 'list' && listScrollOffsetRef.current > 0) {
+            setTimeout(() => {
+              listFlatListRef.current?.scrollToOffset({
+                offset: listScrollOffsetRef.current,
+                animated: false,
+              });
+            }, 50);
+          } else if (mode === 'previous' && previousScrollOffsetRef.current > 0) {
+            setTimeout(() => {
+              previousFlatListRef.current?.scrollToOffset({
+                offset: previousScrollOffsetRef.current,
+                animated: false,
+              });
+            }, 50);
+          }
+        });
+      });
+    } else {
       if (mode === 'carousel' && !isFirstLoadRef.current && carouselScrollOffsetRef.current > 0) {
         setIsCarouselReady(false);
       }
       
       setViewMode(mode);
       isFirstLoadRef.current = false;
-      slideAnim.setValue(50);
       
-      Animated.parallel([
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-        Animated.timing(slideAnim, {
-          toValue: 0,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-      ]).start(() => {
-        if (mode === 'carousel' && carouselScrollOffsetRef.current > 0) {
-          requestAnimationFrame(() => {
-            carouselFlatListRef.current?.scrollToOffset({
-              offset: carouselScrollOffsetRef.current,
-              animated: false,
-            });
-            setTimeout(() => {
-              setIsCarouselReady(true);
-            }, 100);
+      if (mode === 'carousel' && carouselScrollOffsetRef.current > 0) {
+        requestAnimationFrame(() => {
+          carouselFlatListRef.current?.scrollToOffset({
+            offset: carouselScrollOffsetRef.current,
+            animated: false,
           });
-        } else if (mode === 'list' && listScrollOffsetRef.current > 0) {
           setTimeout(() => {
-            listFlatListRef.current?.scrollToOffset({
-              offset: listScrollOffsetRef.current,
-              animated: false,
-            });
-          }, 50);
-        } else if (mode === 'previous' && previousScrollOffsetRef.current > 0) {
-          setTimeout(() => {
-            previousFlatListRef.current?.scrollToOffset({
-              offset: previousScrollOffsetRef.current,
-              animated: false,
-            });
-          }, 50);
-        }
-      });
-    });
-  }, [fadeAnim, slideAnim, toggleIndicatorAnim]);
+            setIsCarouselReady(true);
+          }, 100);
+        });
+      } else if (mode === 'list' && listScrollOffsetRef.current > 0) {
+        setTimeout(() => {
+          listFlatListRef.current?.scrollToOffset({
+            offset: listScrollOffsetRef.current,
+            animated: false,
+          });
+        }, 50);
+      }
+    }
+  }, [fadeAnim, slideAnim, toggleIndicatorAnim, viewMode]);
 
   const handleMenuPress = useCallback((session: HypnosisSession, mode: ViewMode) => {
     setMenuSession(session);
