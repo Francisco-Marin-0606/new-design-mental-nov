@@ -382,67 +382,65 @@ export default function HomeScreen() {
             </View>
           )}
 
-          {viewMode === 'carousel' ? (
-            <Animated.View style={[styles.carouselContainer, { opacity: fadeAnim, transform: [{ translateX: slideAnim }] }]}>
-              <Animated.FlatList
-                ref={carouselFlatListRef}
-                data={HYPNOSIS_SESSIONS}
-                keyExtractor={keyExtractor}
-                renderItem={renderItem}
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                bounces
-                alwaysBounceHorizontal
-                overScrollMode={Platform.OS === 'android' ? 'always' : 'auto'}
-                decelerationRate="fast"
-                snapToInterval={snapInterval}
-                snapToAlignment="start"
-                onMomentumScrollEnd={onMomentumScrollEnd}
-                testID="hypnosis-carousel"
-                initialScrollIndex={isFirstLoadRef.current ? 0 : undefined}
-                getItemLayout={(data: ArrayLike<HypnosisSession> | null | undefined, index: number) => ({
-                  length: snapInterval,
-                  offset: index * snapInterval,
-                  index,
-                })}
-                contentContainerStyle={{ paddingLeft: sidePadding, paddingRight: sidePadding, paddingTop: 48, paddingBottom: 48 }}
-                onScroll={Animated.event(
-                  [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-                  { useNativeDriver: false, listener: onScroll }
-                )}
-                scrollEventThrottle={16}
-              />
-            </Animated.View>
-          ) : viewMode === 'list' ? (
-            <Animated.View style={[styles.listContainer, { opacity: fadeAnim, transform: [{ translateX: slideAnim }] }]}>
-              <FlatList
-                ref={listFlatListRef}
-                data={HYPNOSIS_SESSIONS}
-                keyExtractor={keyExtractor}
-                renderItem={renderListItem}
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={styles.listContentContainer}
-                testID="hypnosis-list"
-                onScroll={onListScroll}
-                scrollEventThrottle={16}
-              />
-            </Animated.View>
-          ) : (
-            <Animated.View style={[styles.listContainer, { opacity: fadeAnim, transform: [{ translateX: slideAnim }] }]}>
-              <FlatList
-                ref={previousFlatListRef}
-                data={HYPNOSIS_SESSIONS.slice(Math.floor(HYPNOSIS_SESSIONS.length / 2))}
-                keyExtractor={keyExtractor}
-                renderItem={renderListItem}
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={styles.listContentContainer}
-                testID="hypnosis-previous-list"
-                ListEmptyComponent={<Text style={styles.emptyText}>Sin anteriores</Text>}
-                onScroll={onPreviousScroll}
-                scrollEventThrottle={16}
-              />
-            </Animated.View>
-          )}
+          <Animated.View style={[styles.carouselContainer, { opacity: viewMode === 'carousel' ? fadeAnim : 0, transform: [{ translateX: viewMode === 'carousel' ? slideAnim : 0 }] }]}>
+            <Animated.FlatList
+              ref={carouselFlatListRef}
+              data={HYPNOSIS_SESSIONS}
+              keyExtractor={keyExtractor}
+              renderItem={renderItem}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              bounces
+              alwaysBounceHorizontal
+              overScrollMode={Platform.OS === 'android' ? 'always' : 'auto'}
+              decelerationRate="fast"
+              snapToInterval={snapInterval}
+              snapToAlignment="start"
+              onMomentumScrollEnd={onMomentumScrollEnd}
+              testID="hypnosis-carousel"
+              initialScrollIndex={isFirstLoadRef.current ? 0 : undefined}
+              getItemLayout={(data: ArrayLike<HypnosisSession> | null | undefined, index: number) => ({
+                length: snapInterval,
+                offset: index * snapInterval,
+                index,
+              })}
+              contentContainerStyle={{ paddingLeft: sidePadding, paddingRight: sidePadding, paddingTop: 48, paddingBottom: 48 }}
+              onScroll={Animated.event(
+                [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+                { useNativeDriver: false, listener: onScroll }
+              )}
+              scrollEventThrottle={16}
+            />
+          </Animated.View>
+
+          <Animated.View style={[styles.listContainer, { opacity: viewMode === 'list' ? fadeAnim : 0, transform: [{ translateX: viewMode === 'list' ? slideAnim : 0 }] }]}>
+            <FlatList
+              ref={listFlatListRef}
+              data={HYPNOSIS_SESSIONS}
+              keyExtractor={keyExtractor}
+              renderItem={renderListItem}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.listContentContainer}
+              testID="hypnosis-list"
+              onScroll={onListScroll}
+              scrollEventThrottle={16}
+            />
+          </Animated.View>
+
+          <Animated.View style={[styles.listContainer, { opacity: viewMode === 'previous' ? fadeAnim : 0, transform: [{ translateX: viewMode === 'previous' ? slideAnim : 0 }] }]}>
+            <FlatList
+              ref={previousFlatListRef}
+              data={HYPNOSIS_SESSIONS.slice(Math.floor(HYPNOSIS_SESSIONS.length / 2))}
+              keyExtractor={keyExtractor}
+              renderItem={renderListItem}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.listContentContainer}
+              testID="hypnosis-previous-list"
+              ListEmptyComponent={<Text style={styles.emptyText}>Sin anteriores</Text>}
+              onScroll={onPreviousScroll}
+              scrollEventThrottle={16}
+            />
+          </Animated.View>
         </View>
 
         <View style={styles.bottomSection}>
@@ -567,8 +565,7 @@ const styles = StyleSheet.create({
 
   // Carrusel
   carouselContainer: {
-    flex: 1,
-    position: 'relative',
+    ...StyleSheet.absoluteFillObject,
   },
   cardWrapper: {
     alignItems: 'flex-start',
@@ -649,7 +646,7 @@ const styles = StyleSheet.create({
   nextButtonText: { fontSize: 20, fontWeight: '700', color: '#ffffff', opacity: 0.3 },
 
   listContainer: {
-    flex: 1,
+    ...StyleSheet.absoluteFillObject,
     paddingHorizontal: 44,
   },
   listContentContainer: {
