@@ -169,6 +169,8 @@ export default function HomeScreen() {
   const listFlatListRef = useRef<FlatList<HypnosisSession>>(null);
   const previousFlatListRef = useRef<FlatList<HypnosisSession>>(null);
 
+  const isFirstLoadRef = useRef<boolean>(true);
+
   const handleOpen = useCallback(async () => {
     if (Platform.OS !== 'web') {
       try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy); } catch {}
@@ -255,6 +257,7 @@ export default function HomeScreen() {
       }),
     ]).start(() => {
       setViewMode(mode);
+      isFirstLoadRef.current = false;
       slideAnim.setValue(50);
       Animated.parallel([
         Animated.timing(fadeAnim, {
@@ -396,7 +399,7 @@ export default function HomeScreen() {
                 snapToAlignment="start"
                 onMomentumScrollEnd={onMomentumScrollEnd}
                 testID="hypnosis-carousel"
-                initialScrollIndex={0}
+                initialScrollIndex={isFirstLoadRef.current ? 0 : undefined}
                 getItemLayout={(data: ArrayLike<HypnosisSession> | null | undefined, index: number) => ({
                   length: snapInterval,
                   offset: index * snapInterval,
