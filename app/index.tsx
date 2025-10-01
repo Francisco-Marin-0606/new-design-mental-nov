@@ -170,6 +170,7 @@ export default function HomeScreen() {
   const previousFlatListRef = useRef<FlatList<HypnosisSession>>(null);
 
   const isFirstLoadRef = useRef<boolean>(true);
+  const [isCarouselReady, setIsCarouselReady] = useState<boolean>(true);
 
   const handleOpen = useCallback(async () => {
     if (Platform.OS !== 'web') {
@@ -256,9 +257,14 @@ export default function HomeScreen() {
         useNativeDriver: true,
       }),
     ]).start(() => {
+      if (mode === 'carousel' && !isFirstLoadRef.current && carouselScrollOffsetRef.current > 0) {
+        setIsCarouselReady(false);
+      }
+      
       setViewMode(mode);
       isFirstLoadRef.current = false;
       slideAnim.setValue(50);
+      
       Animated.parallel([
         Animated.timing(fadeAnim, {
           toValue: 1,
@@ -272,12 +278,15 @@ export default function HomeScreen() {
         }),
       ]).start(() => {
         if (mode === 'carousel' && carouselScrollOffsetRef.current > 0) {
-          setTimeout(() => {
+          requestAnimationFrame(() => {
             carouselFlatListRef.current?.scrollToOffset({
               offset: carouselScrollOffsetRef.current,
               animated: false,
             });
-          }, 50);
+            setTimeout(() => {
+              setIsCarouselReady(true);
+            }, 100);
+          });
         } else if (mode === 'list' && listScrollOffsetRef.current > 0) {
           setTimeout(() => {
             listFlatListRef.current?.scrollToOffset({
@@ -384,6 +393,15 @@ export default function HomeScreen() {
 
           {viewMode === 'carousel' ? (
             <Animated.View style={[styles.carouselContainer, { opacity: fadeAnim, transform: [{ translateX: slideAnim }] }]}>
+              {!isCarouselReady && (
+                <View style={styles.skeletonContainer}>
+                  <View style={[styles.skeletonCard, { width: cardWidth, marginLeft: sidePadding }]}>
+                    <View style={styles.skeletonImage} />
+                    <View style={styles.skeletonTitle} />
+                    <View style={styles.skeletonTitleShort} />
+                  </View>
+                </View>
+              )}
               <Animated.FlatList
                 ref={carouselFlatListRef}
                 data={HYPNOSIS_SESSIONS}
@@ -411,6 +429,7 @@ export default function HomeScreen() {
                   { useNativeDriver: false, listener: onScroll }
                 )}
                 scrollEventThrottle={16}
+                style={!isCarouselReady ? { opacity: 0 } : undefined}
               />
             </Animated.View>
           ) : viewMode === 'list' ? (
@@ -690,5 +709,37 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: 'rgba(251, 239, 217, 0.6)',
     marginTop: 24,
+  },
+  skeletonContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    paddingTop: 48,
+  },
+  skeletonCard: {
+    alignItems: 'flex-start',
+  },
+  skeletonImage: {
+    width: '100%',
+    aspectRatio: 4 / 5,
+    borderRadius: 16,
+    backgroundColor: 'rgba(251, 239, 217, 0.1)',
+  },
+  skeletonTitle: {
+    width: '90%',
+    height: 26,
+    marginTop: 20,
+    borderRadius: 6,
+    backgroundColor: 'rgba(251, 239, 217, 0.08)',
+  },
+  skeletonTitleShort: {
+    width: '60%',
+    height: 26,
+    marginTop: 8,
+    borderRadius: 6,
+    backgroundColor: 'rgba(251, 239, 217, 0.08)',
   },
 });
