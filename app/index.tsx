@@ -519,7 +519,7 @@ const styles = StyleSheet.create({
 
   listContainer: {
     flex: 1,
-    paddingHorizontal: 24,
+    paddingHorizontal: 44,
   },
   listContentContainer: {
     paddingTop: 24,
