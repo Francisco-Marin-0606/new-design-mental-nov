@@ -8,7 +8,6 @@ import {
   Image,
   useWindowDimensions,
   Animated,
-  Easing,
   FlatList,
   ListRenderItemInfo,
 } from 'react-native';
@@ -151,7 +150,6 @@ export default function HomeScreen() {
 
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const slideAnim = useRef(new Animated.Value(0)).current;
-  const toggleIndicatorAnim = useRef(new Animated.Value(0)).current;
 
   // Tamaño/espaciado estilo “foto 1”
   const cardWidth = useMemo(() => Math.min(263.35, screenWidth * 1.725), [screenWidth]);
@@ -170,10 +168,6 @@ export default function HomeScreen() {
   const carouselFlatListRef = useRef<FlatList<HypnosisSession>>(null);
   const listFlatListRef = useRef<FlatList<HypnosisSession>>(null);
   const previousFlatListRef = useRef<FlatList<HypnosisSession>>(null);
-
-  const [toggleLayout, setToggleLayout] = useState<{ carousel: { x: number; width: number }; list: { x: number; width: number }; previous: { x: number; width: number } }>(
-    { carousel: { x: 0, width: 0 }, list: { x: 0, width: 0 }, previous: { x: 0, width: 0 } }
-  );
 
   const isFirstLoadRef = useRef<boolean>(true);
   const [isCarouselReady, setIsCarouselReady] = useState<boolean>(true);
@@ -251,14 +245,6 @@ export default function HomeScreen() {
       try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
     }
 
-    const targetPosition = mode === 'carousel' ? 0 : mode === 'list' ? 1 : 2;
-    Animated.timing(toggleIndicatorAnim, {
-      toValue: targetPosition,
-      duration: 300,
-      easing: Easing.bezier(0.25, 0.46, 0.45, 0.94),
-      useNativeDriver: false,
-    }).start();
-
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 0,
@@ -318,7 +304,7 @@ export default function HomeScreen() {
         }
       });
     });
-  }, [fadeAnim, slideAnim, toggleIndicatorAnim]);
+  }, [fadeAnim, slideAnim]);
 
   const renderListItem = useCallback(
     ({ item }: ListRenderItemInfo<HypnosisSession>) => (
@@ -368,58 +354,23 @@ export default function HomeScreen() {
           {showToggle && (
             <View style={styles.toggleRow} testID="toggle-under-title">
               <View style={styles.toggleContainer}>
-                <Animated.View
-                  style={[
-                    styles.toggleIndicator,
-                    {
-                      transform: [
-                        {
-                          translateX: toggleIndicatorAnim.interpolate({
-                            inputRange: [0, 1, 2],
-                            outputRange: [
-                              toggleLayout.carousel.x,
-                              toggleLayout.list.x,
-                              toggleLayout.previous.x,
-                            ],
-                          }),
-                        },
-                      ],
-                      width: toggleIndicatorAnim.interpolate({
-                        inputRange: [0, 1, 2],
-                        outputRange: [
-                          toggleLayout.carousel.width,
-                          toggleLayout.list.width,
-                          toggleLayout.previous.width,
-                        ],
-                      }),
-                    },
-                  ]}
-                />
                 <Pressable
-                  style={[styles.toggleOption]}
+                  style={[styles.toggleOption, viewMode === 'carousel' && styles.toggleOptionActive]}
                   onPress={() => handleViewModeChange('carousel')}
                   android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.08)', borderless: true } : undefined}
                   testID="toggle-carousel"
                   accessibilityLabel="Vista carrusel"
-                  onLayout={(event) => {
-                    const { x, width } = event.nativeEvent.layout;
-                    setToggleLayout(prev => ({ ...prev, carousel: { x, width } }));
-                  }}
                 >
                   <View style={styles.toggleIconCarouselVertical}>
                     <View style={[styles.toggleIconBarSingle, viewMode === 'carousel' && styles.toggleIconActiveBg]} />
                   </View>
                 </Pressable>
                 <Pressable
-                  style={[styles.toggleOption]}
+                  style={[styles.toggleOption, viewMode === 'list' && styles.toggleOptionActive]}
                   onPress={() => handleViewModeChange('list')}
                   android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.08)', borderless: true } : undefined}
                   testID="toggle-list"
                   accessibilityLabel="Vista lista"
-                  onLayout={(event) => {
-                    const { x, width } = event.nativeEvent.layout;
-                    setToggleLayout(prev => ({ ...prev, list: { x, width } }));
-                  }}
                 >
                   <View style={styles.toggleIconList}>
                     <View style={[styles.toggleIconListLine, viewMode === 'list' && styles.toggleIconActiveBg]} />
@@ -428,15 +379,11 @@ export default function HomeScreen() {
                   </View>
                 </Pressable>
                 <Pressable
-                  style={[styles.toggleOption, styles.toggleOptionText]}
+                  style={[styles.toggleOption, styles.toggleOptionText, viewMode === 'previous' && styles.toggleOptionActive]}
                   onPress={() => handleViewModeChange('previous')}
                   android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.08)', borderless: true } : undefined}
                   testID="toggle-previous"
                   accessibilityLabel="Anteriores"
-                  onLayout={(event) => {
-                    const { x, width } = event.nativeEvent.layout;
-                    setToggleLayout(prev => ({ ...prev, previous: { x, width } }));
-                  }}
                 >
                   <Text numberOfLines={1} style={[styles.toggleText, viewMode === 'previous' && styles.toggleTextActive]}>Anteriores</Text>
                 </Pressable>
@@ -583,14 +530,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     gap: 6,
     alignItems: 'center',
-    position: 'relative',
-  },
-  toggleIndicator: {
-    position: 'absolute',
-    height: 32,
-    backgroundColor: '#c9841e',
-    borderRadius: 6,
-    top: 4,
   },
   toggleOption: {
     minWidth: 32,
@@ -599,10 +538,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'transparent',
-    zIndex: 1,
   },
   toggleOptionText: {
     paddingHorizontal: 10,
+  },
+  toggleOptionActive: {
+    backgroundColor: '#c9841e',
   },
   toggleIconCarouselVertical: {
     width: 12,
