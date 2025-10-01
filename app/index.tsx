@@ -716,10 +716,10 @@ const styles = StyleSheet.create({
   },
   skeletonContainer: {
     position: 'absolute',
-    top: 0,
+    top: 48,
     left: 0,
     right: 0,
-    bottom: 0,
+    bottom: 48,
     justifyContent: 'center',
     alignItems: 'center',
   },
