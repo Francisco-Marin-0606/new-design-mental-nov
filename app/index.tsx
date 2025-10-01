@@ -161,6 +161,14 @@ export default function HomeScreen() {
   const currentIndexRef = useRef<number>(0);
   const lastHapticIndexRef = useRef<number>(0);
 
+  const carouselScrollOffsetRef = useRef<number>(0);
+  const listScrollOffsetRef = useRef<number>(0);
+  const previousScrollOffsetRef = useRef<number>(0);
+
+  const carouselFlatListRef = useRef<FlatList<HypnosisSession>>(null);
+  const listFlatListRef = useRef<FlatList<HypnosisSession>>(null);
+  const previousFlatListRef = useRef<FlatList<HypnosisSession>>(null);
+
   const handleOpen = useCallback(async () => {
     if (Platform.OS !== 'web') {
       try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy); } catch {}
@@ -179,6 +187,7 @@ export default function HomeScreen() {
   const onScroll = useCallback((e: { nativeEvent: { contentOffset: { x: number } } }) => {
     try {
       const x = e?.nativeEvent?.contentOffset?.x ?? 0;
+      carouselScrollOffsetRef.current = x;
       const currentIndex = Math.round(x / snapInterval);
       
       if (currentIndex !== lastHapticIndexRef.current) {
@@ -258,7 +267,30 @@ export default function HomeScreen() {
           duration: 200,
           useNativeDriver: true,
         }),
-      ]).start();
+      ]).start(() => {
+        if (mode === 'carousel' && carouselScrollOffsetRef.current > 0) {
+          setTimeout(() => {
+            carouselFlatListRef.current?.scrollToOffset({
+              offset: carouselScrollOffsetRef.current,
+              animated: false,
+            });
+          }, 50);
+        } else if (mode === 'list' && listScrollOffsetRef.current > 0) {
+          setTimeout(() => {
+            listFlatListRef.current?.scrollToOffset({
+              offset: listScrollOffsetRef.current,
+              animated: false,
+            });
+          }, 50);
+        } else if (mode === 'previous' && previousScrollOffsetRef.current > 0) {
+          setTimeout(() => {
+            previousFlatListRef.current?.scrollToOffset({
+              offset: previousScrollOffsetRef.current,
+              animated: false,
+            });
+          }, 50);
+        }
+      });
     });
   }, [fadeAnim, slideAnim]);
 
@@ -277,6 +309,14 @@ export default function HomeScreen() {
     ),
     [handleCardPress]
   );
+
+  const onListScroll = useCallback((e: { nativeEvent: { contentOffset: { y: number } } }) => {
+    listScrollOffsetRef.current = e?.nativeEvent?.contentOffset?.y ?? 0;
+  }, []);
+
+  const onPreviousScroll = useCallback((e: { nativeEvent: { contentOffset: { y: number } } }) => {
+    previousScrollOffsetRef.current = e?.nativeEvent?.contentOffset?.y ?? 0;
+  }, []);
 
   const showToggle = HYPNOSIS_SESSIONS.length > 8;
 
@@ -342,6 +382,7 @@ export default function HomeScreen() {
           {viewMode === 'carousel' ? (
             <Animated.View style={[styles.carouselContainer, { opacity: fadeAnim, transform: [{ translateX: slideAnim }] }]}>
               <Animated.FlatList
+                ref={carouselFlatListRef}
                 data={HYPNOSIS_SESSIONS}
                 keyExtractor={keyExtractor}
                 renderItem={renderItem}
@@ -372,17 +413,21 @@ export default function HomeScreen() {
           ) : viewMode === 'list' ? (
             <Animated.View style={[styles.listContainer, { opacity: fadeAnim, transform: [{ translateX: slideAnim }] }]}>
               <FlatList
+                ref={listFlatListRef}
                 data={HYPNOSIS_SESSIONS}
                 keyExtractor={keyExtractor}
                 renderItem={renderListItem}
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={styles.listContentContainer}
                 testID="hypnosis-list"
+                onScroll={onListScroll}
+                scrollEventThrottle={16}
               />
             </Animated.View>
           ) : (
             <Animated.View style={[styles.listContainer, { opacity: fadeAnim, transform: [{ translateX: slideAnim }] }]}>
               <FlatList
+                ref={previousFlatListRef}
                 data={HYPNOSIS_SESSIONS.slice(Math.floor(HYPNOSIS_SESSIONS.length / 2))}
                 keyExtractor={keyExtractor}
                 renderItem={renderListItem}
@@ -390,6 +435,8 @@ export default function HomeScreen() {
                 contentContainerStyle={styles.listContentContainer}
                 testID="hypnosis-previous-list"
                 ListEmptyComponent={<Text style={styles.emptyText}>Sin anteriores</Text>}
+                onScroll={onPreviousScroll}
+                scrollEventThrottle={16}
               />
             </Animated.View>
           )}
