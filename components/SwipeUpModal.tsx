@@ -251,19 +251,20 @@ export default function SwipeUpModal({ visible, onClose, imageUri, title }: Swip
             return;
           }
           
-          // If no tab switch occurred, animate back to original position
+          // If no tab switch occurred, animate back to original position with bounce
           Animated.parallel([
             Animated.spring(textTranslateX, {
               toValue: 0,
               useNativeDriver: true,
-              tension: 100,
-              friction: 8,
+              tension: 80,
+              friction: 7,
+              velocity: Math.abs(gestureState.vx) * 100,
             }),
             Animated.spring(textOpacity, {
               toValue: 1,
               useNativeDriver: true,
-              tension: 100,
-              friction: 8,
+              tension: 80,
+              friction: 7,
             }),
           ]).start();
         },
