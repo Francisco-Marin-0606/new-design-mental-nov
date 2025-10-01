@@ -799,7 +799,7 @@ export default function HomeScreen() {
             >
               <Image
                 source={{ uri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/FooterHipnosis.png' }}
-                style={styles.navIconImage}
+                style={[styles.navIconImage, { opacity: navSection === 'hipnosis' ? 1 : 0.2 }]}
                 resizeMode="contain"
               />
             </Pressable>
@@ -812,7 +812,7 @@ export default function HomeScreen() {
             >
               <Image
                 source={{ uri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/icono_aura.png' }}
-                style={styles.navIconImage}
+                style={[styles.navIconImage, { opacity: navSection === 'aura' ? 1 : 0.2 }]}
                 resizeMode="contain"
               />
             </Pressable>
@@ -1385,7 +1385,7 @@ const styles = StyleSheet.create({
   },
   navToggleContainer: {
     flexDirection: 'row',
-    gap: 60,
+    gap: 80,
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
@@ -1405,8 +1405,8 @@ const styles = StyleSheet.create({
     color: '#fbefd9',
   },
   navIconImage: {
-    width: 52.5,
-    height: 52.5,
+    width: 42,
+    height: 42,
   },
   skeletonContainer: {
     position: 'absolute',
