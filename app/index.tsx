@@ -24,6 +24,7 @@ interface HypnosisSession {
   title: string;
   imageUri: string;
   durationSec: number;
+  isCreating?: boolean;
 }
 
 type DownloadState = 'idle' | 'downloading' | 'completed';
@@ -147,7 +148,17 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
     extrapolate: 'clamp',
   });
 
+  const colorProgressAnim = useRef(new Animated.Value(0)).current;
 
+  useEffect(() => {
+    if (item.isCreating) {
+      Animated.timing(colorProgressAnim, {
+        toValue: 0.9,
+        duration: 180000,
+        useNativeDriver: false,
+      }).start();
+    }
+  }, [item.isCreating, colorProgressAnim]);
 
   const pressScale = useRef(new Animated.Value(1)).current;
   const combinedScale = Animated.multiply(scale, pressScale);
@@ -202,7 +213,24 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
         */}
         <View style={styles.cardShadow}>
           <View style={styles.cardInner}>
-            <Image source={{ uri: item.imageUri }} style={styles.cardImage} resizeMode="cover" />
+            {item.isCreating ? (
+              <>
+                <Image source={{ uri: item.imageUri }} style={styles.cardImage} resizeMode="cover" />
+                <Animated.View
+                  style={[
+                    StyleSheet.absoluteFillObject,
+                    {
+                      backgroundColor: colorProgressAnim.interpolate({
+                        inputRange: [0, 0.9],
+                        outputRange: ['rgba(255, 255, 255, 0.85)', 'rgba(255, 255, 255, 0)'],
+                      }),
+                    },
+                  ]}
+                />
+              </>
+            ) : (
+              <Image source={{ uri: item.imageUri }} style={styles.cardImage} resizeMode="cover" />
+            )}
           </View>
         </View>
 
@@ -210,17 +238,22 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
           {item.title}
         </Text>
 
-        {index === 0 && (
+        {item.isCreating ? (
+          <View style={styles.badgeCreating} testID="creating-badge">
+            <Text style={styles.badgeText}>CREANDO...</Text>
+          </View>
+        ) : index === 0 ? (
           <View style={styles.badge} testID="listen-badge">
             <Text style={styles.badgeText}>NUEVA</Text>
           </View>
-        )}
+        ) : null}
       </Pressable>
     </Animated.View>
   );
 }
 
 const HYPNOSIS_SESSIONS_RAW: HypnosisSession[] = [
+  { id: '0', title: 'Tu hipnosis está siendo creada', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg', durationSec: 0, isCreating: true },
   { id: '1', title: 'Calma profunda en los Colomos', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg', durationSec: 30 * 60 + 14 },
   { id: '2', title: 'Célula de sanación y calma', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg', durationSec: 20 * 60 + 24 },
   { id: '3', title: 'El reloj quieto sobre la mesa', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg', durationSec: 18 * 60 + 5 },
@@ -1121,6 +1154,14 @@ const styles = StyleSheet.create({
     marginTop: 15,
     alignSelf: 'flex-start',
     backgroundColor: '#c9841e',
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 999,
+  },
+  badgeCreating: {
+    marginTop: 15,
+    alignSelf: 'flex-start',
+    backgroundColor: 'rgba(251, 239, 217, 0.25)',
     paddingHorizontal: 14,
     paddingVertical: 7,
     borderRadius: 999,
