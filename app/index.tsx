@@ -252,6 +252,8 @@ function formatDuration(totalSeconds: number): string {
   return `${mm}:${ss}`;
 }
 
+type NavSection = 'hipnosis' | 'aura';
+
 export default function HomeScreen() {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [selectedSession, setSelectedSession] = useState<HypnosisSession | null>(null);
@@ -261,6 +263,7 @@ export default function HomeScreen() {
   const [menuViewMode, setMenuViewMode] = useState<ViewMode>('carousel');
   const [playerModalVisible, setPlayerModalVisible] = useState<boolean>(false);
   const [playerSession, setPlayerSession] = useState<HypnosisSession | null>(null);
+  const [navSection, setNavSection] = useState<NavSection>('hipnosis');
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
 
   const [downloads, setDownloads] = useState<Record<string, DownloadInfo>>({});
@@ -296,6 +299,12 @@ export default function HomeScreen() {
     list: { x: number; width: number };
     previous: { x: number; width: number };
   }>({ carousel: { x: 0, width: 32 }, list: { x: 0, width: 32 }, previous: { x: 0, width: 0 } });
+
+  const navIndicatorAnim = useRef(new Animated.Value(0)).current;
+  const [navButtonLayouts, setNavButtonLayouts] = useState<{
+    hipnosis: { x: number; width: number };
+    aura: { x: number; width: number };
+  }>({ hipnosis: { x: 0, width: 100 }, aura: { x: 0, width: 100 } });
 
   const handleOpen = useCallback(async () => {
     if (Platform.OS !== 'web') {
@@ -364,6 +373,22 @@ export default function HomeScreen() {
   );
 
   const keyExtractor = useCallback((i: HypnosisSession) => i.id, []);
+
+  const handleNavSectionChange = useCallback(async (section: NavSection) => {
+    if (Platform.OS !== 'web') {
+      try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); } catch {}
+    }
+
+    const targetPosition = section === 'hipnosis' ? 0 : 1;
+    Animated.spring(navIndicatorAnim, {
+      toValue: targetPosition,
+      useNativeDriver: false,
+      tension: 80,
+      friction: 10,
+    }).start();
+
+    setNavSection(section);
+  }, [navIndicatorAnim]);
 
   const handleViewModeChange = useCallback(async (mode: ViewMode) => {
     if (Platform.OS !== 'web') {
@@ -754,6 +779,60 @@ export default function HomeScreen() {
           >
             <Text style={styles.nextButtonText}>Próxima hipnosis en 15 días</Text>
           </Pressable>
+        </View>
+
+        <View style={styles.footerNav}>
+          <View style={styles.navToggleContainer}>
+            <Animated.View
+              style={[
+                styles.navToggleIndicator,
+                {
+                  transform: [{
+                    translateX: navIndicatorAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [
+                        navButtonLayouts.hipnosis.x,
+                        navButtonLayouts.aura.x,
+                      ],
+                    }),
+                  }],
+                  width: navIndicatorAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [
+                      navButtonLayouts.hipnosis.width,
+                      navButtonLayouts.aura.width,
+                    ],
+                  }),
+                },
+              ]}
+            />
+            <Pressable
+              style={styles.navToggleOption}
+              onPress={() => handleNavSectionChange('hipnosis')}
+              android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.08)', borderless: true } : undefined}
+              testID="nav-hipnosis"
+              accessibilityLabel="Hipnosis"
+              onLayout={(event) => {
+                const { x, width } = event.nativeEvent.layout;
+                setNavButtonLayouts(prev => ({ ...prev, hipnosis: { x, width } }));
+              }}
+            >
+              <Text style={[styles.navToggleText, navSection === 'hipnosis' && styles.navToggleTextActive]}>Hipnosis</Text>
+            </Pressable>
+            <Pressable
+              style={styles.navToggleOption}
+              onPress={() => handleNavSectionChange('aura')}
+              android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.08)', borderless: true } : undefined}
+              testID="nav-aura"
+              accessibilityLabel="Aura"
+              onLayout={(event) => {
+                const { x, width } = event.nativeEvent.layout;
+                setNavButtonLayouts(prev => ({ ...prev, aura: { x, width } }));
+              }}
+            >
+              <Text style={[styles.navToggleText, navSection === 'aura' && styles.navToggleTextActive]}>Aura</Text>
+            </Pressable>
+          </View>
         </View>
       </SafeAreaView>
 
@@ -1307,6 +1386,46 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: 'rgba(251, 239, 217, 0.6)',
     marginTop: 24,
+  },
+  footerNav: {
+    paddingHorizontal: 44,
+    paddingBottom: 20,
+    paddingTop: 12,
+  },
+  navToggleContainer: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(251, 239, 217, 0.15)',
+    borderRadius: 12,
+    paddingVertical: 6,
+    paddingHorizontal: 6,
+    gap: 8,
+    alignItems: 'center',
+    position: 'relative',
+  },
+  navToggleIndicator: {
+    position: 'absolute',
+    height: 44,
+    backgroundColor: '#c9841e',
+    borderRadius: 10,
+    top: 6,
+  },
+  navToggleOption: {
+    flex: 1,
+    height: 44,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+    zIndex: 1,
+  },
+  navToggleText: {
+    color: 'rgba(251, 239, 217, 0.6)',
+    fontSize: 16,
+    fontWeight: '700',
+    letterSpacing: 0.3,
+  },
+  navToggleTextActive: {
+    color: '#fbefd9',
   },
   skeletonContainer: {
     position: 'absolute',
