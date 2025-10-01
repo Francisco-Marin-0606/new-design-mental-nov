@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, useMemo } from 'react';
+import React, { useState, useCallback, useRef, useMemo, useEffect } from 'react';
 import {
   StyleSheet,
   View,
@@ -22,6 +22,14 @@ interface HypnosisSession {
   id: string;
   title: string;
   imageUri: string;
+  durationSec: number;
+}
+
+type DownloadState = 'idle' | 'downloading' | 'completed';
+
+interface DownloadInfo {
+  progress: number;
+  state: DownloadState;
 }
 
 interface CarouselItemProps {
@@ -39,9 +47,10 @@ interface ListItemProps {
   onPress: (session: HypnosisSession) => void;
   onMenuPress: (session: HypnosisSession) => void;
   viewMode: ViewMode;
+  downloadInfo?: DownloadInfo;
 }
 
-function ListItem({ item, onPress, onMenuPress, viewMode }: ListItemProps) {
+function ListItem({ item, onPress, onMenuPress, viewMode, downloadInfo }: ListItemProps) {
   const pressScale = useRef(new Animated.Value(1)).current;
 
   const handlePressIn = useCallback(() => {
@@ -87,8 +96,24 @@ function ListItem({ item, onPress, onMenuPress, viewMode }: ListItemProps) {
           <>
             <Image source={{ uri: item.imageUri }} style={[styles.listItemImage, pressed && { opacity: 0.2 }]} resizeMode="cover" />
             <View style={[styles.listItemContent, pressed && { opacity: 0.2 }]}>
+              {downloadInfo?.state === 'downloading' && (
+                <Text style={styles.downloadingLabel} testID={`downloading-${item.id}`}>
+                  Descargando... {Math.max(0, Math.min(100, Math.round(downloadInfo.progress)))}%
+                </Text>
+              )}
               <Text style={styles.listItemTitle} numberOfLines={2}>{item.title}</Text>
+              <View style={styles.durationRow}>
+                <View style={[styles.durationIconCircle, (downloadInfo?.state === 'completed') && styles.durationIconCircleCompleted]}>
+                  <Download size={12} color={downloadInfo?.state === 'completed' ? '#ffffff' : 'rgba(251, 239, 217, 0.6)'} />
+                </View>
+                <Text style={styles.durationText}>Duración {formatDuration(item.durationSec)}</Text>
+              </View>
             </View>
+            {downloadInfo?.state === 'downloading' && (
+              <View style={styles.progressBar} accessibilityLabel="Progreso de descarga">
+                <View style={[styles.progressFill, { width: `${Math.max(0, Math.min(100, downloadInfo.progress))}%` }]} />
+              </View>
+            )}
             <Pressable
               style={styles.menuButton}
               onPress={handleMenuPress}
@@ -196,21 +221,36 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
 }
 
 const HYPNOSIS_SESSIONS_RAW: HypnosisSession[] = [
-  { id: '1', title: 'Calma profunda en los Colomos', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg' },
-  { id: '2', title: 'Célula de sanación y calma', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg' },
-  { id: '3', title: 'El reloj quieto sobre la mesa', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg' },
-  { id: '4', title: 'Respiración profunda para relajarte', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg' },
-  { id: '5', title: 'Meditación guiada para la noche', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg' },
-  { id: '6', title: 'Sueño reparador y tranquilo hoy', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg' },
-  { id: '7', title: 'Paz interior en cada respiración', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg' },
-  { id: '8', title: 'Energía positiva para tu día', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg' },
-  { id: '9', title: 'Liberación emocional suave y guiada', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg' },
-  { id: '10', title: 'Conexión espiritual serena y profunda', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg' },
+  { id: '1', title: 'Calma profunda en los Colomos', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg', durationSec: 30 * 60 + 14 },
+  { id: '2', title: 'Célula de sanación y calma', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg', durationSec: 20 * 60 + 24 },
+  { id: '3', title: 'El reloj quieto sobre la mesa', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg', durationSec: 18 * 60 + 5 },
+  { id: '4', title: 'Respiración profunda para relajarte', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg', durationSec: 25 * 60 + 10 },
+  { id: '5', title: 'Meditación guiada para la noche', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg', durationSec: 42 * 60 + 2 },
+  { id: '6', title: 'Sueño reparador y tranquilo hoy', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg', durationSec: 35 * 60 + 33 },
+  { id: '7', title: 'Paz interior en cada respiración', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg', durationSec: 19 * 60 + 11 },
+  { id: '8', title: 'Energía positiva para tu día', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg', durationSec: 28 * 60 + 46 },
+  { id: '9', title: 'Liberación emocional suave y guiada', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg', durationSec: 21 * 60 + 7 },
+  { id: '10', title: 'Conexión espiritual serena y profunda', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg', durationSec: 31 * 60 + 54 },
 ];
 
 const HYPNOSIS_SESSIONS: HypnosisSession[] = [...HYPNOSIS_SESSIONS_RAW].reverse();
 
 type ViewMode = 'carousel' | 'list' | 'previous';
+
+function formatDuration(totalSeconds: number): string {
+  if (!Number.isFinite(totalSeconds) || totalSeconds < 0) return '0:00';
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = Math.floor(totalSeconds % 60);
+  const mm = minutes.toString();
+  const ss = seconds.toString().padStart(2, '0');
+  if (hours > 0) {
+    const hh = hours.toString();
+    const mm2 = minutes.toString().padStart(2, '0');
+    return `${hh}:${mm2}:${ss}`;
+  }
+  return `${mm}:${ss}`;
+}
 
 export default function HomeScreen() {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
@@ -222,6 +262,9 @@ export default function HomeScreen() {
   const [playerModalVisible, setPlayerModalVisible] = useState<boolean>(false);
   const [playerSession, setPlayerSession] = useState<HypnosisSession | null>(null);
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
+
+  const [downloads, setDownloads] = useState<Record<string, DownloadInfo>>({});
+  const timersRef = useRef<Record<string, NodeJS.Timeout | number>>({});
 
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const slideAnim = useRef(new Animated.Value(0)).current;
@@ -446,9 +489,35 @@ export default function HomeScreen() {
     console.log(`Action: ${action} for session:`, menuSession?.title);
     setMenuModalVisible(false);
     
-    if (action === 'play' && menuSession) {
+    if (!menuSession) return;
+
+    if (action === 'play') {
       setPlayerSession(menuSession);
       setPlayerModalVisible(true);
+    }
+
+    if (action === 'download') {
+      const id = menuSession.id;
+      setDownloads((prev) => ({
+        ...prev,
+        [id]: { progress: 0, state: 'downloading' },
+      }));
+      try {
+        const stepMs = 400;
+        const handle = setInterval(() => {
+          setDownloads((prev) => {
+            const current = prev[id] ?? { progress: 0, state: 'downloading' };
+            if (current.state !== 'downloading') return prev;
+            const next = Math.min(100, (current.progress ?? 0) + Math.floor(5 + Math.random() * 12));
+            const state: DownloadState = next >= 100 ? 'completed' : 'downloading';
+            return { ...prev, [id]: { progress: next, state } };
+          });
+        }, stepMs) as unknown as number;
+        timersRef.current[id] = handle;
+      } catch (e) {
+        console.log('Download simulation error', e);
+        setDownloads((prev) => ({ ...prev, [id]: { progress: 0, state: 'idle' } }));
+      }
     }
   }, [menuSession]);
 
@@ -466,11 +535,27 @@ export default function HomeScreen() {
     }
   }, [viewMode, handleOpen]);
 
+  useEffect(() => {
+    Object.entries(downloads).forEach(([id, info]) => {
+      if (info?.state === 'completed' && timersRef.current[id]) {
+        const t = timersRef.current[id];
+        if (typeof t === 'number') clearInterval(t as number);
+        timersRef.current[id] = 0;
+      }
+    });
+  }, [downloads]);
+
   const renderListItem = useCallback(
     ({ item }: ListRenderItemInfo<HypnosisSession>) => (
-      <ListItem item={item} onPress={handleListItemPress} onMenuPress={(session) => handleMenuPress(session, viewMode)} viewMode={viewMode} />
+      <ListItem
+        item={item}
+        onPress={handleListItemPress}
+        onMenuPress={(session) => handleMenuPress(session, viewMode)}
+        viewMode={viewMode}
+        downloadInfo={downloads[item.id]}
+      />
     ),
-    [handleListItemPress, handleMenuPress, viewMode]
+    [handleListItemPress, handleMenuPress, viewMode, downloads]
   );
 
   const onListScroll = useCallback((e: { nativeEvent: { contentOffset: { y: number } } }) => {
@@ -736,7 +821,7 @@ export default function HomeScreen() {
         onClose={() => setPlayerModalVisible(false)}
         mode="audio"
         title={playerSession?.title}
-        mediaUri="https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Netflix/Mental%20Login%20Background.mp4"
+        mediaUri="https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/Mental%20Login%20Background_1.mp4"
       />
     </View>
   );
@@ -971,6 +1056,50 @@ const styles = StyleSheet.create({
     color: '#fbefd9',
     lineHeight: 24,
     paddingRight: 40,
+  },
+  durationRow: {
+    marginTop: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  durationIconCircle: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: 'transparent',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(251, 239, 217, 0.3)',
+  },
+  durationIconCircleCompleted: {
+    backgroundColor: '#c9841e',
+    borderColor: '#c9841e',
+  },
+  durationText: {
+    color: 'rgba(251, 239, 217, 0.6)',
+    fontSize: 14,
+  },
+  downloadingLabel: {
+    color: '#ff9a2e',
+    fontSize: 14,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  progressBar: {
+    position: 'absolute',
+    left: 12,
+    right: 12,
+    bottom: 12,
+    height: 3,
+    backgroundColor: 'rgba(251, 239, 217, 0.12)',
+    borderRadius: 2,
+  },
+  progressFill: {
+    height: 3,
+    backgroundColor: '#ff9a2e',
+    borderRadius: 2,
   },
   menuButton: {
     position: 'absolute',
