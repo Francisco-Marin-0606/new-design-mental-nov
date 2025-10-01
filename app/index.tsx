@@ -37,9 +37,10 @@ interface ListItemProps {
   item: HypnosisSession;
   onPress: (session: HypnosisSession) => void;
   onMenuPress: (session: HypnosisSession) => void;
+  viewMode: ViewMode;
 }
 
-function ListItem({ item, onPress, onMenuPress }: ListItemProps) {
+function ListItem({ item, onPress, onMenuPress, viewMode }: ListItemProps) {
   const pressScale = useRef(new Animated.Value(1)).current;
 
   const handlePressIn = useCallback(() => {
@@ -216,6 +217,7 @@ export default function HomeScreen() {
   const [viewMode, setViewMode] = useState<ViewMode>('carousel');
   const [menuModalVisible, setMenuModalVisible] = useState<boolean>(false);
   const [menuSession, setMenuSession] = useState<HypnosisSession | null>(null);
+  const [menuViewMode, setMenuViewMode] = useState<ViewMode>('carousel');
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
 
   const fadeAnim = useRef(new Animated.Value(1)).current;
@@ -391,8 +393,9 @@ export default function HomeScreen() {
     });
   }, [fadeAnim, slideAnim, toggleIndicatorAnim]);
 
-  const handleMenuPress = useCallback((session: HypnosisSession) => {
+  const handleMenuPress = useCallback((session: HypnosisSession, mode: ViewMode) => {
     setMenuSession(session);
+    setMenuViewMode(mode);
     setMenuModalVisible(true);
   }, []);
 
@@ -410,9 +413,9 @@ export default function HomeScreen() {
 
   const renderListItem = useCallback(
     ({ item }: ListRenderItemInfo<HypnosisSession>) => (
-      <ListItem item={item} onPress={handleCardPress} onMenuPress={handleMenuPress} />
+      <ListItem item={item} onPress={handleCardPress} onMenuPress={(session) => handleMenuPress(session, viewMode)} viewMode={viewMode} />
     ),
-    [handleCardPress, handleMenuPress]
+    [handleCardPress, handleMenuPress, viewMode]
   );
 
   const onListScroll = useCallback((e: { nativeEvent: { contentOffset: { y: number } } }) => {
@@ -644,27 +647,31 @@ export default function HomeScreen() {
               <Text style={styles.menuItemText}>Descargar</Text>
             </Pressable>
 
-            <Pressable
-              style={styles.menuItem}
-              onPress={() => handleMenuAction('qa')}
-              android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.08)' } : undefined}
-            >
-              <View style={styles.menuIconContainer}>
-                <MessageCircle color="#fbefd9" size={20} />
-              </View>
-              <Text style={styles.menuItemText}>Preguntas y respuestas</Text>
-            </Pressable>
+            {menuViewMode === 'previous' && (
+              <>
+                <Pressable
+                  style={styles.menuItem}
+                  onPress={() => handleMenuAction('qa')}
+                  android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.08)' } : undefined}
+                >
+                  <View style={styles.menuIconContainer}>
+                    <MessageCircle color="#fbefd9" size={20} />
+                  </View>
+                  <Text style={styles.menuItemText}>Preguntas y respuestas</Text>
+                </Pressable>
 
-            <Pressable
-              style={styles.menuItem}
-              onPress={() => handleMenuAction('rename')}
-              android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.08)' } : undefined}
-            >
-              <View style={styles.menuIconContainer}>
-                <Edit3 color="#fbefd9" size={20} />
-              </View>
-              <Text style={styles.menuItemText}>Cambiar nombre</Text>
-            </Pressable>
+                <Pressable
+                  style={styles.menuItem}
+                  onPress={() => handleMenuAction('rename')}
+                  android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.08)' } : undefined}
+                >
+                  <View style={styles.menuIconContainer}>
+                    <Edit3 color="#fbefd9" size={20} />
+                  </View>
+                  <Text style={styles.menuItemText}>Cambiar nombre</Text>
+                </Pressable>
+              </>
+            )}
           </View>
         </View>
       )}
