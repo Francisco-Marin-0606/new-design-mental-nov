@@ -140,9 +140,12 @@ const HYPNOSIS_SESSIONS_RAW: HypnosisSession[] = [
 
 const HYPNOSIS_SESSIONS: HypnosisSession[] = [...HYPNOSIS_SESSIONS_RAW].reverse();
 
+type ViewMode = 'carousel' | 'list';
+
 export default function HomeScreen() {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [selectedSession, setSelectedSession] = useState<HypnosisSession | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>('carousel');
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
 
   // Tamaño/espaciado estilo “foto 1”
@@ -223,6 +226,31 @@ export default function HomeScreen() {
 
   const keyExtractor = useCallback((i: HypnosisSession) => i.id, []);
 
+  const toggleViewMode = useCallback(async () => {
+    if (Platform.OS !== 'web') {
+      try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
+    }
+    setViewMode(prev => prev === 'carousel' ? 'list' : 'carousel');
+  }, []);
+
+  const renderListItem = useCallback(
+    ({ item }: ListRenderItemInfo<HypnosisSession>) => (
+      <Pressable
+        style={styles.listItem}
+        onPress={() => handleCardPress(item)}
+        android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.08)' } : undefined}
+      >
+        <Image source={{ uri: item.imageUri }} style={styles.listItemImage} resizeMode="cover" />
+        <View style={styles.listItemContent}>
+          <Text style={styles.listItemTitle} numberOfLines={2}>{item.title}</Text>
+        </View>
+      </Pressable>
+    ),
+    [handleCardPress]
+  );
+
+  const showToggle = HYPNOSIS_SESSIONS.length > 8;
+
   return (
     <View style={styles.root} testID="root-fullscreen">
       <StatusBar style="light" translucent backgroundColor="transparent" />
@@ -231,44 +259,80 @@ export default function HomeScreen() {
         <View style={styles.container}>
           <View style={styles.headerRow} testID="header-row">
             <Text style={styles.headerTitle}>Mis hipnosis</Text>
-            <Image
-              source={{ uri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/TuercaConfig.png' }}
-              style={styles.headerIcon}
-              resizeMode="contain"
-              testID="header-settings-icon"
-              accessibilityLabel="Configuración"
-            />
+            <View style={styles.headerRight}>
+              {showToggle && (
+                <Pressable
+                  style={styles.toggleButton}
+                  onPress={toggleViewMode}
+                  android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.08)', borderless: true } : undefined}
+                  testID="view-toggle-button"
+                >
+                  <View style={styles.toggleContainer}>
+                    <View style={[styles.toggleOption, viewMode === 'carousel' && styles.toggleOptionActive]}>
+                      <View style={[styles.toggleIconCarousel, viewMode === 'carousel' && styles.toggleIconActive]} />
+                    </View>
+                    <View style={[styles.toggleOption, viewMode === 'list' && styles.toggleOptionActive]}>
+                      <View style={styles.toggleIconList}>
+                        <View style={[styles.toggleIconListLine, viewMode === 'list' && styles.toggleIconActive]} />
+                        <View style={[styles.toggleIconListLine, viewMode === 'list' && styles.toggleIconActive]} />
+                        <View style={[styles.toggleIconListLine, viewMode === 'list' && styles.toggleIconActive]} />
+                      </View>
+                    </View>
+                  </View>
+                </Pressable>
+              )}
+              <Image
+                source={{ uri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/TuercaConfig.png' }}
+                style={styles.headerIcon}
+                resizeMode="contain"
+                testID="header-settings-icon"
+                accessibilityLabel="Configuración"
+              />
+            </View>
           </View>
 
-          <View style={styles.carouselContainer}>
-            <Animated.FlatList
-              data={HYPNOSIS_SESSIONS}
-              keyExtractor={keyExtractor}
-              renderItem={renderItem}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              bounces
-              alwaysBounceHorizontal
-              overScrollMode={Platform.OS === 'android' ? 'always' : 'auto'}
-              decelerationRate="fast"
-              snapToInterval={snapInterval}
-              snapToAlignment="start"
-              onMomentumScrollEnd={onMomentumScrollEnd}
-              testID="hypnosis-carousel"
-              initialScrollIndex={0}
-              getItemLayout={(data: ArrayLike<HypnosisSession> | null | undefined, index: number) => ({
-                length: snapInterval,
-                offset: sidePadding + index * snapInterval,
-                index,
-              })}
-              contentContainerStyle={{ paddingLeft: sidePadding, paddingRight: sidePadding, paddingTop: 18 + topShift, paddingBottom: 18 }}
-              onScroll={Animated.event(
-                [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-                { useNativeDriver: false, listener: onScroll }
-              )}
-              scrollEventThrottle={16}
-            />
-          </View>
+          {viewMode === 'carousel' ? (
+            <View style={styles.carouselContainer}>
+              <Animated.FlatList
+                data={HYPNOSIS_SESSIONS}
+                keyExtractor={keyExtractor}
+                renderItem={renderItem}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                bounces
+                alwaysBounceHorizontal
+                overScrollMode={Platform.OS === 'android' ? 'always' : 'auto'}
+                decelerationRate="fast"
+                snapToInterval={snapInterval}
+                snapToAlignment="start"
+                onMomentumScrollEnd={onMomentumScrollEnd}
+                testID="hypnosis-carousel"
+                initialScrollIndex={0}
+                getItemLayout={(data: ArrayLike<HypnosisSession> | null | undefined, index: number) => ({
+                  length: snapInterval,
+                  offset: sidePadding + index * snapInterval,
+                  index,
+                })}
+                contentContainerStyle={{ paddingLeft: sidePadding, paddingRight: sidePadding, paddingTop: 18 + topShift, paddingBottom: 18 }}
+                onScroll={Animated.event(
+                  [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+                  { useNativeDriver: false, listener: onScroll }
+                )}
+                scrollEventThrottle={16}
+              />
+            </View>
+          ) : (
+            <View style={styles.listContainer}>
+              <FlatList
+                data={HYPNOSIS_SESSIONS}
+                keyExtractor={keyExtractor}
+                renderItem={renderListItem}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={styles.listContentContainer}
+                testID="hypnosis-list"
+              />
+            </View>
+          )}
         </View>
 
         <View style={styles.bottomSection}>
@@ -308,9 +372,56 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#fbefd9',
   },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
   headerIcon: {
     width: 28,
     height: 28,
+  },
+  toggleButton: {
+    padding: 4,
+  },
+  toggleContainer: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(251, 239, 217, 0.15)',
+    borderRadius: 8,
+    padding: 4,
+    gap: 4,
+  },
+  toggleOption: {
+    width: 32,
+    height: 32,
+    borderRadius: 6,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+  },
+  toggleOptionActive: {
+    backgroundColor: '#c9841e',
+  },
+  toggleIconCarousel: {
+    width: 16,
+    height: 12,
+    borderRadius: 2,
+    borderWidth: 2,
+    borderColor: 'rgba(251, 239, 217, 0.6)',
+  },
+  toggleIconActive: {
+    borderColor: '#fbefd9',
+  },
+  toggleIconList: {
+    width: 16,
+    height: 12,
+    justifyContent: 'space-between',
+  },
+  toggleIconListLine: {
+    width: '100%',
+    height: 2,
+    backgroundColor: 'rgba(251, 239, 217, 0.6)',
+    borderRadius: 1,
   },
 
   // Carrusel
@@ -395,4 +506,43 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   nextButtonText: { fontSize: 20, fontWeight: '700', color: '#ffffff', opacity: 0.3 },
+
+  listContainer: {
+    flex: 1,
+    paddingHorizontal: 24,
+  },
+  listContentContainer: {
+    paddingTop: 24,
+    paddingBottom: 24,
+  },
+  listItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(251, 239, 217, 0.08)',
+    borderRadius: 12,
+    marginBottom: 12,
+    padding: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  listItemImage: {
+    width: 60,
+    height: 75,
+    borderRadius: 8,
+    backgroundColor: '#2a1410',
+  },
+  listItemContent: {
+    flex: 1,
+    marginLeft: 16,
+    justifyContent: 'center',
+  },
+  listItemTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#fbefd9',
+    lineHeight: 24,
+  },
 });
