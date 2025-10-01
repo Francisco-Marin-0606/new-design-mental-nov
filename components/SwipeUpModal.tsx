@@ -304,7 +304,7 @@ export default function SwipeUpModal({ visible, onClose, imageUri, title }: Swip
   if (!visible || !isClient) return null;
 
   return (
-    <View style={styles.overlay} testID="swipeup-overlay" pointerEvents={audioPlayerVisible ? 'box-none' : 'auto'} {...(audioPlayerVisible ? {} : panResponder.panHandlers)}>
+    <View style={styles.overlay} testID="swipeup-overlay" pointerEvents={audioPlayerVisible ? 'box-none' : 'auto'}>
       <Animated.View style={[styles.backdrop, { opacity }]} pointerEvents="none" testID="modal-backdrop" />
       <Animated.View
         style={[
@@ -489,7 +489,7 @@ export default function SwipeUpModal({ visible, onClose, imageUri, title }: Swip
               </View>
             </View>
 
-            <View style={styles.tabsSection}>
+            <View style={styles.tabsSection} {...panResponder.panHandlers}>
               <View style={styles.tabsSectionInner}>
                 <View style={styles.tabsContainer}>
                   <View style={styles.tabsRow} testID="tabs-row">
