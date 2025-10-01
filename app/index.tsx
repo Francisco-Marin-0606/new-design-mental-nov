@@ -790,39 +790,12 @@ export default function HomeScreen() {
 
         <View style={styles.footerNav}>
           <View style={styles.navToggleContainer}>
-            <Animated.View
-              style={[
-                styles.navToggleIndicator,
-                {
-                  transform: [{
-                    translateX: navIndicatorAnim.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [
-                        navButtonLayouts.hipnosis.x,
-                        navButtonLayouts.aura.x,
-                      ],
-                    }),
-                  }],
-                  width: navIndicatorAnim.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [
-                      navButtonLayouts.hipnosis.width,
-                      navButtonLayouts.aura.width,
-                    ],
-                  }),
-                },
-              ]}
-            />
             <Pressable
               style={styles.navToggleOption}
               onPress={() => handleNavSectionChange('hipnosis')}
               android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.08)', borderless: true } : undefined}
               testID="nav-hipnosis"
               accessibilityLabel="Hipnosis"
-              onLayout={(event) => {
-                const { x, width } = event.nativeEvent.layout;
-                setNavButtonLayouts(prev => ({ ...prev, hipnosis: { x, width } }));
-              }}
             >
               <Image
                 source={{ uri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/FooterHipnosis.png' }}
@@ -836,10 +809,6 @@ export default function HomeScreen() {
               android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.08)', borderless: true } : undefined}
               testID="nav-aura"
               accessibilityLabel="Aura"
-              onLayout={(event) => {
-                const { x, width } = event.nativeEvent.layout;
-                setNavButtonLayouts(prev => ({ ...prev, aura: { x, width } }));
-              }}
             >
               <Image
                 source={{ uri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/icono_aura.png' }}
@@ -1416,29 +1385,15 @@ const styles = StyleSheet.create({
   },
   navToggleContainer: {
     flexDirection: 'row',
-    backgroundColor: 'rgba(251, 239, 217, 0.15)',
-    borderRadius: 8,
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    gap: 6,
+    gap: 24,
     alignItems: 'center',
+    justifyContent: 'center',
     position: 'relative',
   },
-  navToggleIndicator: {
-    position: 'absolute',
-    height: 32,
-    backgroundColor: '#c9841e',
-    borderRadius: 6,
-    top: 4,
-  },
   navToggleOption: {
-    flex: 1,
-    height: 32,
-    borderRadius: 6,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'transparent',
-    zIndex: 1,
   },
   navToggleText: {
     color: 'rgba(251, 239, 217, 0.6)',
@@ -1450,8 +1405,8 @@ const styles = StyleSheet.create({
     color: '#fbefd9',
   },
   navIconImage: {
-    width: 28,
-    height: 28,
+    width: 33.6,
+    height: 33.6,
   },
   skeletonContainer: {
     position: 'absolute',
