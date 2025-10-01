@@ -96,11 +96,6 @@ function ListItem({ item, onPress, onMenuPress, viewMode, downloadInfo }: ListIt
           <>
             <Image source={{ uri: item.imageUri }} style={[styles.listItemImage, pressed && { opacity: 0.2 }]} resizeMode="cover" />
             <View style={[styles.listItemContent, pressed && { opacity: 0.2 }]}>
-              {downloadInfo?.state === 'downloading' && (
-                <Text style={styles.downloadingLabel} testID={`downloading-${item.id}`}>
-                  Descargando... {Math.max(0, Math.min(100, Math.round(downloadInfo.progress)))}%
-                </Text>
-              )}
               <Text style={styles.listItemTitle} numberOfLines={2}>{item.title}</Text>
               <View style={styles.durationRow}>
                 {downloadInfo?.state === 'downloading' && (
