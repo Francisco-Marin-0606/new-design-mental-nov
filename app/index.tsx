@@ -1238,7 +1238,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 12,
     top: '50%',
-    transform: [{ translateY: -14 }],
+    transform: [{ translateY: -10 }],
     padding: 4,
   },
   menuOverlay: {
