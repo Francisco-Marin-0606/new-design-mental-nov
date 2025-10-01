@@ -737,6 +737,7 @@ export default function HomeScreen() {
                   paddingLeft: sidePadding,
                   paddingRight: sidePadding,
                   alignItems: 'center',
+                  justifyContent: 'center',
                 }}
                 onScroll={Animated.event(
                   [{ nativeEvent: { contentOffset: { x: scrollX } } }],
