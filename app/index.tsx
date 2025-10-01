@@ -215,18 +215,44 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
           <View style={styles.cardInner}>
             {item.isCreating ? (
               <>
-                <Image source={{ uri: item.imageUri }} style={styles.cardImage} resizeMode="cover" />
-                <Animated.View
+                <Animated.Image 
+                  source={{ uri: item.imageUri }} 
                   style={[
-                    StyleSheet.absoluteFillObject,
+                    styles.cardImage,
                     {
-                      backgroundColor: colorProgressAnim.interpolate({
+                      opacity: colorProgressAnim.interpolate({
                         inputRange: [0, 0.9],
-                        outputRange: ['rgba(255, 255, 255, 0.85)', 'rgba(255, 255, 255, 0)'],
+                        outputRange: [0.15, 1],
                       }),
                     },
-                  ]}
+                  ]} 
+                  resizeMode="cover" 
                 />
+                <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject}>
+                  <Defs>
+                    <SvgLinearGradient id="revealGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <Stop offset="0%" stopColor="#ffffff" stopOpacity={1} />
+                      <Stop 
+                        offset={colorProgressAnim.interpolate({
+                          inputRange: [0, 0.9],
+                          outputRange: ['0%', '100%'],
+                        }) as any}
+                        stopColor="#ffffff" 
+                        stopOpacity={1} 
+                      />
+                      <Stop 
+                        offset={colorProgressAnim.interpolate({
+                          inputRange: [0, 0.9],
+                          outputRange: ['0%', '100%'],
+                        }) as any}
+                        stopColor="#ffffff" 
+                        stopOpacity={0} 
+                      />
+                      <Stop offset="100%" stopColor="#ffffff" stopOpacity={0} />
+                    </SvgLinearGradient>
+                  </Defs>
+                  <Rect x={0} y={0} width="100%" height="100%" fill="url(#revealGradient)" />
+                </Svg>
               </>
             ) : (
               <Image source={{ uri: item.imageUri }} style={styles.cardImage} resizeMode="cover" />
@@ -242,7 +268,7 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
           <View style={styles.badgeCreating} testID="creating-badge">
             <Text style={styles.badgeText}>CREANDO...</Text>
           </View>
-        ) : index === 0 ? (
+        ) : index === 1 ? (
           <View style={styles.badge} testID="listen-badge">
             <Text style={styles.badgeText}>NUEVA</Text>
           </View>
@@ -252,7 +278,7 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
   );
 }
 
-const HYPNOSIS_SESSIONS_RAW: HypnosisSession[] = [
+const HYPNOSIS_SESSIONS: HypnosisSession[] = [
   { id: '0', title: 'Tu hipnosis está siendo creada', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg', durationSec: 0, isCreating: true },
   { id: '1', title: 'Calma profunda en los Colomos', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg', durationSec: 30 * 60 + 14 },
   { id: '2', title: 'Célula de sanación y calma', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg', durationSec: 20 * 60 + 24 },
@@ -265,8 +291,6 @@ const HYPNOSIS_SESSIONS_RAW: HypnosisSession[] = [
   { id: '9', title: 'Liberación emocional suave y guiada', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg', durationSec: 21 * 60 + 7 },
   { id: '10', title: 'Conexión espiritual serena y profunda', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg', durationSec: 31 * 60 + 54 },
 ];
-
-const HYPNOSIS_SESSIONS: HypnosisSession[] = [...HYPNOSIS_SESSIONS_RAW].reverse();
 
 type ViewMode = 'carousel' | 'list' | 'previous';
 
