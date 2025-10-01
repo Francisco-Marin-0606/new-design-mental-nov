@@ -289,6 +289,10 @@ export default function HomeScreen() {
   const listFlatListRef = useRef<FlatList<HypnosisSession>>(null);
   const previousFlatListRef = useRef<FlatList<HypnosisSession>>(null);
 
+  const cardHeight = useMemo(() => cardWidth * (5 / 4), [cardWidth]);
+  const titleHeight = 90;
+  const totalCardHeight = cardHeight + titleHeight;
+
   const isFirstLoadRef = useRef<boolean>(true);
   const [isCarouselReady, setIsCarouselReady] = useState<boolean>(true);
 
@@ -729,7 +733,11 @@ export default function HomeScreen() {
                   offset: index * snapInterval,
                   index,
                 })}
-                contentContainerStyle={{ paddingLeft: sidePadding, paddingRight: sidePadding, paddingTop: 48, paddingBottom: 48 }}
+                contentContainerStyle={{
+                  paddingLeft: sidePadding,
+                  paddingRight: sidePadding,
+                  alignItems: 'center',
+                }}
                 onScroll={Animated.event(
                   [{ nativeEvent: { contentOffset: { x: scrollX } } }],
                   { useNativeDriver: false, listener: onScroll }
@@ -1074,6 +1082,7 @@ const styles = StyleSheet.create({
   carouselContainer: {
     flex: 1,
     position: 'relative',
+    justifyContent: 'center',
   },
   cardWrapper: {
     alignItems: 'flex-start',
