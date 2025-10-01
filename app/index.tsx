@@ -33,6 +33,58 @@ interface CarouselItemProps {
   onPress: (session: HypnosisSession) => void;
 }
 
+interface ListItemProps {
+  item: HypnosisSession;
+  onPress: (session: HypnosisSession) => void;
+}
+
+function ListItem({ item, onPress }: ListItemProps) {
+  const pressScale = useRef(new Animated.Value(1)).current;
+
+  const handlePressIn = useCallback(() => {
+    Animated.spring(pressScale, {
+      toValue: 0.9,
+      useNativeDriver: true,
+      speed: 50,
+      bounciness: 0,
+    }).start();
+  }, [pressScale]);
+
+  const handlePressOut = useCallback(() => {
+    Animated.spring(pressScale, {
+      toValue: 1,
+      useNativeDriver: true,
+      speed: 50,
+      bounciness: 0,
+    }).start();
+  }, [pressScale]);
+
+  const handlePress = useCallback(() => {
+    onPress(item);
+  }, [item, onPress]);
+
+  return (
+    <Animated.View style={{ transform: [{ scale: pressScale }] }}>
+      <Pressable
+        style={styles.listItem}
+        onPress={handlePress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.08)' } : undefined}
+      >
+        {({ pressed }) => (
+          <>
+            <Image source={{ uri: item.imageUri }} style={[styles.listItemImage, pressed && { opacity: 0.2 }]} resizeMode="cover" />
+            <View style={[styles.listItemContent, pressed && { opacity: 0.2 }]}>
+              <Text style={styles.listItemTitle} numberOfLines={2}>{item.title}</Text>
+            </View>
+          </>
+        )}
+      </Pressable>
+    </Animated.View>
+  );
+}
+
 function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrollX, onPress }: CarouselItemProps) {
   const inputRange = [
     (index - 1) * snapInterval,
@@ -323,16 +375,7 @@ export default function HomeScreen() {
 
   const renderListItem = useCallback(
     ({ item }: ListRenderItemInfo<HypnosisSession>) => (
-      <Pressable
-        style={styles.listItem}
-        onPress={() => handleCardPress(item)}
-        android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.08)' } : undefined}
-      >
-        <Image source={{ uri: item.imageUri }} style={styles.listItemImage} resizeMode="cover" />
-        <View style={styles.listItemContent}>
-          <Text style={styles.listItemTitle} numberOfLines={2}>{item.title}</Text>
-        </View>
-      </Pressable>
+      <ListItem item={item} onPress={handleCardPress} />
     ),
     [handleCardPress]
   );
