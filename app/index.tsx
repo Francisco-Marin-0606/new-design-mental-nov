@@ -1140,6 +1140,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 8,
+    marginBottom: 60,
   },
   nextButtonText: { fontSize: 20, fontWeight: '700', color: '#ffffff', opacity: 0.3 },
 
