@@ -443,9 +443,9 @@ export default function SwipeUpModal({ visible, onClose, imageUri, title }: Swip
                         />
                       )}
                       {isDownloaded ? (
-                        <Check color="#000000" size={18} />
+                        <Check color="#FFFFFF" size={18} />
                       ) : (
-                        <Download color="#000000" size={18} />
+                        <Download color="#FFFFFF" size={18} />
                       )}
                       <Text style={styles.downloadText}>
                         {isDownloaded ? 'Descargada' : 
@@ -623,14 +623,14 @@ const styles = StyleSheet.create({
   infoTextCenter: { color: '#FFFFFF', fontSize: 16, fontWeight: '700', textAlign: 'center', alignSelf: 'center', width: '100%' },
   actionsRow: { flexDirection: 'row', gap: 12 },
   explainBtnWide: {
-    width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF', paddingVertical: 10, borderRadius: 10, gap: 8,
+    width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#b36017', paddingVertical: 10, borderRadius: 10, gap: 8,
     shadowColor: '#000000', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.1, shadowRadius: 8, elevation: 8,
   },
   downloadBtnSmall: {
-    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF', paddingVertical: 10, borderRadius: 10, gap: 8,
+    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255, 255, 255, 0.2)', paddingVertical: 10, borderRadius: 10, gap: 8,
     shadowColor: '#000000', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.1, shadowRadius: 8, elevation: 8, position: 'relative', overflow: 'hidden',
   },
-  explainText: { color: '#000000', fontSize: 16, fontWeight: '700' },
+  explainText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
   playBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF', paddingVertical: 10, borderRadius: 10, gap: 8,
     shadowColor: '#000000', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.1, shadowRadius: 8, elevation: 8,
@@ -659,10 +659,10 @@ const styles = StyleSheet.create({
   separator: { height: 1, backgroundColor: '#ffffff', opacity: 0.2, marginTop: 8 },
   icon: { width: 18, height: 18, resizeMode: 'contain' },
   downloadBtn: { width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#D4621F', paddingVertical: 10, borderRadius: 10, position: 'relative', overflow: 'hidden' },
-  downloadBtnLoading: { backgroundColor: '#FFFFFF' },
-  downloadBtnCompleted: { backgroundColor: '#FFFFFF' },
-  downloadProgress: { position: 'absolute', left: 0, top: 0, bottom: 0, backgroundColor: 'rgba(0, 0, 0, 0.1)', borderRadius: 10 },
-  downloadText: { color: '#000000', fontSize: 16, fontWeight: '700' },
+  downloadBtnLoading: { backgroundColor: '#b36017' },
+  downloadBtnCompleted: { backgroundColor: 'rgba(255, 255, 255, 0.2)' },
+  downloadProgress: { position: 'absolute', left: 0, top: 0, bottom: 0, backgroundColor: 'rgba(255, 255, 255, 0.4)', borderRadius: 10 },
+  downloadText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
   tabContentContainer: { flex: 1 },
   animatedContentContainer: { flex: 1 },
 });
