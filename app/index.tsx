@@ -225,15 +225,11 @@ export default function HomeScreen() {
 
   const keyExtractor = useCallback((i: HypnosisSession) => i.id, []);
 
-  const toggleViewMode = useCallback(async () => {
+  const handleViewModeChange = useCallback(async (mode: ViewMode) => {
     if (Platform.OS !== 'web') {
       try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
     }
-    setViewMode(prev => {
-      if (prev === 'carousel') return 'list';
-      if (prev === 'list') return 'previous';
-      return 'carousel';
-    });
+    setViewMode(mode);
   }, []);
 
   const renderListItem = useCallback(
@@ -275,31 +271,41 @@ export default function HomeScreen() {
 
           {showToggle && (
             <View style={styles.toggleRow} testID="toggle-under-title">
-              <Pressable
-                style={styles.toggleButton}
-                onPress={toggleViewMode}
-                android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.08)', borderless: true } : undefined}
-                testID="view-toggle-button"
-                accessibilityLabel={viewMode === 'carousel' ? 'Vista carrusel' : viewMode === 'list' ? 'Vista lista' : 'Anteriores'}
-              >
-                <View style={styles.toggleContainer}>
-                  <View style={[styles.toggleOption, viewMode === 'carousel' && styles.toggleOptionActive]} testID="toggle-carousel">
-                    <View style={styles.toggleIconCarouselVertical}>
-                      <View style={[styles.toggleIconBarSingle, viewMode === 'carousel' && styles.toggleIconActiveBg]} />
-                    </View>
+              <View style={styles.toggleContainer}>
+                <Pressable
+                  style={[styles.toggleOption, viewMode === 'carousel' && styles.toggleOptionActive]}
+                  onPress={() => handleViewModeChange('carousel')}
+                  android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.08)', borderless: true } : undefined}
+                  testID="toggle-carousel"
+                  accessibilityLabel="Vista carrusel"
+                >
+                  <View style={styles.toggleIconCarouselVertical}>
+                    <View style={[styles.toggleIconBarSingle, viewMode === 'carousel' && styles.toggleIconActiveBg]} />
                   </View>
-                  <View style={[styles.toggleOption, viewMode === 'list' && styles.toggleOptionActive]} testID="toggle-list">
-                    <View style={styles.toggleIconList}>
-                      <View style={[styles.toggleIconListLine, viewMode === 'list' && styles.toggleIconActiveBg]} />
-                      <View style={[styles.toggleIconListLine, viewMode === 'list' && styles.toggleIconActiveBg]} />
-                      <View style={[styles.toggleIconListLine, viewMode === 'list' && styles.toggleIconActiveBg]} />
-                    </View>
+                </Pressable>
+                <Pressable
+                  style={[styles.toggleOption, viewMode === 'list' && styles.toggleOptionActive]}
+                  onPress={() => handleViewModeChange('list')}
+                  android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.08)', borderless: true } : undefined}
+                  testID="toggle-list"
+                  accessibilityLabel="Vista lista"
+                >
+                  <View style={styles.toggleIconList}>
+                    <View style={[styles.toggleIconListLine, viewMode === 'list' && styles.toggleIconActiveBg]} />
+                    <View style={[styles.toggleIconListLine, viewMode === 'list' && styles.toggleIconActiveBg]} />
+                    <View style={[styles.toggleIconListLine, viewMode === 'list' && styles.toggleIconActiveBg]} />
                   </View>
-                  <View style={[styles.toggleOption, styles.toggleOptionText, viewMode === 'previous' && styles.toggleOptionActive]} testID="toggle-previous">
-                    <Text numberOfLines={1} style={[styles.toggleText, viewMode === 'previous' && styles.toggleTextActive]}>Anteriores</Text>
-                  </View>
-                </View>
-              </Pressable>
+                </Pressable>
+                <Pressable
+                  style={[styles.toggleOption, styles.toggleOptionText, viewMode === 'previous' && styles.toggleOptionActive]}
+                  onPress={() => handleViewModeChange('previous')}
+                  android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.08)', borderless: true } : undefined}
+                  testID="toggle-previous"
+                  accessibilityLabel="Anteriores"
+                >
+                  <Text numberOfLines={1} style={[styles.toggleText, viewMode === 'previous' && styles.toggleTextActive]}>Anteriores</Text>
+                </Pressable>
+              </View>
             </View>
           )}
 
@@ -412,9 +418,7 @@ const styles = StyleSheet.create({
     paddingRight: 54,
     marginBottom: 8,
   },
-  toggleButton: {
-    padding: 4,
-  },
+
   toggleContainer: {
     flexDirection: 'row',
     backgroundColor: 'rgba(251, 239, 217, 0.15)',
