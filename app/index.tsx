@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { BlurView } from 'expo-blur';
+
 import * as Haptics from 'expo-haptics';
 import SwipeUpModal from '@/components/SwipeUpModal';
 
@@ -52,16 +52,7 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
     extrapolate: 'clamp',
   });
 
-  // Opacidad del blur solo para ítems NO centrales
-  const blurOpacity = scrollX.interpolate({
-    inputRange: [
-      (index - 1) * snapInterval,
-      index * snapInterval,
-      (index + 1) * snapInterval,
-    ],
-    outputRange: [1, 0, 1],
-    extrapolate: 'clamp',
-  });
+
 
   const pressScale = useRef(new Animated.Value(1)).current;
   const combinedScale = Animated.multiply(scale, pressScale);
@@ -120,35 +111,13 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
           </View>
         </View>
 
-        {/* Título con recorte sutil y blur opcional */}
-        <View style={styles.textBlurWrapper}>
-          <Text style={[styles.cardTitle, { width: cardWidth }]} numberOfLines={3}>
-            {item.title}
-          </Text>
+        <Text style={[styles.cardTitle, { width: cardWidth }]} numberOfLines={3}>
+          {item.title}
+        </Text>
 
-          {Platform.OS !== 'web' ? (
-            <View style={styles.textBlurClip}>
-              <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { opacity: blurOpacity }]}>
-                <BlurView intensity={12} tint="dark" style={StyleSheet.absoluteFill} />
-              </Animated.View>
-            </View>
-          ) : null}
-        </View>
-
-        {/* Badge ESCUCHAR solamente en el primer ítem */}
         {index === 0 && (
-          <View style={styles.badgeBlurWrapper}>
-            <View style={styles.badge} testID="listen-badge">
-              <Text style={styles.badgeText}>ESCUCHAR</Text>
-            </View>
-
-            {Platform.OS !== 'web' ? (
-              <View style={styles.badgeBlurClip}>
-                <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { opacity: blurOpacity }]}>
-                  <BlurView intensity={12} tint="dark" style={StyleSheet.absoluteFill} />
-                </Animated.View>
-              </View>
-            ) : null}
+          <View style={styles.badge} testID="listen-badge">
+            <Text style={styles.badgeText}>ESCUCHAR</Text>
           </View>
         )}
       </Pressable>
@@ -381,26 +350,10 @@ const styles = StyleSheet.create({
 
   cardImage: { width: '100%', height: '100%' },
 
-  // Overlay de blur: ocupa el área exacta del cardInner (sin márgenes negativos)
-  blurOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    borderRadius: 16,
-  },
 
-  textBlurWrapper: {
-    marginTop: 20,
-    position: 'relative' as const,
-  },
-  // Clip pequeño para el blur del título (opcional)
-  textBlurClip: {
-    ...StyleSheet.absoluteFillObject,
-    top: -4,
-    bottom: -4,
-    borderRadius: 10,
-    overflow: 'hidden',
-  },
 
   cardTitle: {
+    marginTop: 20,
     fontSize: 26,
     fontWeight: '600',
     color: '#fbefd9',
@@ -409,12 +362,9 @@ const styles = StyleSheet.create({
     lineHeight: 30,
   },
 
-  badgeBlurWrapper: {
+  badge: {
     marginTop: 15,
     alignSelf: 'flex-start',
-    position: 'relative' as const,
-  },
-  badge: {
     backgroundColor: '#c9841e',
     paddingHorizontal: 14,
     paddingVertical: 7,
@@ -425,12 +375,6 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#fbefd9',
     letterSpacing: 0.2,
-  },
-  // Clip del blur para el badge (opcional)
-  badgeBlurClip: {
-    ...StyleSheet.absoluteFillObject,
-    borderRadius: 999,
-    overflow: 'hidden',
   },
 
   // Pie
