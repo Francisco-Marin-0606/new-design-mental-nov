@@ -848,9 +848,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 0,
     lineHeight: 34,
-    textShadowColor: 'rgba(0, 0, 0, 0.5)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
+    textShadowColor: 'rgba(0, 0, 0, 0.205)',
+    textShadowOffset: { width: 0, height: 0.82 },
+    textShadowRadius: 1.64,
   },
   subtitle: {
     fontSize: 18,
