@@ -146,8 +146,7 @@ export default function HomeScreen() {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [selectedSession, setSelectedSession] = useState<HypnosisSession | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('carousel');
-  const [isTransitioning, setIsTransitioning] = useState<boolean>(false);
-  const { width: screenWidth } = useWindowDimensions();
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
 
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const slideAnim = useRef(new Animated.Value(0)).current;
@@ -243,8 +242,6 @@ export default function HomeScreen() {
       try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
     }
 
-    setIsTransitioning(true);
-
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 0,
@@ -271,7 +268,6 @@ export default function HomeScreen() {
           useNativeDriver: true,
         }),
       ]).start(() => {
-        setIsTransitioning(false);
         if (mode === 'carousel' && carouselScrollOffsetRef.current > 0) {
           setTimeout(() => {
             carouselFlatListRef.current?.scrollToOffset({
@@ -380,32 +376,6 @@ export default function HomeScreen() {
                   <Text numberOfLines={1} style={[styles.toggleText, viewMode === 'previous' && styles.toggleTextActive]}>Anteriores</Text>
                 </Pressable>
               </View>
-            </View>
-          )}
-
-          {isTransitioning && (
-            <View style={styles.skeletonContainer}>
-              {viewMode === 'carousel' ? (
-                <View style={[styles.carouselContainer, { paddingLeft: sidePadding, paddingRight: sidePadding, paddingTop: 48 }]}>
-                  <View style={styles.skeletonCarouselWrapper}>
-                    <View style={[styles.skeletonCard, { width: cardWidth }]} />
-                  </View>
-                </View>
-              ) : (
-                <View style={styles.listContainer}>
-                  <View style={styles.skeletonListWrapper}>
-                    {[1, 2, 3, 4, 5].map((i) => (
-                      <View key={i} style={styles.skeletonListItem}>
-                        <View style={styles.skeletonListImage} />
-                        <View style={styles.skeletonListContent}>
-                          <View style={styles.skeletonListTitle} />
-                          <View style={styles.skeletonListSubtitle} />
-                        </View>
-                      </View>
-                    ))}
-                  </View>
-                </View>
-              )}
             </View>
           )}
 
@@ -717,59 +687,5 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: 'rgba(251, 239, 217, 0.6)',
     marginTop: 24,
-  },
-
-  skeletonContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 10,
-  },
-  skeletonCarouselWrapper: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  skeletonCard: {
-    aspectRatio: 4 / 5,
-    borderRadius: 16,
-    backgroundColor: 'rgba(251, 239, 217, 0.1)',
-  },
-  skeletonListWrapper: {
-    paddingTop: 24,
-  },
-  skeletonListItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(251, 239, 217, 0.08)',
-    borderRadius: 12,
-    marginBottom: 12,
-    padding: 12,
-  },
-  skeletonListImage: {
-    width: 60,
-    height: 75,
-    borderRadius: 8,
-    backgroundColor: 'rgba(251, 239, 217, 0.15)',
-  },
-  skeletonListContent: {
-    flex: 1,
-    marginLeft: 16,
-    justifyContent: 'center',
-  },
-  skeletonListTitle: {
-    width: '80%',
-    height: 18,
-    borderRadius: 4,
-    backgroundColor: 'rgba(251, 239, 217, 0.15)',
-    marginBottom: 8,
-  },
-  skeletonListSubtitle: {
-    width: '60%',
-    height: 14,
-    borderRadius: 4,
-    backgroundColor: 'rgba(251, 239, 217, 0.1)',
   },
 });
