@@ -798,12 +798,20 @@ export default function HomeScreen() {
               <View style={styles.menuDivider} />
 
               <Pressable
-                style={styles.menuItem}
+                style={[styles.menuItem, { overflow: 'hidden' }]}
                 onPress={() => handleMenuAction('download')}
                 android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.1)' } : undefined}
                 testID="menu-download"
                 accessibilityLabel="Descargar"
               >
+                {menuDownload?.state === 'downloading' && (
+                  <View 
+                    style={[
+                      styles.menuItemProgressBar,
+                      { width: `${Math.max(0, Math.min(100, Math.round(menuDownload.progress)))}%` }
+                    ]}
+                  />
+                )}
                 <View style={[styles.menuIconContainer, styles.menuIconAccent]}>
                   <Download color="#ffffff" size={20} />
                 </View>
@@ -1245,6 +1253,15 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 4,
     marginBottom: 10,
+    position: 'relative',
+  },
+  menuItemProgressBar: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    borderRadius: 14,
   },
   menuIconContainer: {
     width: 22,
