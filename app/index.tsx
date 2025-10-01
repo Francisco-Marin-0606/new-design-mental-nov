@@ -591,7 +591,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#c9841e',
     borderRadius: 6,
     top: 4,
-    left: 8,
   },
   toggleOption: {
     minWidth: 32,
