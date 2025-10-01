@@ -140,7 +140,7 @@ const HYPNOSIS_SESSIONS_RAW: HypnosisSession[] = [
 
 const HYPNOSIS_SESSIONS: HypnosisSession[] = [...HYPNOSIS_SESSIONS_RAW].reverse();
 
-type ViewMode = 'carousel' | 'list' | 'previous';
+type ViewMode = 'carousel' | 'list';
 
 export default function HomeScreen() {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
@@ -225,11 +225,11 @@ export default function HomeScreen() {
 
   const keyExtractor = useCallback((i: HypnosisSession) => i.id, []);
 
-  const setMode = useCallback(async (mode: ViewMode) => {
+  const toggleViewMode = useCallback(async () => {
     if (Platform.OS !== 'web') {
       try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
     }
-    setViewMode(mode);
+    setViewMode(prev => prev === 'carousel' ? 'list' : 'carousel');
   }, []);
 
   const renderListItem = useCallback(
@@ -249,15 +249,6 @@ export default function HomeScreen() {
   );
 
   const showToggle = HYPNOSIS_SESSIONS.length > 8;
-
-  const displayedSessions: HypnosisSession[] = useMemo(() => {
-    switch (viewMode) {
-      case 'previous':
-        return [...HYPNOSIS_SESSIONS].reverse();
-      default:
-        return HYPNOSIS_SESSIONS;
-    }
-  }, [viewMode]);
 
   return (
     <View style={styles.root} testID="root-fullscreen">
@@ -280,39 +271,32 @@ export default function HomeScreen() {
 
           {showToggle && (
             <View style={styles.toggleRow}>
-              <View style={styles.toggleContainer}>
-                <Pressable
-                  style={[styles.toggleOption, viewMode === 'carousel' && styles.toggleOptionActive]}
-                  onPress={() => setMode('carousel')}
-                  android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.08)', borderless: true } : undefined}
-                  testID="toggle-carousel"
-                >
-                  <Text style={[styles.toggleLabel, viewMode === 'carousel' && styles.toggleLabelActive]}>Carrusel</Text>
-                </Pressable>
-                <Pressable
-                  style={[styles.toggleOption, viewMode === 'list' && styles.toggleOptionActive]}
-                  onPress={() => setMode('list')}
-                  android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.08)', borderless: true } : undefined}
-                  testID="toggle-list"
-                >
-                  <Text style={[styles.toggleLabel, viewMode === 'list' && styles.toggleLabelActive]}>Lista</Text>
-                </Pressable>
-                <Pressable
-                  style={[styles.toggleOption, viewMode === 'previous' && styles.toggleOptionActive]}
-                  onPress={() => setMode('previous')}
-                  android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.08)', borderless: true } : undefined}
-                  testID="toggle-previous"
-                >
-                  <Text style={[styles.toggleLabel, viewMode === 'previous' && styles.toggleLabelActive]}>Anteriores</Text>
-                </Pressable>
-              </View>
+              <Pressable
+                style={styles.toggleButton}
+                onPress={toggleViewMode}
+                android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.08)', borderless: true } : undefined}
+                testID="view-toggle-button"
+              >
+                <View style={styles.toggleContainer}>
+                  <View style={[styles.toggleOption, viewMode === 'carousel' && styles.toggleOptionActive]}>
+                    <View style={[styles.toggleIconCarousel, viewMode === 'carousel' && styles.toggleIconActive]} />
+                  </View>
+                  <View style={[styles.toggleOption, viewMode === 'list' && styles.toggleOptionActive]}>
+                    <View style={styles.toggleIconList}>
+                      <View style={[styles.toggleIconListLine, viewMode === 'list' && styles.toggleIconActive]} />
+                      <View style={[styles.toggleIconListLine, viewMode === 'list' && styles.toggleIconActive]} />
+                      <View style={[styles.toggleIconListLine, viewMode === 'list' && styles.toggleIconActive]} />
+                    </View>
+                  </View>
+                </View>
+              </Pressable>
             </View>
           )}
 
           {viewMode === 'carousel' ? (
             <View style={styles.carouselContainer}>
               <Animated.FlatList
-                data={displayedSessions}
+                data={HYPNOSIS_SESSIONS}
                 keyExtractor={keyExtractor}
                 renderItem={renderItem}
                 horizontal
@@ -342,7 +326,7 @@ export default function HomeScreen() {
           ) : (
             <View style={styles.listContainer}>
               <FlatList
-                data={displayedSessions}
+                data={HYPNOSIS_SESSIONS}
                 keyExtractor={keyExtractor}
                 renderItem={renderListItem}
                 showsVerticalScrollIndicator={false}
@@ -401,44 +385,53 @@ const styles = StyleSheet.create({
   },
   toggleRow: {
     flexDirection: 'row',
-    justifyContent: 'flex-start',
+    justifyContent: 'flex-end',
     paddingLeft: 54,
     paddingRight: 54,
-    marginBottom: 16,
+    marginBottom: 8,
   },
   toggleButton: {
     padding: 4,
   },
   toggleContainer: {
-    flexDirection: 'column',
+    flexDirection: 'row',
     backgroundColor: 'rgba(251, 239, 217, 0.15)',
-    borderRadius: 10,
-    padding: 6,
-    gap: 6,
-    alignSelf: 'flex-start'
+    borderRadius: 8,
+    padding: 4,
+    gap: 4,
   },
   toggleOption: {
-    minWidth: 120,
-    height: 34,
-    borderRadius: 8,
+    width: 32,
+    height: 32,
+    borderRadius: 6,
     justifyContent: 'center',
-    alignItems: 'flex-start',
-    paddingHorizontal: 10,
+    alignItems: 'center',
     backgroundColor: 'transparent',
   },
   toggleOptionActive: {
     backgroundColor: '#c9841e',
   },
-  toggleLabel: {
-    fontSize: 14,
-    color: 'rgba(251, 239, 217, 0.7)',
-    fontWeight: '500',
+  toggleIconCarousel: {
+    width: 16,
+    height: 12,
+    borderRadius: 2,
+    borderWidth: 2,
+    borderColor: 'rgba(251, 239, 217, 0.6)',
   },
-  toggleLabelActive: {
-    color: '#fbefd9',
+  toggleIconActive: {
+    borderColor: '#fbefd9',
   },
-  
-  
+  toggleIconList: {
+    width: 16,
+    height: 12,
+    justifyContent: 'space-between',
+  },
+  toggleIconListLine: {
+    width: '100%',
+    height: 2,
+    backgroundColor: 'rgba(251, 239, 217, 0.6)',
+    borderRadius: 1,
+  },
 
   // Carrusel
   carouselContainer: {
