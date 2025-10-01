@@ -357,7 +357,7 @@ export default function HomeScreen() {
                 ListEmptyComponent={<Text style={styles.emptyText}>Sin anteriores</Text>}
               />
             </View>
-          )
+          )}
         </View>
 
         <View style={styles.bottomSection}>
