@@ -210,7 +210,7 @@ export default function SwipeUpModal({ visible, onClose, imageUri, title }: Swip
       PanResponder.create({
         onMoveShouldSetPanResponder: (_, gestureState) => {
           const isHorizontal = Math.abs(gestureState.dx) > Math.abs(gestureState.dy);
-          const isSignificantHorizontal = Math.abs(gestureState.dx) > 20;
+          const isSignificantHorizontal = Math.abs(gestureState.dx) > 5;
           if (isHorizontal && isSignificantHorizontal) return true;
           return false;
         },
@@ -237,8 +237,8 @@ export default function SwipeUpModal({ visible, onClose, imageUri, title }: Swip
           textOpacity.setValue(Math.max(0.7, opacity));
         },
         onPanResponderRelease: (_, gestureState) => {
-          const swipeThreshold = 30;
-          const velocityThreshold = 0.3;
+          const swipeThreshold = 50;
+          const velocityThreshold = 0.2;
           const isLeftSwipe = gestureState.dx < -swipeThreshold || gestureState.vx < -velocityThreshold;
           const isRightSwipe = gestureState.dx > swipeThreshold || gestureState.vx > velocityThreshold;
           const currentTab = activeTabRef.current;
