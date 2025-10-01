@@ -358,7 +358,8 @@ export default function HomeScreen() {
         
         setViewMode(mode);
         isFirstLoadRef.current = false;
-        slideAnim.setValue(50);
+        const enterFrom = mode === 'previous' ? 50 : -50;
+        slideAnim.setValue(enterFrom);
         
         Animated.parallel([
           Animated.timing(fadeAnim, {
