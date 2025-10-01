@@ -1408,6 +1408,7 @@ const styles = StyleSheet.create({
   navIconImage: {
     width: 42,
     height: 42,
+    marginTop: 15,
   },
   skeletonContainer: {
     position: 'absolute',
