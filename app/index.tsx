@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { MoreVertical, Play, Download, MessageCircle, Edit3 } from 'lucide-react-native';
+import { MoreVertical, Play, Download, MessageCircle, Edit3, Settings } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import SwipeUpModal from '@/components/SwipeUpModal';
 import PlayerModal from '@/components/PlayerModal';
@@ -459,10 +459,10 @@ export default function HomeScreen() {
           <View style={styles.headerRow} testID="header-row">
             <Text style={styles.headerTitle}>Mis hipnosis</Text>
             <View style={styles.headerRight}>
-              <Image
-                source={{ uri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/TuercaConfig.png' }}
-                style={styles.headerIcon}
-                resizeMode="contain"
+              <Settings
+                color="#fbefd9"
+                size={24}
+                strokeWidth={1.5}
                 testID="header-settings-icon"
                 accessibilityLabel="Configuración"
               />
