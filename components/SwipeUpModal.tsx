@@ -210,48 +210,40 @@ export default function SwipeUpModal({ visible, onClose, imageUri, title }: Swip
       PanResponder.create({
         onMoveShouldSetPanResponder: (_, gestureState) => {
           const isHorizontal = Math.abs(gestureState.dx) > Math.abs(gestureState.dy);
-          const isSignificantHorizontal = Math.abs(gestureState.dx) > 5;
-          if (isHorizontal && isSignificantHorizontal) return true;
-          return false;
+          const hasIntent = Math.abs(gestureState.dx) > 3 || Math.abs(gestureState.vx) > 0.05;
+          return isHorizontal && hasIntent;
         },
+        onPanResponderTerminationRequest: () => false,
         onPanResponderGrant: () => {
-          // Reset any ongoing animations when starting a new gesture
           textTranslateX.stopAnimation();
           textOpacity.stopAnimation();
         },
         onPanResponderMove: (_, gestureState) => {
-          // Make the text follow the finger with some resistance
-          const dragResistance = 0.6; // Adjust this value to change how much the text follows (0-1)
-          const maxDrag = screenWidth * 0.4; // Maximum distance the text can be dragged
-          
-          // Calculate the drag offset with resistance and limits
+          const dragResistance = 0.6;
+          const maxDrag = screenWidth * 0.4;
           let dragOffset = gestureState.dx * dragResistance;
           dragOffset = Math.max(-maxDrag, Math.min(maxDrag, dragOffset));
-          
-          // Apply the drag offset to the text
           textTranslateX.setValue(dragOffset);
-          
-          // Slightly fade the text as it's being dragged
           const fadeAmount = Math.abs(dragOffset) / maxDrag;
-          const opacity = 1 - (fadeAmount * 0.3); // Fade up to 30%
-          textOpacity.setValue(Math.max(0.7, opacity));
+          const nextOpacity = 1 - fadeAmount * 0.3;
+          textOpacity.setValue(Math.max(0.7, nextOpacity));
         },
         onPanResponderRelease: (_, gestureState) => {
-          const swipeThreshold = 50;
-          const velocityThreshold = 0.2;
-          const isLeftSwipe = gestureState.dx < -swipeThreshold || gestureState.vx < -velocityThreshold;
-          const isRightSwipe = gestureState.dx > swipeThreshold || gestureState.vx > velocityThreshold;
+          const distanceThreshold = Math.max(24, screenWidth * 0.15);
+          const velocityThreshold = 0.05;
+          const isLeftSwipe = gestureState.dx <= -distanceThreshold || gestureState.vx <= -velocityThreshold;
+          const isRightSwipe = gestureState.dx >= distanceThreshold || gestureState.vx >= velocityThreshold;
           const currentTab = activeTabRef.current;
-          
+
           if (isLeftSwipe && currentTab === 'mensaje') {
             switchToTabSafe('respuestas', 'left');
             return;
-          } else if (isRightSwipe && currentTab === 'respuestas') {
+          }
+          if (isRightSwipe && currentTab === 'respuestas') {
             switchToTabSafe('mensaje', 'right');
             return;
           }
-          
-          // If no tab switch occurred, animate back to original position with bounce
+
           Animated.parallel([
             Animated.spring(textTranslateX, {
               toValue: 0,
