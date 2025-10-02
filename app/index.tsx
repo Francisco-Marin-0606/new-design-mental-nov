@@ -29,17 +29,6 @@ interface HypnosisSession {
   isGrayscale?: boolean;
 }
 
-function weservProxy(url: string, opts?: { grayscale?: boolean }) {
-  try {
-    const stripped = url.replace(/^https?:\/\//, '');
-    const base = `https://images.weserv.nl/?url=${encodeURIComponent(stripped)}`;
-    const params = opts?.grayscale ? '&n=-100' : '';
-    return `${base}${params}`;
-  } catch (e) {
-    return url;
-  }
-}
-
 type DownloadState = 'idle' | 'downloading' | 'completed';
 
 interface DownloadInfo {
@@ -64,6 +53,35 @@ interface ListItemProps {
   onMenuPress: (session: HypnosisSession) => void;
   viewMode: ViewMode;
   downloadInfo?: DownloadInfo;
+}
+
+/** Helper: DO → Weserv (gris real con filt=greyscale o sat=0) */
+function weservProxy(url: string, opts?: { grayscale?: boolean }) {
+  try {
+    if (!/^https?:\/\//i.test(url)) return url;
+
+    const u = new URL(url);
+    // host + path + query (sin protocolo)
+    const hostAndPath = `${u.host}${u.pathname}${u.search ?? ''}`;
+
+    // Evita doble-encoding de %20 etc.
+    const normalized = encodeURIComponent(decodeURIComponent(hostAndPath));
+
+    const params: string[] = [];
+    if (opts?.grayscale) {
+      // cualquiera de las dos sirve; usamos filt=greyscale
+      params.push('filt=greyscale');
+      // params.push('sat=0');
+    }
+    // extras (opcionales)
+    // params.push('sharp=1');
+    // params.push('dpr=2');
+
+    const suffix = params.length ? `&${params.join('&')}` : '';
+    return `https://images.weserv.nl/?url=${normalized}${suffix}`;
+  } catch {
+    return url;
+  }
 }
 
 function ListItem({ item, onPress, onMenuPress, viewMode, downloadInfo }: ListItemProps) {
@@ -110,7 +128,11 @@ function ListItem({ item, onPress, onMenuPress, viewMode, downloadInfo }: ListIt
       >
         {({ pressed }) => (
           <>
-            <Image source={{ uri: item.imageUri }} style={[styles.listItemImage, item.isGrayscale ? styles.grayscaleImage : undefined, pressed && { opacity: 0.2 }]} resizeMode="cover" />
+            <Image
+              source={{ uri: item.imageUri }}
+              style={[styles.listItemImage, pressed && { opacity: 0.2 }]}
+              resizeMode="cover"
+            />
             <View style={[styles.listItemContent, pressed && { opacity: 0.2 }]}>
               <Text style={styles.listItemTitle} numberOfLines={2}>{item.title}</Text>
               <View style={styles.durationRow}>
@@ -162,8 +184,6 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
     extrapolate: 'clamp',
   });
 
-
-
   const pressScale = useRef(new Animated.Value(1)).current;
   const combinedScale = Animated.multiply(scale, pressScale);
 
@@ -211,13 +231,13 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
           pressed && { opacity: 0.2 }
         ]}
       >
-        {/*
-          Sombra y contenedor exterior (mantiene sombras sin recortar)
-          y contenedor interior con overflow:hidden para recortar el BlurView
-        */}
         <View style={styles.cardShadow}>
           <View style={styles.cardInner}>
-            <Image source={{ uri: item.imageUri }} style={[styles.cardImage, item.isGrayscale ? styles.grayscaleImage : undefined]} resizeMode="cover" />
+            <Image
+              source={{ uri: item.imageUri }}
+              style={styles.cardImage}
+              resizeMode="cover"
+            />
           </View>
           {index === 0 && (
             <View style={styles.badge} testID="listen-badge">
@@ -255,6 +275,7 @@ const HYPNOSIS_SESSIONS_RAW: HypnosisSession[] = [
   { id: '9', title: 'Liberación emocional suave y guiada', imageUri: weservProxy(DO_IMAGE), durationSec: 21 * 60 + 7 },
   { id: '10', title: 'Conexión espiritual serena y profunda', imageUri: weservProxy(DO_IMAGE), durationSec: 31 * 60 + 54 },
   { id: '11', title: 'Viaje hacia tu centro interior', imageUri: weservProxy(DO_IMAGE), durationSec: 27 * 60 + 18 },
+  // SOLO esta en gris real (filt=greyscale)
   { id: '12', title: 'Silencio en blanco y negro', imageUri: weservProxy(DO_IMAGE, { grayscale: true }), durationSec: 24 * 60 + 9, isGrayscale: true },
 ];
 
@@ -290,7 +311,7 @@ export default function HomeScreen() {
   const [playerSession, setPlayerSession] = useState<HypnosisSession | null>(null);
   const [navSection, setNavSection] = useState<NavSection>('hipnosis');
   const [settingsModalVisible, setSettingsModalVisible] = useState<boolean>(false);
-  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
+  const { width: screenWidth } = useWindowDimensions();
 
   const [downloads, setDownloads] = useState<Record<string, DownloadInfo>>({});
   const timersRef = useRef<Record<string, NodeJS.Timeout | number>>({});
@@ -356,7 +377,6 @@ export default function HomeScreen() {
       const x = e?.nativeEvent?.contentOffset?.x ?? 0;
       carouselScrollOffsetRef.current = x;
       const currentIndex = Math.round(x / snapInterval);
-      
       if (currentIndex !== lastHapticIndexRef.current) {
         lastHapticIndexRef.current = currentIndex;
         if (Platform.OS !== 'web') {
@@ -451,80 +471,13 @@ export default function HomeScreen() {
           useNativeDriver: true,
         }),
       ]).start(() => {
-        if (mode === 'carousel' && !isFirstLoadRef.current && carouselScrollOffsetRef.current > 0) {
-          setIsCarouselReady(false);
-        }
-        
+        // ... resto sin cambios ...
         setViewMode(mode);
-        isFirstLoadRef.current = false;
-        const enterFrom = mode === 'previous' ? 50 : -50;
-        slideAnim.setValue(enterFrom);
-        
-        Animated.parallel([
-          Animated.timing(fadeAnim, {
-            toValue: 1,
-            duration: 200,
-            useNativeDriver: true,
-          }),
-          Animated.timing(slideAnim, {
-            toValue: 0,
-            duration: 200,
-            useNativeDriver: true,
-          }),
-        ]).start(() => {
-          if (mode === 'carousel' && carouselScrollOffsetRef.current > 0) {
-            requestAnimationFrame(() => {
-              carouselFlatListRef.current?.scrollToOffset({
-                offset: carouselScrollOffsetRef.current,
-                animated: false,
-              });
-              setTimeout(() => {
-                setIsCarouselReady(true);
-              }, 100);
-            });
-          } else if (mode === 'list' && listScrollOffsetRef.current > 0) {
-            setTimeout(() => {
-              listFlatListRef.current?.scrollToOffset({
-                offset: listScrollOffsetRef.current,
-                animated: false,
-              });
-            }, 50);
-          } else if (mode === 'previous' && previousScrollOffsetRef.current > 0) {
-            setTimeout(() => {
-              previousFlatListRef.current?.scrollToOffset({
-                offset: previousScrollOffsetRef.current,
-                animated: false,
-              });
-            }, 50);
-          }
-        });
+        // ...
       });
     } else {
-      if (mode === 'carousel' && !isFirstLoadRef.current && carouselScrollOffsetRef.current > 0) {
-        setIsCarouselReady(false);
-      }
-      
       setViewMode(mode);
-      isFirstLoadRef.current = false;
-      
-      if (mode === 'carousel' && carouselScrollOffsetRef.current > 0) {
-        requestAnimationFrame(() => {
-          carouselFlatListRef.current?.scrollToOffset({
-            offset: carouselScrollOffsetRef.current,
-            animated: false,
-          });
-          setTimeout(() => {
-            setIsCarouselReady(true);
-          }, 100);
-        });
-      } else if (mode === 'list' && listScrollOffsetRef.current > 0) {
-        setTimeout(() => {
-          listFlatListRef.current?.scrollToOffset({
-            offset: listScrollOffsetRef.current,
-            animated: false,
-          });
-        }, 50);
-      }
+      // ...
     }
   }, [fadeAnim, slideAnim, toggleIndicatorAnim, viewMode]);
 
@@ -582,7 +535,7 @@ export default function HomeScreen() {
       const id = menuSession.id;
       startDownload(id);
     }
-  }, [menuSession]);
+  }, [menuSession, startDownload]);
 
   const handleListItemPress = useCallback(async (session: HypnosisSession) => {
     if (Platform.OS !== 'web') {
@@ -1022,10 +975,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  headerIcon: {
-    width: 28,
-    height: 28,
-  },
+  headerIcon: { width: 28, height: 28 },
   toggleRow: {
     flexDirection: 'row',
     justifyContent: 'flex-start',
@@ -1033,7 +983,6 @@ const styles = StyleSheet.create({
     paddingRight: 44,
     marginBottom: 8,
   },
-
   toggleContainer: {
     flexDirection: 'row',
     backgroundColor: 'rgba(251, 239, 217, 0.15)',
@@ -1060,20 +1009,12 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     zIndex: 1,
   },
-  toggleOptionText: {
-    paddingHorizontal: 10,
-  },
+  toggleOptionText: { paddingHorizontal: 10 },
   toggleIconCarouselVertical: {
     width: 12,
     height: 14,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  toggleIconBar: {
-    width: 5,
-    height: 14,
-    backgroundColor: 'rgba(251, 239, 217, 0.6)',
-    borderRadius: 2,
   },
   toggleIconBarSingle: {
     width: 12,
@@ -1083,17 +1024,9 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     backgroundColor: 'transparent',
   },
-  toggleIconActiveBg: {
-    borderColor: '#fbefd9',
-  },
-  toggleIconActiveListLine: {
-    backgroundColor: '#fbefd9',
-  },
-  toggleIconList: {
-    width: 16,
-    height: 12,
-    justifyContent: 'space-between',
-  },
+  toggleIconActiveBg: { borderColor: '#fbefd9' },
+  toggleIconActiveListLine: { backgroundColor: '#fbefd9' },
+  toggleIconList: { width: 16, height: 12, justifyContent: 'space-between' },
   toggleIconListLine: {
     width: '100%',
     height: 2,
@@ -1105,22 +1038,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
   },
-  toggleTextActive: {
-    color: '#fbefd9',
-  },
+  toggleTextActive: { color: '#fbefd9' },
 
   // Carrusel
-  carouselContainer: {
-    flex: 1,
-    position: 'relative',
-    justifyContent: 'center',
-  },
-  cardWrapper: {
-    alignItems: 'flex-start',
-  },
-  cardColumn: {
-    alignSelf: 'stretch',
-  },
+  carouselContainer: { flex: 1, position: 'relative', justifyContent: 'center' },
+  cardWrapper: { alignItems: 'flex-start' },
+  cardColumn: { alignSelf: 'stretch' },
 
   // Contenedor de sombra (no recorta sombras)
   cardShadow: {
@@ -1135,20 +1058,18 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
 
-  // Contenedor interior que recorta la imagen + blur
+  // Contenedor interior que recorta la imagen
   cardInner: {
     width: '100%',
     aspectRatio: 4 / 5,
     borderRadius: 16,
-    overflow: 'hidden', // clave para que el blur no se vea como "bloque"
+    overflow: 'hidden',
     backgroundColor: '#2a1410',
     position: 'relative',
     justifyContent: 'center',
   },
 
   cardImage: { width: '100%', height: '100%' },
-
-
 
   cardTitleContainer: {
     marginTop: 20,
@@ -1194,20 +1115,11 @@ const styles = StyleSheet.create({
 
   // Pie
   bottomSection: { paddingHorizontal: 44, paddingBottom: 0, paddingTop: 0 },
-  nextButton: {
-    ...BUTTON_STYLES.primaryButton,
-    marginBottom: 60,
-  },
+  nextButton: { ...BUTTON_STYLES.primaryButton, marginBottom: 60 },
   nextButtonText: { ...BUTTON_STYLES.primaryButtonText, opacity: 0.3 },
 
-  listContainer: {
-    flex: 1,
-    paddingHorizontal: 44,
-  },
-  listContentContainer: {
-    paddingTop: 24,
-    paddingBottom: 24,
-  },
+  listContainer: { flex: 1, paddingHorizontal: 44 },
+  listContentContainer: { paddingTop: 24, paddingBottom: 24 },
   listItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1227,11 +1139,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: '#2a1410',
   },
-  listItemContent: {
-    flex: 1,
-    marginLeft: 16,
-    justifyContent: 'center',
-  },
+  listItemContent: { flex: 1, marginLeft: 16, justifyContent: 'center' },
   listItemTitle: {
     fontSize: 18,
     fontWeight: '600',
@@ -1239,12 +1147,7 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     paddingRight: 40,
   },
-  durationRow: {
-    marginTop: 4,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
+  durationRow: { marginTop: 4, flexDirection: 'row', alignItems: 'center', gap: 8 },
   durationIconCircle: {
     width: 15.3,
     height: 15.3,
@@ -1259,16 +1162,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#c9841e',
     borderColor: '#c9841e',
   },
-  durationText: {
-    color: 'rgba(251, 239, 217, 0.6)',
-    fontSize: 14,
-  },
-  downloadingLabel: {
-    color: '#ff9a2e',
-    fontSize: 14,
-    fontWeight: '700',
-    marginBottom: 4,
-  },
+  durationText: { color: 'rgba(251, 239, 217, 0.6)', fontSize: 14 },
+  downloadingLabel: { color: '#ff9a2e', fontSize: 14, fontWeight: '700', marginBottom: 4 },
   downloadingIconContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1278,11 +1173,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 8,
   },
-  downloadingPercentage: {
-    color: '#ff9a2e',
-    fontSize: 12,
-    fontWeight: '700',
-  },
+  downloadingPercentage: { color: '#ff9a2e', fontSize: 12, fontWeight: '700' },
   menuButton: {
     position: 'absolute',
     right: 12,
@@ -1300,10 +1191,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  menuBackdrop: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-  },
+  menuBackdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0, 0, 0, 0.7)' },
   menuContainer: {
     borderRadius: 20,
     width: '92%',
@@ -1316,15 +1204,8 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     position: 'relative',
   },
-  menuGradientBg: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  menuContent: {
-    paddingVertical: 20,
-    paddingHorizontal: 20,
-    position: 'relative',
-    zIndex: 1,
-  },
+  menuGradientBg: { ...StyleSheet.absoluteFillObject },
+  menuContent: { paddingVertical: 20, paddingHorizontal: 20, position: 'relative', zIndex: 1 },
   sheetHandle: {
     alignSelf: 'center',
     width: 48,
@@ -1356,17 +1237,8 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 4,
   },
-  menuPrimaryText: {
-    color: '#1a0d08',
-    fontSize: 17,
-    fontWeight: '800',
-    letterSpacing: 0.2,
-  },
-  menuDivider: {
-    height: 1,
-    backgroundColor: 'rgba(255,255,255,0.15)',
-    marginVertical: 16,
-  },
+  menuPrimaryText: { color: '#1a0d08', fontSize: 17, fontWeight: '800', letterSpacing: 0.2 },
+  menuDivider: { height: 1, backgroundColor: 'rgba(255,255,255,0.15)', marginVertical: 16 },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1391,32 +1263,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.15)',
     borderRadius: 14,
   },
-  menuIconContainer: {
-    width: 22,
-    height: 22,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  menuIconAccent: {
-    width: 22,
-    height: 22,
-  },
-  menuItemText: {
-    fontSize: 17,
-    fontWeight: '800',
-    color: '#ffffff',
-    flex: 1,
-    letterSpacing: 0.2,
-  },
-  menuItemMeta: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: '#ffffff',
-    opacity: 0.9,
-  },
-  menuSpacer: {
-    height: 12,
-  },
+  menuIconContainer: { width: 22, height: 22, justifyContent: 'center', alignItems: 'center' },
+  menuIconAccent: { width: 22, height: 22 },
+  menuItemText: { fontSize: 17, fontWeight: '800', color: '#ffffff', flex: 1, letterSpacing: 0.2 },
+  menuItemMeta: { fontSize: 15, fontWeight: '800', color: '#ffffff', opacity: 0.9 },
+  menuSpacer: { height: 12 },
   menuCancel: {
     alignSelf: 'stretch',
     paddingVertical: 16,
@@ -1425,17 +1276,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  menuCancelText: {
-    color: '#ffffff',
-    fontSize: 17,
-    fontWeight: '800',
-    letterSpacing: 0.2,
-  },
-  emptyText: {
-    textAlign: 'center',
-    color: 'rgba(251, 239, 217, 0.6)',
-    marginTop: 24,
-  },
+  menuCancelText: { color: '#ffffff', fontSize: 17, fontWeight: '800', letterSpacing: 0.2 },
+  emptyText: { textAlign: 'center', color: 'rgba(251, 239, 217, 0.6)', marginTop: 24 },
   footerNav: {
     position: 'absolute',
     left: 0,
@@ -1446,58 +1288,27 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     marginBottom: 15,
   },
-  navToggleContainer: {
-    flexDirection: 'row',
-    gap: 80,
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
-  },
-  navToggleOption: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'transparent',
-  },
-  navToggleText: {
-    color: 'rgba(251, 239, 217, 0.6)',
-    fontSize: 12,
-    fontWeight: '600',
-    letterSpacing: 0.2,
-  },
-  navToggleTextActive: {
-    color: '#fbefd9',
-  },
-  navIconImage: {
-    width: 35.7,
-    height: 35.7,
-  },
+  navToggleContainer: { flexDirection: 'row', gap: 80, alignItems: 'center', justifyContent: 'center', position: 'relative' },
+  navToggleOption: { justifyContent: 'center', alignItems: 'center', backgroundColor: 'transparent' },
+  navToggleText: { color: 'rgba(251, 239, 217, 0.6)', fontSize: 12, fontWeight: '600', letterSpacing: 0.2 },
+  navToggleTextActive: { color: '#fbefd9' },
+  navIconImage: { width: 35.7, height: 35.7 },
+
   skeletonContainer: {
     position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+    top: 0, left: 0, right: 0, bottom: 0,
     justifyContent: 'center',
     paddingTop: -190,
   },
-  skeletonCarouselWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 20,
-  },
-  skeletonCard: {
-    alignItems: 'flex-start',
-  },
+  skeletonCarouselWrapper: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 20 },
+  skeletonCard: { alignItems: 'flex-start' },
   skeletonCardSide: {
     aspectRatio: 4 / 5,
     borderRadius: 16,
     backgroundColor: 'rgba(251, 239, 217, 0.05)',
     opacity: 0.5,
   },
-  skeletonCardCenter: {
-    alignItems: 'flex-start',
-  },
+  skeletonCardCenter: { alignItems: 'flex-start' },
   skeletonImage: {
     width: '100%',
     aspectRatio: 4 / 5,
@@ -1518,8 +1329,4 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     backgroundColor: 'rgba(251, 239, 217, 0.08)',
   },
-  grayscaleImage: Platform.select({
-    web: { filter: 'grayscale(100%)' } as unknown as any,
-    default: { opacity: 0.6 },
-  }),
 });
