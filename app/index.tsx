@@ -186,6 +186,7 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
 
   const pressScale = useRef(new Animated.Value(1)).current;
   const combinedScale = Animated.multiply(scale, pressScale);
+  const [isRevealing, setIsRevealing] = useState<boolean>(false);
 
   const handlePressIn = useCallback(() => {
     Animated.spring(pressScale, {
@@ -246,6 +247,7 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
               <RevealFromBottom
                 grayscaleUri={item.imageUri}
                 colorUri={weservProxy(DO_IMAGE)}
+                onRevealChange={setIsRevealing}
               />
             ) : (
               <Image
@@ -255,7 +257,7 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
               />
             )}
           </View>
-          {index === 0 && (
+          {index === 1 && (
             <View style={styles.badge} testID="listen-badge">
               <Text style={styles.badgeText}>NUEVA</Text>
             </View>
@@ -264,7 +266,7 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
 
         <View style={[styles.cardTitleContainer, { width: cardWidth }]}>
           <Text style={styles.cardTitle} numberOfLines={3}>
-            {item.title}
+            {item.isGrayscale && isRevealing ? 'Tu hipnosis está siendo creada...' : item.title}
           </Text>
           {downloadInfo?.state === 'completed' && (
             <View style={styles.cardDownloadIcon}>
@@ -316,7 +318,7 @@ function formatDuration(totalSeconds: number): string {
 
 type NavSection = 'hipnosis' | 'aura';
 
-function RevealFromBottom({ grayscaleUri, colorUri }: { grayscaleUri: string; colorUri: string }) {
+function RevealFromBottom({ grayscaleUri, colorUri, onRevealChange }: { grayscaleUri: string; colorUri: string; onRevealChange?: (revealing: boolean) => void }) {
   const containerHeightRef = useRef<number>(0);
   const revealHeight = useRef(new Animated.Value(0)).current;
   const [hasLayout, setHasLayout] = useState<boolean>(false);
@@ -334,15 +336,21 @@ function RevealFromBottom({ grayscaleUri, colorUri }: { grayscaleUri: string; co
     const h = containerHeightRef.current;
     try {
       revealHeight.setValue(0);
+      onRevealChange?.(true);
       Animated.timing(revealHeight, {
-        toValue: h,
+        toValue: h * 0.85,
         duration: 20000,
         useNativeDriver: false,
-      }).start();
+      }).start(({ finished }) => {
+        if (finished) {
+          onRevealChange?.(false);
+        }
+      });
     } catch (err) {
       console.log('[Reveal] animation error', err);
+      onRevealChange?.(false);
     }
-  }, [hasLayout, revealHeight]);
+  }, [hasLayout, revealHeight, onRevealChange]);
 
   return (
     <View style={styles.revealContainer} onLayout={onLayout} testID="reveal-grayscale-card">
