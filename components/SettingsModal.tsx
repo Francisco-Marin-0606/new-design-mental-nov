@@ -311,7 +311,7 @@ const styles = StyleSheet.create({
   subscriptionRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     marginBottom: 0,
   },
   subscriptionInfo: {
