@@ -26,6 +26,7 @@ interface HypnosisSession {
   title: string;
   imageUri: string;
   durationSec: number;
+  isGrayscale?: boolean;
 }
 
 type DownloadState = 'idle' | 'downloading' | 'completed';
@@ -98,7 +99,7 @@ function ListItem({ item, onPress, onMenuPress, viewMode, downloadInfo }: ListIt
       >
         {({ pressed }) => (
           <>
-            <Image source={{ uri: item.imageUri }} style={[styles.listItemImage, styles.grayscaleImage, pressed && { opacity: 0.2 }]} resizeMode="cover" />
+            <Image source={{ uri: item.imageUri }} style={[styles.listItemImage, item.isGrayscale ? styles.grayscaleImage : undefined, pressed && { opacity: 0.2 }]} resizeMode="cover" />
             <View style={[styles.listItemContent, pressed && { opacity: 0.2 }]}>
               <Text style={styles.listItemTitle} numberOfLines={2}>{item.title}</Text>
               <View style={styles.durationRow}>
@@ -205,7 +206,7 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
         */}
         <View style={styles.cardShadow}>
           <View style={styles.cardInner}>
-            <Image source={{ uri: item.imageUri }} style={[styles.cardImage, styles.grayscaleImage]} resizeMode="cover" />
+            <Image source={{ uri: item.imageUri }} style={[styles.cardImage, item.isGrayscale ? styles.grayscaleImage : undefined]} resizeMode="cover" />
           </View>
           {index === 0 && (
             <View style={styles.badge} testID="listen-badge">
@@ -241,6 +242,7 @@ const HYPNOSIS_SESSIONS_RAW: HypnosisSession[] = [
   { id: '9', title: 'Liberación emocional suave y guiada', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg', durationSec: 21 * 60 + 7 },
   { id: '10', title: 'Conexión espiritual serena y profunda', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg', durationSec: 31 * 60 + 54 },
   { id: '11', title: 'Viaje hacia tu centro interior', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg', durationSec: 27 * 60 + 18 },
+  { id: '12', title: 'Silencio en blanco y negro', imageUri: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1080&auto=format&fit=crop&grayscale=1', durationSec: 24 * 60 + 9, isGrayscale: true },
 ];
 
 const HYPNOSIS_SESSIONS: HypnosisSession[] = [...HYPNOSIS_SESSIONS_RAW].reverse();
@@ -1503,7 +1505,8 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     backgroundColor: 'rgba(251, 239, 217, 0.08)',
   },
-  grayscaleImage: {
-    opacity: 0.7,
-  },
+  grayscaleImage: Platform.select({
+    web: { filter: 'grayscale(100%)' } as unknown as any,
+    default: { opacity: 0.6 },
+  }),
 });
