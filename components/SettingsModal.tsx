@@ -401,6 +401,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#89e082',
+    textAlign: 'center',
   },
 
   menuSection: {
