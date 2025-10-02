@@ -35,6 +35,16 @@ interface DownloadInfo {
   state: DownloadState;
 }
 
+function getGrayscaleUri(uri: string): string {
+  try {
+    const noProto = uri.replace(/^https?:\/\//, '');
+    const encoded = encodeURIComponent(noProto);
+    return `https://images.weserv.nl/?url=${encoded}&grayscale`;
+  } catch {
+    return uri;
+  }
+}
+
 interface CarouselItemProps {
   item: HypnosisSession;
   index: number;
@@ -44,6 +54,7 @@ interface CarouselItemProps {
   scrollX: Animated.Value;
   onPress: (session: HypnosisSession) => void;
   downloadInfo?: DownloadInfo;
+  isActive: boolean;
 }
 
 interface ListItemProps {
@@ -98,7 +109,7 @@ function ListItem({ item, onPress, onMenuPress, viewMode, downloadInfo }: ListIt
       >
         {({ pressed }) => (
           <>
-            <Image source={{ uri: item.imageUri }} style={[styles.listItemImage, styles.grayscaleImage, pressed && { opacity: 0.2 }]} resizeMode="cover" />
+            <Image source={{ uri: item.imageUri }} style={[styles.listItemImage, pressed && { opacity: 0.2 }]} resizeMode="cover" />
             <View style={[styles.listItemContent, pressed && { opacity: 0.2 }]}>
               <Text style={styles.listItemTitle} numberOfLines={2}>{item.title}</Text>
               <View style={styles.durationRow}>
@@ -131,7 +142,7 @@ function ListItem({ item, onPress, onMenuPress, viewMode, downloadInfo }: ListIt
   );
 }
 
-function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrollX, onPress, downloadInfo }: CarouselItemProps) {
+function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrollX, onPress, downloadInfo, isActive }: CarouselItemProps) {
   const inputRange = [
     (index - 1) * snapInterval,
     index * snapInterval,
@@ -157,14 +168,23 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
   const isRevealingCard = item.id === '12';
 
   useEffect(() => {
-    if (isRevealingCard) {
-      Animated.timing(revealProgress, {
-        toValue: 1,
-        duration: 20000,
-        useNativeDriver: false,
-      }).start();
+    if (!isRevealingCard) return;
+
+    if (isActive) {
+      revealProgress.stopAnimation(() => {
+        revealProgress.setValue(0);
+        Animated.timing(revealProgress, {
+          toValue: 1,
+          duration: 20000,
+          useNativeDriver: false,
+        }).start();
+      });
+    } else {
+      revealProgress.stopAnimation(() => {
+        revealProgress.setValue(0);
+      });
     }
-  }, [isRevealingCard, revealProgress]);
+  }, [isRevealingCard, isActive, revealProgress]);
 
   const handlePressIn = useCallback(() => {
     Animated.spring(pressScale, {
@@ -215,8 +235,8 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
             {isRevealingCard ? (
               <>
                 <Image 
-                  source={{ uri: item.imageUri }} 
-                  style={[styles.cardImage, styles.grayscaleImage]} 
+                  source={{ uri: getGrayscaleUri(item.imageUri) }} 
+                  style={[styles.cardImage]} 
                   resizeMode="cover" 
                 />
                 <Animated.View
@@ -241,7 +261,7 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
                 </Animated.View>
               </>
             ) : (
-              <Image source={{ uri: item.imageUri }} style={[styles.cardImage, styles.grayscaleImage]} resizeMode="cover" />
+              <Image source={{ uri: item.imageUri }} style={[styles.cardImage]} resizeMode="cover" />
             )}
           </View>
           {index === 0 && (
@@ -329,6 +349,7 @@ export default function HomeScreen() {
 
   const scrollX = useRef(new Animated.Value(0)).current;
   const currentIndexRef = useRef<number>(0);
+  const [activeIndex, setActiveIndex] = useState<number>(0);
   const lastHapticIndexRef = useRef<number>(0);
 
   const carouselScrollOffsetRef = useRef<number>(0);
@@ -379,6 +400,7 @@ export default function HomeScreen() {
       const x = e?.nativeEvent?.contentOffset?.x ?? 0;
       carouselScrollOffsetRef.current = x;
       const currentIndex = Math.round(x / snapInterval);
+      setActiveIndex(currentIndex);
       
       if (currentIndex !== lastHapticIndexRef.current) {
         lastHapticIndexRef.current = currentIndex;
@@ -421,6 +443,7 @@ export default function HomeScreen() {
         scrollX={scrollX}
         onPress={handleCardPress}
         downloadInfo={downloads[item.id]}
+        isActive={activeIndex === index}
       />
     ),
     [cardWidth, cardSpacing, snapInterval, scrollX, handleCardPress, downloads]
