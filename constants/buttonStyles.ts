@@ -18,7 +18,7 @@ export const BUTTON_STYLES = StyleSheet.create({
   },
   primaryButtonText: {
     fontSize: 20,
-    fontWeight: '500' as const,
+    fontWeight: '400' as const,
     color: '#ffffff',
   },
 });
