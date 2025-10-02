@@ -87,6 +87,7 @@ function weservProxy(url: string, opts?: { grayscale?: boolean }) {
 function ListItem({ item, onPress, onMenuPress, viewMode, downloadInfo }: ListItemProps) {
   const pressScale = useRef(new Animated.Value(1)).current;
   const [isRevealing, setIsRevealing] = useState<boolean>(false);
+  const [revealProgress, setRevealProgress] = useState<number>(0);
 
   const handlePressIn = useCallback(() => {
     Animated.spring(pressScale, {
@@ -135,6 +136,7 @@ function ListItem({ item, onPress, onMenuPress, viewMode, downloadInfo }: ListIt
                   grayscaleUri={item.imageUri}
                   colorUri={weservProxy(DO_IMAGE)}
                   onRevealChange={setIsRevealing}
+                  onProgressChange={setRevealProgress}
                 />
               ) : (
                 <Image
@@ -146,7 +148,7 @@ function ListItem({ item, onPress, onMenuPress, viewMode, downloadInfo }: ListIt
             </View>
             <View style={[styles.listItemContent, pressed && { opacity: 0.2 }]}>
               <Text style={styles.listItemTitle} numberOfLines={2}>
-                {item.isGrayscale && isRevealing ? 'Tu hipnosis está siendo creada...' : item.title}
+                {item.isGrayscale && revealProgress < 100 ? 'Tu hipnosis está siendo creada...' : item.title}
               </Text>
               <View style={styles.durationRow}>
                 {downloadInfo?.state === 'downloading' && (
@@ -200,6 +202,7 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
   const pressScale = useRef(new Animated.Value(1)).current;
   const combinedScale = Animated.multiply(scale, pressScale);
   const [isRevealing, setIsRevealing] = useState<boolean>(false);
+  const [revealProgress, setRevealProgress] = useState<number>(0);
 
   const handlePressIn = useCallback(() => {
     Animated.spring(pressScale, {
@@ -261,6 +264,7 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
                 grayscaleUri={item.imageUri}
                 colorUri={weservProxy(DO_IMAGE)}
                 onRevealChange={setIsRevealing}
+                onProgressChange={setRevealProgress}
               />
             ) : (
               <Image
@@ -279,7 +283,7 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
 
         <View style={[styles.cardTitleContainer, { width: cardWidth }]}>
           <Text style={styles.cardTitle} numberOfLines={3}>
-            {item.isGrayscale && isRevealing ? 'Tu hipnosis está siendo creada...' : item.title}
+            {item.isGrayscale && revealProgress < 100 ? 'Tu hipnosis está siendo creada...' : item.title}
           </Text>
           {downloadInfo?.state === 'completed' && (
             <View style={styles.cardDownloadIcon}>
@@ -331,10 +335,11 @@ function formatDuration(totalSeconds: number): string {
 
 type NavSection = 'hipnosis' | 'aura';
 
-function RevealFromBottom({ grayscaleUri, colorUri, onRevealChange }: { grayscaleUri: string; colorUri: string; onRevealChange?: (revealing: boolean) => void }) {
+function RevealFromBottom({ grayscaleUri, colorUri, onRevealChange, onProgressChange }: { grayscaleUri: string; colorUri: string; onRevealChange?: (revealing: boolean) => void; onProgressChange?: (progress: number) => void }) {
   const containerHeightRef = useRef<number>(0);
   const revealHeight = useRef(new Animated.Value(0)).current;
   const [hasLayout, setHasLayout] = useState<boolean>(false);
+  const progressListenerId = useRef<string | null>(null);
 
   const onLayout = useCallback((e: { nativeEvent: { layout?: { height?: number } } }) => {
     const h = e?.nativeEvent?.layout?.height ?? 0;
@@ -350,20 +355,43 @@ function RevealFromBottom({ grayscaleUri, colorUri, onRevealChange }: { grayscal
     try {
       revealHeight.setValue(0);
       onRevealChange?.(true);
+      onProgressChange?.(0);
+      
+      if (progressListenerId.current) {
+        revealHeight.removeListener(progressListenerId.current);
+      }
+      
+      progressListenerId.current = revealHeight.addListener(({ value }) => {
+        const progress = (value / h) * 100;
+        onProgressChange?.(progress);
+      });
+      
       Animated.timing(revealHeight, {
-        toValue: h * 0.85,
+        toValue: h,
         duration: 20000,
         useNativeDriver: false,
       }).start(({ finished }) => {
         if (finished) {
           onRevealChange?.(false);
+          onProgressChange?.(100);
+        }
+        if (progressListenerId.current) {
+          revealHeight.removeListener(progressListenerId.current);
+          progressListenerId.current = null;
         }
       });
     } catch (err) {
       console.log('[Reveal] animation error', err);
       onRevealChange?.(false);
     }
-  }, [hasLayout, revealHeight, onRevealChange]);
+    
+    return () => {
+      if (progressListenerId.current) {
+        revealHeight.removeListener(progressListenerId.current);
+        progressListenerId.current = null;
+      }
+    };
+  }, [hasLayout, revealHeight, onRevealChange, onProgressChange]);
 
   return (
     <View style={styles.revealContainer} onLayout={onLayout} testID="reveal-grayscale-card">
@@ -477,6 +505,9 @@ export default function HomeScreen() {
   }, [snapInterval]);
 
   const handleCardPress = useCallback(async (session: HypnosisSession) => {
+    if (session.isGrayscale) {
+      return;
+    }
     if (Platform.OS !== 'web') {
       try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy); } catch {}
     }
@@ -642,6 +673,9 @@ export default function HomeScreen() {
   }, [menuSession, startDownload]);
 
   const handleListItemPress = useCallback(async (session: HypnosisSession) => {
+    if (session.isGrayscale) {
+      return;
+    }
     if (Platform.OS !== 'web') {
       try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy); } catch {}
     }
