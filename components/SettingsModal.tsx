@@ -320,19 +320,19 @@ const styles = StyleSheet.create({
   subscriptionLabel: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#fbefd9',
+    color: '#ffffff',
     marginBottom: 4,
   },
   subscriptionType: {
     fontSize: 16,
     fontWeight: '400',
-    color: '#fbefd9',
+    color: 'rgba(255, 255, 255, 0.5)',
   },
   budgetContainer: {
-    backgroundColor: '#0f3d09',
-    paddingHorizontal: 16,
+    backgroundColor: '#1a4d14',
+    paddingHorizontal: 24,
     paddingVertical: 11,
-    borderRadius: 8,
+    borderRadius: 12,
     minWidth: 120,
     alignItems: 'center',
     height: 42.67,
@@ -341,7 +341,7 @@ const styles = StyleSheet.create({
   budgetText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#89e082',
+    color: '#7dd876',
   },
 
   menuSection: {
