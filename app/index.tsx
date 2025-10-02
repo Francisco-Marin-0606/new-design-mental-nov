@@ -29,6 +29,17 @@ interface HypnosisSession {
   isGrayscale?: boolean;
 }
 
+function weservProxy(url: string, opts?: { grayscale?: boolean }) {
+  try {
+    const stripped = url.replace(/^https?:\/\//, '');
+    const base = `https://images.weserv.nl/?url=${encodeURIComponent(stripped)}`;
+    const params = opts?.grayscale ? '&n=-100' : '';
+    return `${base}${params}`;
+  } catch (e) {
+    return url;
+  }
+}
+
 type DownloadState = 'idle' | 'downloading' | 'completed';
 
 interface DownloadInfo {
@@ -230,19 +241,21 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
   );
 }
 
+const DO_IMAGE = 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg';
+
 const HYPNOSIS_SESSIONS_RAW: HypnosisSession[] = [
-  { id: '1', title: 'Calma profunda en los Colomos', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg', durationSec: 30 * 60 + 14 },
-  { id: '2', title: 'Célula de sanación y calma', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg', durationSec: 20 * 60 + 24 },
-  { id: '3', title: 'El reloj quieto sobre la mesa', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg', durationSec: 18 * 60 + 5 },
-  { id: '4', title: 'Respiración profunda para relajarte', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg', durationSec: 25 * 60 + 10 },
-  { id: '5', title: 'Meditación guiada para la noche', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg', durationSec: 42 * 60 + 2 },
-  { id: '6', title: 'Sueño reparador y tranquilo hoy', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg', durationSec: 35 * 60 + 33 },
-  { id: '7', title: 'Paz interior en cada respiración', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg', durationSec: 19 * 60 + 11 },
-  { id: '8', title: 'Energía positiva para tu día', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg', durationSec: 28 * 60 + 46 },
-  { id: '9', title: 'Liberación emocional suave y guiada', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg', durationSec: 21 * 60 + 7 },
-  { id: '10', title: 'Conexión espiritual serena y profunda', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg', durationSec: 31 * 60 + 54 },
-  { id: '11', title: 'Viaje hacia tu centro interior', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg', durationSec: 27 * 60 + 18 },
-  { id: '12', title: 'Silencio en blanco y negro', imageUri: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1080&auto=format&fit=crop&sat=-100', durationSec: 24 * 60 + 9, isGrayscale: true },
+  { id: '1', title: 'Calma profunda en los Colomos', imageUri: weservProxy(DO_IMAGE), durationSec: 30 * 60 + 14 },
+  { id: '2', title: 'Célula de sanación y calma', imageUri: weservProxy(DO_IMAGE), durationSec: 20 * 60 + 24 },
+  { id: '3', title: 'El reloj quieto sobre la mesa', imageUri: weservProxy(DO_IMAGE), durationSec: 18 * 60 + 5 },
+  { id: '4', title: 'Respiración profunda para relajarte', imageUri: weservProxy(DO_IMAGE), durationSec: 25 * 60 + 10 },
+  { id: '5', title: 'Meditación guiada para la noche', imageUri: weservProxy(DO_IMAGE), durationSec: 42 * 60 + 2 },
+  { id: '6', title: 'Sueño reparador y tranquilo hoy', imageUri: weservProxy(DO_IMAGE), durationSec: 35 * 60 + 33 },
+  { id: '7', title: 'Paz interior en cada respiración', imageUri: weservProxy(DO_IMAGE), durationSec: 19 * 60 + 11 },
+  { id: '8', title: 'Energía positiva para tu día', imageUri: weservProxy(DO_IMAGE), durationSec: 28 * 60 + 46 },
+  { id: '9', title: 'Liberación emocional suave y guiada', imageUri: weservProxy(DO_IMAGE), durationSec: 21 * 60 + 7 },
+  { id: '10', title: 'Conexión espiritual serena y profunda', imageUri: weservProxy(DO_IMAGE), durationSec: 31 * 60 + 54 },
+  { id: '11', title: 'Viaje hacia tu centro interior', imageUri: weservProxy(DO_IMAGE), durationSec: 27 * 60 + 18 },
+  { id: '12', title: 'Silencio en blanco y negro', imageUri: weservProxy(DO_IMAGE, { grayscale: true }), durationSec: 24 * 60 + 9, isGrayscale: true },
 ];
 
 const HYPNOSIS_SESSIONS: HypnosisSession[] = [...HYPNOSIS_SESSIONS_RAW].reverse();
