@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useCallback, useState } from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -24,7 +24,8 @@ export default function SettingsModal({ visible, onClose }: SettingsModalProps) 
   
   const translateY = useRef(new Animated.Value(screenHeight)).current;
   const opacity = useRef(new Animated.Value(0)).current;
-  const [pressedButton, setPressedButton] = useState<string | null>(null);
+  
+  const buttonAnimations = useRef<{ [key: string]: { scale: Animated.Value; opacity: Animated.Value } }>({}).current;
 
   const DURATION_OPEN = 400;
   const DURATION_CLOSE = 350;
@@ -98,12 +99,50 @@ export default function SettingsModal({ visible, onClose }: SettingsModalProps) 
     console.log(`Settings action: ${action}`);
   }, []);
 
-  const handlePressIn = (buttonId: string) => {
-    setPressedButton(buttonId);
+  const getButtonAnimation = (buttonId: string) => {
+    if (!buttonAnimations[buttonId]) {
+      buttonAnimations[buttonId] = {
+        scale: new Animated.Value(1),
+        opacity: new Animated.Value(1),
+      };
+    }
+    return buttonAnimations[buttonId];
   };
 
-  const handlePressOut = () => {
-    setPressedButton(null);
+  const handlePressIn = (buttonId: string) => {
+    const anim = getButtonAnimation(buttonId);
+    
+    Animated.parallel([
+      Animated.spring(anim.scale, {
+        toValue: 0.95,
+        useNativeDriver: true,
+        speed: 50,
+        bounciness: 0,
+      }),
+      Animated.timing(anim.opacity, {
+        toValue: 0.6,
+        duration: 150,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
+  const handlePressOut = (buttonId: string) => {
+    const anim = getButtonAnimation(buttonId);
+    
+    Animated.parallel([
+      Animated.spring(anim.scale, {
+        toValue: 1,
+        useNativeDriver: true,
+        speed: 50,
+        bounciness: 4,
+      }),
+      Animated.timing(anim.opacity, {
+        toValue: 1,
+        duration: 150,
+        useNativeDriver: true,
+      }),
+    ]).start();
   };
 
   if (!visible) return null;
@@ -149,88 +188,108 @@ export default function SettingsModal({ visible, onClose }: SettingsModalProps) 
           </View>
 
           <View style={styles.menuSection}>
-            <Pressable
-              style={[
-                styles.menuItem,
-                pressedButton === 'manage-subscription' && styles.menuItemScaled,
-              ]}
-              onPress={() => handleMenuAction('manage-subscription')}
-              onPressIn={() => handlePressIn('manage-subscription')}
-              onPressOut={handlePressOut}
-              android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.1)' } : undefined}
-              testID="menu-manage-subscription"
+            <Animated.View
+              style={{
+                transform: [{ scale: getButtonAnimation('manage-subscription').scale }],
+                opacity: getButtonAnimation('manage-subscription').opacity,
+              }}
             >
-              <View style={styles.menuIconContainer}>
-                <User color="#ffffff" size={20} />
-              </View>
-              <Text style={styles.menuItemText}>Gestionar suscripción</Text>
-            </Pressable>
+              <Pressable
+                style={styles.menuItem}
+                onPress={() => handleMenuAction('manage-subscription')}
+                onPressIn={() => handlePressIn('manage-subscription')}
+                onPressOut={() => handlePressOut('manage-subscription')}
+                android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.1)' } : undefined}
+                testID="menu-manage-subscription"
+              >
+                <View style={styles.menuIconContainer}>
+                  <User color="#ffffff" size={20} />
+                </View>
+                <Text style={styles.menuItemText}>Gestionar suscripción</Text>
+              </Pressable>
+            </Animated.View>
 
-            <Pressable
-              style={[
-                styles.menuItem,
-                pressedButton === 'edit-profile' && styles.menuItemScaled,
-              ]}
-              onPress={() => handleMenuAction('edit-profile')}
-              onPressIn={() => handlePressIn('edit-profile')}
-              onPressOut={handlePressOut}
-              android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.1)' } : undefined}
-              testID="menu-edit-profile"
+            <Animated.View
+              style={{
+                transform: [{ scale: getButtonAnimation('edit-profile').scale }],
+                opacity: getButtonAnimation('edit-profile').opacity,
+              }}
             >
-              <View style={styles.menuIconContainer}>
-                <Edit3 color="#ffffff" size={20} />
-              </View>
-              <Text style={styles.menuItemText}>Editar mi perfil</Text>
-            </Pressable>
+              <Pressable
+                style={styles.menuItem}
+                onPress={() => handleMenuAction('edit-profile')}
+                onPressIn={() => handlePressIn('edit-profile')}
+                onPressOut={() => handlePressOut('edit-profile')}
+                android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.1)' } : undefined}
+                testID="menu-edit-profile"
+              >
+                <View style={styles.menuIconContainer}>
+                  <Edit3 color="#ffffff" size={20} />
+                </View>
+                <Text style={styles.menuItemText}>Editar mi perfil</Text>
+              </Pressable>
+            </Animated.View>
 
-            <Pressable
-              style={[
-                styles.menuItem,
-                pressedButton === 'faq' && styles.menuItemScaled,
-              ]}
-              onPress={() => handleMenuAction('faq')}
-              onPressIn={() => handlePressIn('faq')}
-              onPressOut={handlePressOut}
-              android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.1)' } : undefined}
-              testID="menu-faq"
+            <Animated.View
+              style={{
+                transform: [{ scale: getButtonAnimation('faq').scale }],
+                opacity: getButtonAnimation('faq').opacity,
+              }}
             >
-              <View style={styles.menuIconContainer}>
-                <HelpCircle color="#ffffff" size={20} />
-              </View>
-              <Text style={styles.menuItemText}>Preguntas frecuentes</Text>
-            </Pressable>
+              <Pressable
+                style={styles.menuItem}
+                onPress={() => handleMenuAction('faq')}
+                onPressIn={() => handlePressIn('faq')}
+                onPressOut={() => handlePressOut('faq')}
+                android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.1)' } : undefined}
+                testID="menu-faq"
+              >
+                <View style={styles.menuIconContainer}>
+                  <HelpCircle color="#ffffff" size={20} />
+                </View>
+                <Text style={styles.menuItemText}>Preguntas frecuentes</Text>
+              </Pressable>
+            </Animated.View>
 
-            <Pressable
-              style={[
-                styles.menuItem,
-                pressedButton === 'contact' && styles.menuItemScaled,
-              ]}
-              onPress={() => handleMenuAction('contact')}
-              onPressIn={() => handlePressIn('contact')}
-              onPressOut={handlePressOut}
-              android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.1)' } : undefined}
-              testID="menu-contact"
+            <Animated.View
+              style={{
+                transform: [{ scale: getButtonAnimation('contact').scale }],
+                opacity: getButtonAnimation('contact').opacity,
+              }}
             >
-              <View style={styles.menuIconContainer}>
-                <Mail color="#ffffff" size={20} />
-              </View>
-              <Text style={styles.menuItemText}>Contacto</Text>
-            </Pressable>
+              <Pressable
+                style={styles.menuItem}
+                onPress={() => handleMenuAction('contact')}
+                onPressIn={() => handlePressIn('contact')}
+                onPressOut={() => handlePressOut('contact')}
+                android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.1)' } : undefined}
+                testID="menu-contact"
+              >
+                <View style={styles.menuIconContainer}>
+                  <Mail color="#ffffff" size={20} />
+                </View>
+                <Text style={styles.menuItemText}>Contacto</Text>
+              </Pressable>
+            </Animated.View>
           </View>
 
-          <Pressable
-            style={[
-              styles.logoutButton,
-              pressedButton === 'logout' && styles.logoutButtonScaled,
-            ]}
-            onPress={() => handleMenuAction('logout')}
-            onPressIn={() => handlePressIn('logout')}
-            onPressOut={handlePressOut}
-            android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.15)' } : undefined}
-            testID="logout-button"
+          <Animated.View
+            style={{
+              transform: [{ scale: getButtonAnimation('logout').scale }],
+              opacity: getButtonAnimation('logout').opacity,
+            }}
           >
-            <Text style={styles.logoutButtonText}>Cerrar sesión</Text>
-          </Pressable>
+            <Pressable
+              style={styles.logoutButton}
+              onPress={() => handleMenuAction('logout')}
+              onPressIn={() => handlePressIn('logout')}
+              onPressOut={() => handlePressOut('logout')}
+              android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.15)' } : undefined}
+              testID="logout-button"
+            >
+              <Text style={styles.logoutButtonText}>Cerrar sesión</Text>
+            </Pressable>
+          </Animated.View>
 
           <Text style={styles.versionText}>Versión de la app 3.1.63</Text>
 
@@ -356,10 +415,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(251, 239, 217, 0.08)',
     marginBottom: 10,
   },
-  menuItemScaled: {
-    transform: [{ scale: 0.9 }],
-    opacity: 0.2,
-  },
+
   menuIconContainer: {
     width: 24,
     height: 24,
@@ -376,10 +432,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     marginTop: 8,
   },
-  logoutButtonScaled: {
-    transform: [{ scale: 0.9 }],
-    opacity: 0.2,
-  },
+
   logoutButtonText: {
     ...BUTTON_STYLES.primaryButtonText,
   },
