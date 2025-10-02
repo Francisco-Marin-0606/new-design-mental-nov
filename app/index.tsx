@@ -1009,7 +1009,10 @@ export default function HomeScreen() {
               <Text style={styles.menuTitle} numberOfLines={2}>{menuSession?.title}</Text>
 
               <Pressable
-                style={styles.menuPrimary}
+                style={({ pressed }) => [
+                  styles.menuPrimary,
+                  pressed && { transform: [{ scale: 0.9 }], opacity: 0.2 }
+                ]}
                 onPress={() => handleMenuAction('play')}
                 android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.15)' } : undefined}
                 testID="menu-primary-play"
@@ -1022,7 +1025,11 @@ export default function HomeScreen() {
               <View style={styles.menuDivider} />
 
               <Pressable
-                style={[styles.menuItem, { overflow: 'hidden' }]}
+                style={({ pressed }) => [
+                  styles.menuItem,
+                  { overflow: 'hidden' },
+                  pressed && { transform: [{ scale: 0.9 }], opacity: 0.2 }
+                ]}
                 onPress={() => handleMenuAction('download')}
                 android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.1)' } : undefined}
                 testID="menu-download"
@@ -1059,7 +1066,10 @@ export default function HomeScreen() {
                 <>
                   <View style={styles.menuDivider} />
                   <Pressable
-                    style={styles.menuItem}
+                    style={({ pressed }) => [
+                      styles.menuItem,
+                      pressed && { transform: [{ scale: 0.9 }], opacity: 0.2 }
+                    ]}
                     onPress={() => handleMenuAction('qa')}
                     android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.1)' } : undefined}
                     testID="menu-qa"
@@ -1072,7 +1082,10 @@ export default function HomeScreen() {
                   </Pressable>
 
                   <Pressable
-                    style={styles.menuItem}
+                    style={({ pressed }) => [
+                      styles.menuItem,
+                      pressed && { transform: [{ scale: 0.9 }], opacity: 0.2 }
+                    ]}
                     onPress={() => handleMenuAction('rename')}
                     android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.1)' } : undefined}
                     testID="menu-rename"
@@ -1088,7 +1101,10 @@ export default function HomeScreen() {
 
               <View style={styles.menuSpacer} />
               <Pressable
-                style={styles.menuCancel}
+                style={({ pressed }) => [
+                  styles.menuCancel,
+                  pressed && { transform: [{ scale: 0.9 }], opacity: 0.2 }
+                ]}
                 onPress={handleMenuClose}
                 android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.15)' } : undefined}
                 testID="menu-cancel"
