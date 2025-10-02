@@ -444,7 +444,7 @@ const styles = StyleSheet.create({
   versionText: {
     fontSize: 14,
     fontWeight: '400',
-    color: 'rgba(251, 239, 217, 0.4)',
+    color: 'rgba(251, 239, 217, 0.5)',
     textAlign: 'center',
     marginBottom: 20,
   },
