@@ -535,13 +535,22 @@ export default function HomeScreen() {
           useNativeDriver: true,
         }),
       ]).start(() => {
-        // ... resto sin cambios ...
         setViewMode(mode);
-        // ...
+        Animated.parallel([
+          Animated.timing(fadeAnim, {
+            toValue: 1,
+            duration: 150,
+            useNativeDriver: true,
+          }),
+          Animated.timing(slideAnim, {
+            toValue: 0,
+            duration: 150,
+            useNativeDriver: true,
+          }),
+        ]).start();
       });
     } else {
       setViewMode(mode);
-      // ...
     }
   }, [fadeAnim, slideAnim, toggleIndicatorAnim, viewMode]);
 
