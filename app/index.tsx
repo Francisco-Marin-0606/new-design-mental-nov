@@ -35,17 +35,6 @@ interface DownloadInfo {
   state: DownloadState;
 }
 
-function getGrayscaleUri(uri: string): string {
-  try {
-    const noProto = uri.replace(/^https?:\/\//, '');
-    const decoded = decodeURI(noProto);
-    const safe = encodeURI(decoded);
-    return `https://images.weserv.nl/?url=${safe}&grayscale`;
-  } catch {
-    return uri;
-  }
-}
-
 interface CarouselItemProps {
   item: HypnosisSession;
   index: number;
@@ -55,7 +44,6 @@ interface CarouselItemProps {
   scrollX: Animated.Value;
   onPress: (session: HypnosisSession) => void;
   downloadInfo?: DownloadInfo;
-  isActive: boolean;
 }
 
 interface ListItemProps {
@@ -110,7 +98,7 @@ function ListItem({ item, onPress, onMenuPress, viewMode, downloadInfo }: ListIt
       >
         {({ pressed }) => (
           <>
-            <Image source={{ uri: item.imageUri }} style={[styles.listItemImage, pressed && { opacity: 0.2 }]} resizeMode="cover" />
+            <Image source={{ uri: item.imageUri }} style={[styles.listItemImage, styles.grayscaleImage, pressed && { opacity: 0.2 }]} resizeMode="cover" />
             <View style={[styles.listItemContent, pressed && { opacity: 0.2 }]}>
               <Text style={styles.listItemTitle} numberOfLines={2}>{item.title}</Text>
               <View style={styles.durationRow}>
@@ -143,7 +131,7 @@ function ListItem({ item, onPress, onMenuPress, viewMode, downloadInfo }: ListIt
   );
 }
 
-function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrollX, onPress, downloadInfo, isActive }: CarouselItemProps) {
+function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrollX, onPress, downloadInfo }: CarouselItemProps) {
   const inputRange = [
     (index - 1) * snapInterval,
     index * snapInterval,
@@ -162,30 +150,10 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
     extrapolate: 'clamp',
   });
 
+
+
   const pressScale = useRef(new Animated.Value(1)).current;
   const combinedScale = Animated.multiply(scale, pressScale);
-
-  const revealProgress = useRef(new Animated.Value(0)).current;
-  const isRevealingCard = item.id === '12';
-
-  useEffect(() => {
-    if (!isRevealingCard) return;
-
-    if (isActive) {
-      revealProgress.stopAnimation(() => {
-        revealProgress.setValue(0);
-        Animated.timing(revealProgress, {
-          toValue: 1,
-          duration: 20000,
-          useNativeDriver: false,
-        }).start();
-      });
-    } else {
-      revealProgress.stopAnimation(() => {
-        revealProgress.setValue(0);
-      });
-    }
-  }, [isRevealingCard, isActive, revealProgress]);
 
   const handlePressIn = useCallback(() => {
     Animated.spring(pressScale, {
@@ -231,39 +199,13 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
           pressed && { opacity: 0.2 }
         ]}
       >
+        {/*
+          Sombra y contenedor exterior (mantiene sombras sin recortar)
+          y contenedor interior con overflow:hidden para recortar el BlurView
+        */}
         <View style={styles.cardShadow}>
           <View style={styles.cardInner}>
-            {isRevealingCard ? (
-              <>
-                <Image 
-                  source={{ uri: getGrayscaleUri(item.imageUri) }} 
-                  style={[styles.cardImage]} 
-                  resizeMode="cover" 
-                />
-                <Animated.View
-                  style={[
-                    StyleSheet.absoluteFillObject,
-                    {
-                      backgroundColor: 'transparent',
-                      overflow: 'hidden',
-                    },
-                  ]}
-                >
-                  <Animated.Image
-                    source={{ uri: item.imageUri }}
-                    style={[
-                      styles.cardImage,
-                      {
-                        opacity: revealProgress,
-                      },
-                    ]}
-                    resizeMode="cover"
-                  />
-                </Animated.View>
-              </>
-            ) : (
-              <Image source={{ uri: item.imageUri }} style={[styles.cardImage]} resizeMode="cover" />
-            )}
+            <Image source={{ uri: item.imageUri }} style={[styles.cardImage, styles.grayscaleImage]} resizeMode="cover" />
           </View>
           {index === 0 && (
             <View style={styles.badge} testID="listen-badge">
@@ -299,7 +241,6 @@ const HYPNOSIS_SESSIONS_RAW: HypnosisSession[] = [
   { id: '9', title: 'Liberación emocional suave y guiada', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg', durationSec: 21 * 60 + 7 },
   { id: '10', title: 'Conexión espiritual serena y profunda', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg', durationSec: 31 * 60 + 54 },
   { id: '11', title: 'Viaje hacia tu centro interior', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg', durationSec: 27 * 60 + 18 },
-  { id: '12', title: 'Revelación gradual de tu esencia', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg', durationSec: 24 * 60 + 30 },
 ];
 
 const HYPNOSIS_SESSIONS: HypnosisSession[] = [...HYPNOSIS_SESSIONS_RAW].reverse();
@@ -350,7 +291,6 @@ export default function HomeScreen() {
 
   const scrollX = useRef(new Animated.Value(0)).current;
   const currentIndexRef = useRef<number>(0);
-  const [activeIndex, setActiveIndex] = useState<number>(0);
   const lastHapticIndexRef = useRef<number>(0);
 
   const carouselScrollOffsetRef = useRef<number>(0);
@@ -401,7 +341,6 @@ export default function HomeScreen() {
       const x = e?.nativeEvent?.contentOffset?.x ?? 0;
       carouselScrollOffsetRef.current = x;
       const currentIndex = Math.round(x / snapInterval);
-      setActiveIndex(currentIndex);
       
       if (currentIndex !== lastHapticIndexRef.current) {
         lastHapticIndexRef.current = currentIndex;
@@ -444,7 +383,6 @@ export default function HomeScreen() {
         scrollX={scrollX}
         onPress={handleCardPress}
         downloadInfo={downloads[item.id]}
-        isActive={activeIndex === index}
       />
     ),
     [cardWidth, cardSpacing, snapInterval, scrollX, handleCardPress, downloads]
