@@ -1413,8 +1413,8 @@ const styles = StyleSheet.create({
     color: '#fbefd9',
   },
   navIconImage: {
-    width: 42,
-    height: 42,
+    width: 35.7,
+    height: 35.7,
   },
   skeletonContainer: {
     position: 'absolute',
