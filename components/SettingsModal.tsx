@@ -389,8 +389,8 @@ const styles = StyleSheet.create({
   },
   budgetContainer: {
     backgroundColor: '#0f3d09',
-    paddingHorizontal: 16,
-    paddingVertical: 11,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     borderRadius: 8,
     minWidth: 120,
     alignItems: 'center',
@@ -402,6 +402,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#89e082',
     textAlign: 'center',
+    width: '100%',
   },
 
   menuSection: {
