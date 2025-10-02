@@ -291,9 +291,10 @@ export default function SettingsModal({ visible, onClose }: SettingsModalProps) 
             </Pressable>
           </Animated.View>
 
-          <Text style={styles.versionText}>Versión de la app 3.1.63</Text>
+          <View style={styles.footerContainer}>
+            <Text style={styles.versionText}>Versión de la app 3.1.63</Text>
 
-          <View style={styles.footerLinks}>
+            <View style={styles.footerLinks}>
             <Pressable
               onPress={() => handleMenuAction('terms')}
               android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.1)', borderless: true } : undefined}
@@ -306,6 +307,7 @@ export default function SettingsModal({ visible, onClose }: SettingsModalProps) 
             >
               <Text style={styles.footerLinkText}>Políticas de privacidad</Text>
             </Pressable>
+            </View>
           </View>
         </View>
       </Animated.View>
@@ -341,6 +343,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 44,
     paddingTop: 60,
     paddingBottom: 40,
+    justifyContent: 'space-between',
   },
   closeButton: {
     position: 'absolute',
@@ -437,6 +440,9 @@ const styles = StyleSheet.create({
 
   logoutButtonText: {
     ...BUTTON_STYLES.primaryButtonText,
+  },
+  footerContainer: {
+    marginTop: 'auto',
   },
   versionText: {
     fontSize: 14,
