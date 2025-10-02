@@ -335,7 +335,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     minWidth: 120,
     alignItems: 'center',
-    height: 42.67,
+    height: 34.14,
     justifyContent: 'center',
   },
   budgetText: {
