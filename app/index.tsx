@@ -45,6 +45,8 @@ interface CarouselItemProps {
   scrollX: Animated.Value;
   onPress: (session: HypnosisSession) => void;
   downloadInfo?: DownloadInfo;
+  initialRevealProgress?: number;
+  onRevealProgress?: (id: string, progress: number) => void;
 }
 
 interface ListItemProps {
@@ -165,7 +167,7 @@ function ListItem({ item, onPress, onMenuPress, viewMode, downloadInfo }: ListIt
   );
 }
 
-function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrollX, onPress, downloadInfo }: CarouselItemProps) {
+function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrollX, onPress, downloadInfo, initialRevealProgress = 0, onRevealProgress }: CarouselItemProps) {
   const inputRange = [
     (index - 1) * snapInterval,
     index * snapInterval,
@@ -186,7 +188,7 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
 
   const pressScale = useRef(new Animated.Value(1)).current;
   const combinedScale = Animated.multiply(scale, pressScale);
-  const [isRevealing, setIsRevealing] = useState<boolean>(false);
+  const [isRevealing, setIsRevealing] = useState<boolean>(initialRevealProgress < 0.85);
 
   const handlePressIn = useCallback(() => {
     Animated.spring(pressScale, {
@@ -245,9 +247,18 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
           }}>
             {item.isGrayscale ? (
               <RevealFromBottom
+                sessionId={item.id}
                 grayscaleUri={item.imageUri}
                 colorUri={weservProxy(DO_IMAGE)}
-                onRevealChange={setIsRevealing}
+                initialProgress={initialRevealProgress}
+                onProgress={(p) => {
+                  try {
+                    setIsRevealing(p < 0.85);
+                    onRevealProgress?.(item.id, p);
+                  } catch (err) {
+                    console.log('[Reveal] progress cb error', err);
+                  }
+                }}
               />
             ) : (
               <Image
@@ -318,10 +329,12 @@ function formatDuration(totalSeconds: number): string {
 
 type NavSection = 'hipnosis' | 'aura';
 
-function RevealFromBottom({ grayscaleUri, colorUri, onRevealChange }: { grayscaleUri: string; colorUri: string; onRevealChange?: (revealing: boolean) => void }) {
+function RevealFromBottom({ sessionId, grayscaleUri, colorUri, initialProgress = 0, onProgress }: { sessionId: string; grayscaleUri: string; colorUri: string; initialProgress?: number; onProgress?: (progress: number) => void }) {
   const containerHeightRef = useRef<number>(0);
   const revealHeight = useRef(new Animated.Value(0)).current;
   const [hasLayout, setHasLayout] = useState<boolean>(false);
+  const animRef = useRef<Animated.CompositeAnimation | null>(null);
+  const listenerRef = useRef<string | null>(null);
 
   const onLayout = useCallback((e: { nativeEvent: { layout?: { height?: number } } }) => {
     const h = e?.nativeEvent?.layout?.height ?? 0;
@@ -335,22 +348,37 @@ function RevealFromBottom({ grayscaleUri, colorUri, onRevealChange }: { grayscal
     if (!hasLayout) return;
     const h = containerHeightRef.current;
     try {
-      revealHeight.setValue(0);
-      onRevealChange?.(true);
-      Animated.timing(revealHeight, {
-        toValue: h * 0.85,
-        duration: 20000,
-        useNativeDriver: false,
-      }).start(({ finished }) => {
-        if (finished) {
-          onRevealChange?.(false);
-        }
+      const startPx = Math.max(0, Math.min(h * 0.85, (initialProgress ?? 0) * h));
+      revealHeight.setValue(startPx);
+
+      if (listenerRef.current) {
+        revealHeight.removeListener(listenerRef.current);
+        listenerRef.current = null;
+      }
+      listenerRef.current = revealHeight.addListener(({ value }) => {
+        const p = h > 0 ? value / h : 0;
+        onProgress?.(Math.max(0, Math.min(1, p)));
       });
+
+      const remainingFrac = Math.max(0, 0.85 - (startPx / (h || 1)));
+      const duration = remainingFrac === 0 ? 0 : Math.round((remainingFrac / 0.85) * 20000);
+
+      animRef.current = Animated.timing(revealHeight, {
+        toValue: h * 0.85,
+        duration,
+        useNativeDriver: false,
+      });
+      animRef.current.start();
     } catch (err) {
       console.log('[Reveal] animation error', err);
-      onRevealChange?.(false);
     }
-  }, [hasLayout, revealHeight, onRevealChange]);
+    return () => {
+      if (listenerRef.current) {
+        revealHeight.removeListener(listenerRef.current);
+        listenerRef.current = null;
+      }
+    };
+  }, [hasLayout, revealHeight, initialProgress, onProgress, sessionId]);
 
   return (
     <View style={styles.revealContainer} onLayout={onLayout} testID="reveal-grayscale-card">
@@ -378,6 +406,7 @@ export default function HomeScreen() {
   const { width: screenWidth } = useWindowDimensions();
 
   const [downloads, setDownloads] = useState<Record<string, DownloadInfo>>({});
+  const [revealProgressMap, setRevealProgressMap] = useState<Record<string, number>>({});
   const timersRef = useRef<Record<string, NodeJS.Timeout | number>>({});
 
   const fadeAnim = useRef(new Animated.Value(1)).current;
@@ -482,6 +511,8 @@ export default function HomeScreen() {
         scrollX={scrollX}
         onPress={handleCardPress}
         downloadInfo={downloads[item.id]}
+        initialRevealProgress={revealProgressMap[item.id] ?? 0}
+        onRevealProgress={(id, p) => setRevealProgressMap(prev => ({ ...prev, [id]: p }))}
       />
     ),
     [cardWidth, cardSpacing, snapInterval, scrollX, handleCardPress, downloads]
