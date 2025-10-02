@@ -956,11 +956,7 @@ export default function HomeScreen() {
               testID="nav-hipnosis"
               accessibilityLabel="Hipnosis"
             >
-              <Image
-                source={{ uri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/FooterHipnosis.png' }}
-                style={[styles.navIconImage, { opacity: navSection === 'hipnosis' ? 1 : 0.2 }]}
-                resizeMode="contain"
-              />
+              <Text style={[styles.navToggleTextLabel, navSection === 'hipnosis' && styles.navToggleTextLabelActive]}>Hipnosis</Text>
             </Pressable>
             <Pressable
               style={styles.navToggleOption}
@@ -969,11 +965,7 @@ export default function HomeScreen() {
               testID="nav-aura"
               accessibilityLabel="Aura"
             >
-              <Image
-                source={{ uri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/icono_aura.png' }}
-                style={[styles.navIconImage, { opacity: navSection === 'aura' ? 1 : 0.2 }]}
-                resizeMode="contain"
-              />
+              <Text style={[styles.navToggleTextLabel, navSection === 'aura' && styles.navToggleTextLabelActive]}>Aura</Text>
             </Pressable>
           </View>
         </View>
@@ -1465,6 +1457,8 @@ const styles = StyleSheet.create({
   navToggleOption: { justifyContent: 'center', alignItems: 'center', backgroundColor: 'transparent' },
   navToggleText: { color: 'rgba(251, 239, 217, 0.6)', fontSize: 12, fontWeight: '600', letterSpacing: 0.2 },
   navToggleTextActive: { color: '#fbefd9' },
+  navToggleTextLabel: { color: 'rgba(251, 239, 217, 0.6)', fontSize: 16, fontWeight: '600' as const, letterSpacing: 0.2 },
+  navToggleTextLabelActive: { color: '#fbefd9' },
   navIconImage: { width: 35.7, height: 35.7 },
 
   skeletonContainer: {
