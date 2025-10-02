@@ -551,6 +551,7 @@ export default function HomeScreen() {
         setViewMode(mode);
         fadeAnim.setValue(0);
         slideAnim.setValue(-50);
+        restoreScrollPositions(mode);
         Animated.parallel([
           Animated.timing(fadeAnim, {
             toValue: 1,
@@ -568,6 +569,7 @@ export default function HomeScreen() {
       setViewMode(mode);
       fadeAnim.setValue(0);
       slideAnim.setValue(-50);
+      restoreScrollPositions(mode);
       Animated.parallel([
         Animated.timing(fadeAnim, {
           toValue: 1,
@@ -581,7 +583,7 @@ export default function HomeScreen() {
         }),
       ]).start();
     }
-  }, [fadeAnim, slideAnim, toggleIndicatorAnim, viewMode]);
+  }, [fadeAnim, slideAnim, toggleIndicatorAnim, viewMode, restoreScrollPositions]);
 
   const handleMenuPress = useCallback((session: HypnosisSession, mode: ViewMode) => {
     setMenuSession(session);
@@ -684,6 +686,32 @@ export default function HomeScreen() {
 
   const onPreviousScroll = useCallback((e: { nativeEvent: { contentOffset: { y: number } } }) => {
     previousScrollOffsetRef.current = e?.nativeEvent?.contentOffset?.y ?? 0;
+  }, []);
+
+  const restoreScrollPositions = useCallback((targetMode: ViewMode) => {
+    try {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          if (targetMode === 'carousel' && carouselFlatListRef.current) {
+            const x = Math.max(0, carouselScrollOffsetRef.current ?? 0);
+            console.log('[Restore] Carousel to x:', x);
+            carouselFlatListRef.current.scrollToOffset({ offset: x, animated: false });
+          }
+          if (targetMode === 'list' && listFlatListRef.current) {
+            const y = Math.max(0, listScrollOffsetRef.current ?? 0);
+            console.log('[Restore] List to y:', y);
+            listFlatListRef.current.scrollToOffset({ offset: y, animated: false });
+          }
+          if (targetMode === 'previous' && previousFlatListRef.current) {
+            const y2 = Math.max(0, previousScrollOffsetRef.current ?? 0);
+            console.log('[Restore] Previous to y:', y2);
+            previousFlatListRef.current.scrollToOffset({ offset: y2, animated: false });
+          }
+        });
+      });
+    } catch (err) {
+      console.log('[Restore] error restoring scroll', err);
+    }
   }, []);
 
   const showToggle = HYPNOSIS_SESSIONS.length > 8;
@@ -823,7 +851,6 @@ export default function HomeScreen() {
                 snapToAlignment="start"
                 onMomentumScrollEnd={onMomentumScrollEnd}
                 testID="hypnosis-carousel"
-                initialScrollIndex={isFirstLoadRef.current ? 0 : undefined}
                 getItemLayout={(data: ArrayLike<HypnosisSession> | null | undefined, index: number) => ({
                   length: snapInterval,
                   offset: index * snapInterval,
