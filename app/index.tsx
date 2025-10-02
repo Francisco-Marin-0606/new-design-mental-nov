@@ -45,8 +45,6 @@ interface CarouselItemProps {
   scrollX: Animated.Value;
   onPress: (session: HypnosisSession) => void;
   downloadInfo?: DownloadInfo;
-  initialRevealProgress?: number;
-  onRevealProgress?: (id: string, progress: number) => void;
 }
 
 interface ListItemProps {
@@ -167,7 +165,7 @@ function ListItem({ item, onPress, onMenuPress, viewMode, downloadInfo }: ListIt
   );
 }
 
-function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrollX, onPress, downloadInfo, initialRevealProgress = 0, onRevealProgress }: CarouselItemProps) {
+function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrollX, onPress, downloadInfo }: CarouselItemProps) {
   const inputRange = [
     (index - 1) * snapInterval,
     index * snapInterval,
@@ -188,8 +186,7 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
 
   const pressScale = useRef(new Animated.Value(1)).current;
   const combinedScale = Animated.multiply(scale, pressScale);
-  const [isRevealing, setIsRevealing] = useState<boolean>(initialRevealProgress < 0.85);
-  const [cardInnerHeight, setCardInnerHeight] = useState<number>(0);
+  const [isRevealing, setIsRevealing] = useState<boolean>(false);
 
   const handlePressIn = useCallback(() => {
     Animated.spring(pressScale, {
@@ -239,11 +236,8 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
           <View style={styles.cardInner} onLayout={(e) => {
             try {
               const h = e?.nativeEvent?.layout?.height ?? 0;
-              if (h > 0) {
-                setCardInnerHeight(h);
-                if (item.isGrayscale) {
-                  console.log('[Reveal] cardInner height', h);
-                }
+              if (item.isGrayscale && h > 0) {
+                console.log('[Reveal] layout height', h);
               }
             } catch (err) {
               console.log('[Reveal] onLayout error', err);
@@ -251,19 +245,9 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
           }}>
             {item.isGrayscale ? (
               <RevealFromBottom
-                sessionId={item.id}
                 grayscaleUri={item.imageUri}
                 colorUri={weservProxy(DO_IMAGE)}
-                initialProgress={initialRevealProgress}
-                containerHeight={cardInnerHeight}
-                onProgress={(p) => {
-                  try {
-                    setIsRevealing(p < 0.85);
-                    onRevealProgress?.(item.id, p);
-                  } catch (err) {
-                    console.log('[Reveal] progress cb error', err);
-                  }
-                }}
+                onRevealChange={setIsRevealing}
               />
             ) : (
               <Image
@@ -334,12 +318,10 @@ function formatDuration(totalSeconds: number): string {
 
 type NavSection = 'hipnosis' | 'aura';
 
-function RevealFromBottom({ sessionId, grayscaleUri, colorUri, initialProgress = 0, onProgress, containerHeight }: { sessionId: string; grayscaleUri: string; colorUri: string; initialProgress?: number; onProgress?: (progress: number) => void; containerHeight?: number }) {
+function RevealFromBottom({ grayscaleUri, colorUri, onRevealChange }: { grayscaleUri: string; colorUri: string; onRevealChange?: (revealing: boolean) => void }) {
   const containerHeightRef = useRef<number>(0);
   const revealHeight = useRef(new Animated.Value(0)).current;
   const [hasLayout, setHasLayout] = useState<boolean>(false);
-  const animRef = useRef<Animated.CompositeAnimation | null>(null);
-  const listenerRef = useRef<string | null>(null);
 
   const onLayout = useCallback((e: { nativeEvent: { layout?: { height?: number } } }) => {
     const h = e?.nativeEvent?.layout?.height ?? 0;
@@ -350,47 +332,25 @@ function RevealFromBottom({ sessionId, grayscaleUri, colorUri, initialProgress =
   }, []);
 
   useEffect(() => {
-    if (containerHeight && containerHeight > 0 && containerHeightRef.current !== containerHeight) {
-      containerHeightRef.current = containerHeight;
-      setHasLayout(true);
-    }
-  }, [containerHeight]);
-
-  useEffect(() => {
     if (!hasLayout) return;
     const h = containerHeightRef.current;
     try {
-      const startPx = Math.max(0, Math.min(h * 0.85, (initialProgress ?? 0) * h));
-      revealHeight.setValue(startPx);
-
-      if (listenerRef.current) {
-        revealHeight.removeListener(listenerRef.current);
-        listenerRef.current = null;
-      }
-      listenerRef.current = revealHeight.addListener(({ value }) => {
-        const p = h > 0 ? value / h : 0;
-        onProgress?.(Math.max(0, Math.min(1, p)));
-      });
-
-      const remainingFrac = Math.max(0, 0.85 - (startPx / (h || 1)));
-      const duration = remainingFrac === 0 ? 0 : Math.round((remainingFrac / 0.85) * 20000);
-
-      animRef.current = Animated.timing(revealHeight, {
+      revealHeight.setValue(0);
+      onRevealChange?.(true);
+      Animated.timing(revealHeight, {
         toValue: h * 0.85,
-        duration,
+        duration: 20000,
         useNativeDriver: false,
+      }).start(({ finished }) => {
+        if (finished) {
+          onRevealChange?.(false);
+        }
       });
-      animRef.current.start();
     } catch (err) {
       console.log('[Reveal] animation error', err);
+      onRevealChange?.(false);
     }
-    return () => {
-      if (listenerRef.current) {
-        revealHeight.removeListener(listenerRef.current);
-        listenerRef.current = null;
-      }
-    };
-  }, [hasLayout, revealHeight, initialProgress, onProgress, sessionId]);
+  }, [hasLayout, revealHeight, onRevealChange]);
 
   return (
     <View style={styles.revealContainer} onLayout={onLayout} testID="reveal-grayscale-card">
@@ -418,7 +378,6 @@ export default function HomeScreen() {
   const { width: screenWidth } = useWindowDimensions();
 
   const [downloads, setDownloads] = useState<Record<string, DownloadInfo>>({});
-  const [revealProgressMap, setRevealProgressMap] = useState<Record<string, number>>({});
   const timersRef = useRef<Record<string, NodeJS.Timeout | number>>({});
 
   const fadeAnim = useRef(new Animated.Value(1)).current;
@@ -523,8 +482,6 @@ export default function HomeScreen() {
         scrollX={scrollX}
         onPress={handleCardPress}
         downloadInfo={downloads[item.id]}
-        initialRevealProgress={revealProgressMap[item.id] ?? 0}
-        onRevealProgress={(id, p) => setRevealProgressMap(prev => ({ ...prev, [id]: p }))}
       />
     ),
     [cardWidth, cardSpacing, snapInterval, scrollX, handleCardPress, downloads]
@@ -578,22 +535,13 @@ export default function HomeScreen() {
           useNativeDriver: true,
         }),
       ]).start(() => {
+        // ... resto sin cambios ...
         setViewMode(mode);
-        Animated.parallel([
-          Animated.timing(fadeAnim, {
-            toValue: 1,
-            duration: 150,
-            useNativeDriver: true,
-          }),
-          Animated.timing(slideAnim, {
-            toValue: 0,
-            duration: 150,
-            useNativeDriver: true,
-          }),
-        ]).start();
+        // ...
       });
     } else {
       setViewMode(mode);
+      // ...
     }
   }, [fadeAnim, slideAnim, toggleIndicatorAnim, viewMode]);
 
