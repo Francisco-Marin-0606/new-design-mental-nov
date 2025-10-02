@@ -189,6 +189,7 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
   const pressScale = useRef(new Animated.Value(1)).current;
   const combinedScale = Animated.multiply(scale, pressScale);
   const [isRevealing, setIsRevealing] = useState<boolean>(initialRevealProgress < 0.85);
+  const [cardInnerHeight, setCardInnerHeight] = useState<number>(0);
 
   const handlePressIn = useCallback(() => {
     Animated.spring(pressScale, {
@@ -238,8 +239,11 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
           <View style={styles.cardInner} onLayout={(e) => {
             try {
               const h = e?.nativeEvent?.layout?.height ?? 0;
-              if (item.isGrayscale && h > 0) {
-                console.log('[Reveal] layout height', h);
+              if (h > 0) {
+                setCardInnerHeight(h);
+                if (item.isGrayscale) {
+                  console.log('[Reveal] cardInner height', h);
+                }
               }
             } catch (err) {
               console.log('[Reveal] onLayout error', err);
@@ -251,6 +255,7 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
                 grayscaleUri={item.imageUri}
                 colorUri={weservProxy(DO_IMAGE)}
                 initialProgress={initialRevealProgress}
+                containerHeight={cardInnerHeight}
                 onProgress={(p) => {
                   try {
                     setIsRevealing(p < 0.85);
@@ -329,7 +334,7 @@ function formatDuration(totalSeconds: number): string {
 
 type NavSection = 'hipnosis' | 'aura';
 
-function RevealFromBottom({ sessionId, grayscaleUri, colorUri, initialProgress = 0, onProgress }: { sessionId: string; grayscaleUri: string; colorUri: string; initialProgress?: number; onProgress?: (progress: number) => void }) {
+function RevealFromBottom({ sessionId, grayscaleUri, colorUri, initialProgress = 0, onProgress, containerHeight }: { sessionId: string; grayscaleUri: string; colorUri: string; initialProgress?: number; onProgress?: (progress: number) => void; containerHeight?: number }) {
   const containerHeightRef = useRef<number>(0);
   const revealHeight = useRef(new Animated.Value(0)).current;
   const [hasLayout, setHasLayout] = useState<boolean>(false);
@@ -343,6 +348,13 @@ function RevealFromBottom({ sessionId, grayscaleUri, colorUri, initialProgress =
       setHasLayout(true);
     }
   }, []);
+
+  useEffect(() => {
+    if (containerHeight && containerHeight > 0 && containerHeightRef.current !== containerHeight) {
+      containerHeightRef.current = containerHeight;
+      setHasLayout(true);
+    }
+  }, [containerHeight]);
 
   useEffect(() => {
     if (!hasLayout) return;
