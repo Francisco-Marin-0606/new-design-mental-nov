@@ -18,6 +18,7 @@ import * as Haptics from 'expo-haptics';
 import Svg, { Defs, LinearGradient as SvgLinearGradient, Stop, Rect } from 'react-native-svg';
 import SwipeUpModal from '@/components/SwipeUpModal';
 import PlayerModal from '@/components/PlayerModal';
+import SettingsModal from '@/components/SettingsModal';
 
 interface HypnosisSession {
   id: string;
@@ -271,6 +272,7 @@ export default function HomeScreen() {
   const [playerModalVisible, setPlayerModalVisible] = useState<boolean>(false);
   const [playerSession, setPlayerSession] = useState<HypnosisSession | null>(null);
   const [navSection, setNavSection] = useState<NavSection>('hipnosis');
+  const [settingsModalVisible, setSettingsModalVisible] = useState<boolean>(false);
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
 
   const [downloads, setDownloads] = useState<Record<string, DownloadInfo>>({});
@@ -622,7 +624,16 @@ export default function HomeScreen() {
         <View style={styles.container}>
           <View style={styles.headerRow} testID="header-row">
             <Text style={styles.headerTitle}>Mis hipnosis</Text>
-            <View style={styles.headerRight}>
+            <Pressable 
+              style={styles.headerRight}
+              onPress={async () => {
+                if (Platform.OS !== 'web') {
+                  try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy); } catch {}
+                }
+                setSettingsModalVisible(true);
+              }}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
               <Settings
                 color="#fbefd9"
                 size={28}
@@ -630,7 +641,7 @@ export default function HomeScreen() {
                 testID="header-settings-icon"
                 accessibilityLabel="Configuración"
               />
-            </View>
+            </Pressable>
           </View>
 
           {showToggle && (
@@ -962,6 +973,11 @@ export default function HomeScreen() {
         mode="audio"
         title={playerSession?.title}
         mediaUri="https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/Mental%20Login%20Background_1.mp4"
+      />
+
+      <SettingsModal
+        visible={settingsModalVisible}
+        onClose={() => setSettingsModalVisible(false)}
       />
     </View>
   );
