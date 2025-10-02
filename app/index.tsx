@@ -38,8 +38,9 @@ interface DownloadInfo {
 function getGrayscaleUri(uri: string): string {
   try {
     const noProto = uri.replace(/^https?:\/\//, '');
-    const encoded = encodeURIComponent(noProto);
-    return `https://images.weserv.nl/?url=${encoded}&grayscale`;
+    const decoded = decodeURI(noProto);
+    const safe = encodeURI(decoded);
+    return `https://images.weserv.nl/?url=${safe}&grayscale`;
   } catch {
     return uri;
   }
