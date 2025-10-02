@@ -348,7 +348,9 @@ function RevealFromBottom({ grayscaleUri, colorUri }: { grayscaleUri: string; co
     <View style={styles.revealContainer} onLayout={onLayout} testID="reveal-grayscale-card">
       <Image source={{ uri: grayscaleUri }} style={styles.revealImage} resizeMode="cover" />
       <Animated.View style={[styles.revealOverlay, { height: revealHeight }]} testID="reveal-overlay">
-        <Image source={{ uri: colorUri }} style={styles.revealImage} resizeMode="cover" />
+        <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: containerHeightRef.current }}>
+          <Image source={{ uri: colorUri }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+        </View>
       </Animated.View>
     </View>
   );
