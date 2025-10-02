@@ -612,7 +612,7 @@ export default function HomeScreen() {
             <View style={styles.headerRight}>
               <Settings
                 color="#fbefd9"
-                size={24}
+                size={28}
                 strokeWidth={1.5}
                 testID="header-settings-icon"
                 accessibilityLabel="Configuración"
@@ -959,6 +959,7 @@ const styles = StyleSheet.create({
     paddingLeft: 44,
     paddingRight: 44,
     marginBottom: 16,
+    height: 40,
   },
   headerTitle: {
     fontSize: 32.4,
