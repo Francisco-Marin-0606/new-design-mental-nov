@@ -84,9 +84,8 @@ function weservProxy(url: string, opts?: { grayscale?: boolean }) {
   }
 }
 
-function ListItem({ item, onPress, onMenuPress, viewMode, downloadInfo }: ListItemProps) {
+function ListItem({ item, onPress, onMenuPress, viewMode, downloadInfo, revealHeight, containerHeight, isRevealing, onLayoutCapture }: ListItemProps & { revealHeight: Animated.Value; containerHeight: number; isRevealing: boolean; onLayoutCapture: (height: number) => void }) {
   const pressScale = useRef(new Animated.Value(1)).current;
-  const [isRevealing, setIsRevealing] = useState<boolean>(false);
 
   const handlePressIn = useCallback(() => {
     Animated.spring(pressScale, {
@@ -129,12 +128,22 @@ function ListItem({ item, onPress, onMenuPress, viewMode, downloadInfo }: ListIt
       >
         {({ pressed }) => (
           <>
-            <View style={[styles.listItemImageContainer, pressed && { opacity: 0.2 }]}>
+            <View style={[styles.listItemImageContainer, pressed && { opacity: 0.2 }]} onLayout={(e) => {
+              try {
+                const h = e?.nativeEvent?.layout?.height ?? 0;
+                if (item.isGrayscale && h > 0) {
+                  onLayoutCapture(h);
+                }
+              } catch (err) {
+                console.log('[Reveal] onLayout error', err);
+              }
+            }}>
               {item.isGrayscale ? (
                 <RevealFromBottom
                   grayscaleUri={item.imageUri}
                   colorUri={weservProxy(DO_IMAGE)}
-                  onRevealChange={setIsRevealing}
+                  revealHeight={revealHeight}
+                  containerHeight={containerHeight}
                 />
               ) : (
                 <Image
@@ -178,7 +187,7 @@ function ListItem({ item, onPress, onMenuPress, viewMode, downloadInfo }: ListIt
   );
 }
 
-function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrollX, onPress, downloadInfo }: CarouselItemProps) {
+function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrollX, onPress, downloadInfo, revealHeight, containerHeight, isRevealing, onLayoutCapture }: CarouselItemProps & { revealHeight: Animated.Value; containerHeight: number; isRevealing: boolean; onLayoutCapture: (height: number) => void }) {
   const inputRange = [
     (index - 1) * snapInterval,
     index * snapInterval,
@@ -199,7 +208,6 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
 
   const pressScale = useRef(new Animated.Value(1)).current;
   const combinedScale = Animated.multiply(scale, pressScale);
-  const [isRevealing, setIsRevealing] = useState<boolean>(false);
 
   const handlePressIn = useCallback(() => {
     Animated.spring(pressScale, {
@@ -250,7 +258,7 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
             try {
               const h = e?.nativeEvent?.layout?.height ?? 0;
               if (item.isGrayscale && h > 0) {
-                console.log('[Reveal] layout height', h);
+                onLayoutCapture(h);
               }
             } catch (err) {
               console.log('[Reveal] onLayout error', err);
@@ -260,7 +268,8 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
               <RevealFromBottom
                 grayscaleUri={item.imageUri}
                 colorUri={weservProxy(DO_IMAGE)}
-                onRevealChange={setIsRevealing}
+                revealHeight={revealHeight}
+                containerHeight={containerHeight}
               />
             ) : (
               <Image
@@ -331,45 +340,19 @@ function formatDuration(totalSeconds: number): string {
 
 type NavSection = 'hipnosis' | 'aura';
 
-function RevealFromBottom({ grayscaleUri, colorUri, onRevealChange }: { grayscaleUri: string; colorUri: string; onRevealChange?: (revealing: boolean) => void }) {
-  const containerHeightRef = useRef<number>(0);
-  const revealHeight = useRef(new Animated.Value(0)).current;
-  const [hasLayout, setHasLayout] = useState<boolean>(false);
-
+function RevealFromBottom({ grayscaleUri, colorUri, revealHeight, containerHeight }: { grayscaleUri: string; colorUri: string; revealHeight: Animated.Value; containerHeight: number }) {
   const onLayout = useCallback((e: { nativeEvent: { layout?: { height?: number } } }) => {
     const h = e?.nativeEvent?.layout?.height ?? 0;
     if (h > 0) {
-      containerHeightRef.current = h;
-      setHasLayout(true);
+      console.log('[Reveal] layout height', h);
     }
   }, []);
-
-  useEffect(() => {
-    if (!hasLayout) return;
-    const h = containerHeightRef.current;
-    try {
-      revealHeight.setValue(0);
-      onRevealChange?.(true);
-      Animated.timing(revealHeight, {
-        toValue: h * 0.85,
-        duration: 20000,
-        useNativeDriver: false,
-      }).start(({ finished }) => {
-        if (finished) {
-          onRevealChange?.(false);
-        }
-      });
-    } catch (err) {
-      console.log('[Reveal] animation error', err);
-      onRevealChange?.(false);
-    }
-  }, [hasLayout, revealHeight, onRevealChange]);
 
   return (
     <View style={styles.revealContainer} onLayout={onLayout} testID="reveal-grayscale-card">
       <Image source={{ uri: grayscaleUri }} style={styles.revealImage} resizeMode="cover" />
       <Animated.View style={[styles.revealOverlay, { height: revealHeight }]} testID="reveal-overlay">
-        <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: containerHeightRef.current }}>
+        <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: containerHeight }}>
           <Image source={{ uri: colorUri }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
         </View>
       </Animated.View>
@@ -389,6 +372,11 @@ export default function HomeScreen() {
   const [navSection, setNavSection] = useState<NavSection>('hipnosis');
   const [settingsModalVisible, setSettingsModalVisible] = useState<boolean>(false);
   const { width: screenWidth } = useWindowDimensions();
+
+  const revealHeightRef = useRef(new Animated.Value(0)).current;
+  const [revealContainerHeight, setRevealContainerHeight] = useState<number>(0);
+  const [isRevealing, setIsRevealing] = useState<boolean>(false);
+  const revealAnimationStartedRef = useRef<boolean>(false);
 
   const [downloads, setDownloads] = useState<Record<string, DownloadInfo>>({});
   const timersRef = useRef<Record<string, NodeJS.Timeout | number>>({});
@@ -417,6 +405,28 @@ export default function HomeScreen() {
   const cardHeight = useMemo(() => cardWidth * (5 / 4), [cardWidth]);
   const titleHeight = 90;
   const totalCardHeight = cardHeight + titleHeight;
+
+  useEffect(() => {
+    if (revealContainerHeight > 0 && !revealAnimationStartedRef.current) {
+      revealAnimationStartedRef.current = true;
+      try {
+        revealHeightRef.setValue(0);
+        setIsRevealing(true);
+        Animated.timing(revealHeightRef, {
+          toValue: revealContainerHeight * 0.85,
+          duration: 20000,
+          useNativeDriver: false,
+        }).start(({ finished }) => {
+          if (finished) {
+            setIsRevealing(false);
+          }
+        });
+      } catch (err) {
+        console.log('[Reveal] animation error', err);
+        setIsRevealing(false);
+      }
+    }
+  }, [revealContainerHeight, revealHeightRef]);
 
   const isFirstLoadRef = useRef<boolean>(true);
   const [isCarouselReady, setIsCarouselReady] = useState<boolean>(true);
@@ -495,12 +505,42 @@ export default function HomeScreen() {
         scrollX={scrollX}
         onPress={handleCardPress}
         downloadInfo={downloads[item.id]}
+        revealHeight={revealHeightRef}
+        containerHeight={revealContainerHeight}
+        isRevealing={isRevealing}
+        onLayoutCapture={setRevealContainerHeight}
       />
     ),
-    [cardWidth, cardSpacing, snapInterval, scrollX, handleCardPress, downloads]
+    [cardWidth, cardSpacing, snapInterval, scrollX, handleCardPress, downloads, revealHeightRef, revealContainerHeight, isRevealing]
   );
 
   const keyExtractor = useCallback((i: HypnosisSession) => i.id, []);
+
+  const restoreScrollPositions = useCallback((targetMode: ViewMode) => {
+    try {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          if (targetMode === 'carousel' && carouselFlatListRef.current) {
+            const x = Math.max(0, carouselScrollOffsetRef.current ?? 0);
+            console.log('[Restore] Carousel to x:', x);
+            carouselFlatListRef.current.scrollToOffset({ offset: x, animated: false });
+          }
+          if (targetMode === 'list' && listFlatListRef.current) {
+            const y = Math.max(0, listScrollOffsetRef.current ?? 0);
+            console.log('[Restore] List to y:', y);
+            listFlatListRef.current.scrollToOffset({ offset: y, animated: false });
+          }
+          if (targetMode === 'previous' && previousFlatListRef.current) {
+            const y2 = Math.max(0, previousScrollOffsetRef.current ?? 0);
+            console.log('[Restore] Previous to y:', y2);
+            previousFlatListRef.current.scrollToOffset({ offset: y2, animated: false });
+          }
+        });
+      });
+    } catch (err) {
+      console.log('[Restore] error restoring scroll', err);
+    }
+  }, []);
 
   const handleNavSectionChange = useCallback(async (section: NavSection) => {
     if (Platform.OS !== 'web') {
@@ -675,9 +715,13 @@ export default function HomeScreen() {
         onMenuPress={(session) => handleMenuPress(session, viewMode)}
         viewMode={viewMode}
         downloadInfo={downloads[item.id]}
+        revealHeight={revealHeightRef}
+        containerHeight={revealContainerHeight}
+        isRevealing={isRevealing}
+        onLayoutCapture={setRevealContainerHeight}
       />
     ),
-    [handleListItemPress, handleMenuPress, viewMode, downloads]
+    [handleListItemPress, handleMenuPress, viewMode, downloads, revealHeightRef, revealContainerHeight, isRevealing]
   );
 
   const onListScroll = useCallback((e: { nativeEvent: { contentOffset: { y: number } } }) => {
@@ -686,32 +730,6 @@ export default function HomeScreen() {
 
   const onPreviousScroll = useCallback((e: { nativeEvent: { contentOffset: { y: number } } }) => {
     previousScrollOffsetRef.current = e?.nativeEvent?.contentOffset?.y ?? 0;
-  }, []);
-
-  const restoreScrollPositions = useCallback((targetMode: ViewMode) => {
-    try {
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          if (targetMode === 'carousel' && carouselFlatListRef.current) {
-            const x = Math.max(0, carouselScrollOffsetRef.current ?? 0);
-            console.log('[Restore] Carousel to x:', x);
-            carouselFlatListRef.current.scrollToOffset({ offset: x, animated: false });
-          }
-          if (targetMode === 'list' && listFlatListRef.current) {
-            const y = Math.max(0, listScrollOffsetRef.current ?? 0);
-            console.log('[Restore] List to y:', y);
-            listFlatListRef.current.scrollToOffset({ offset: y, animated: false });
-          }
-          if (targetMode === 'previous' && previousFlatListRef.current) {
-            const y2 = Math.max(0, previousScrollOffsetRef.current ?? 0);
-            console.log('[Restore] Previous to y:', y2);
-            previousFlatListRef.current.scrollToOffset({ offset: y2, animated: false });
-          }
-        });
-      });
-    } catch (err) {
-      console.log('[Restore] error restoring scroll', err);
-    }
   }, []);
 
   const showToggle = HYPNOSIS_SESSIONS.length > 8;
