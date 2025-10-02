@@ -321,7 +321,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '600',
     color: '#fbefd9',
-    marginBottom: 2,
+    marginBottom: 0,
   },
   subscriptionType: {
     fontSize: 16,
