@@ -435,7 +435,7 @@ const styles = StyleSheet.create({
     ...BUTTON_STYLES.primaryButton,
     backgroundColor: '#ff6b35',
     marginBottom: 24,
-    marginTop: 0,
+    marginTop: 8,
   },
 
   logoutButtonText: {
