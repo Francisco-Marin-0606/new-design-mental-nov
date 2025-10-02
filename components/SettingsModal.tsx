@@ -291,9 +291,9 @@ export default function SettingsModal({ visible, onClose }: SettingsModalProps) 
             </Pressable>
           </Animated.View>
 
-          <View style={styles.footerContainer}>
-            <Text style={styles.versionText}>Versión de la app 3.1.63</Text>
+          <Text style={styles.versionText}>Versión de la app 3.1.63</Text>
 
+          <View style={styles.footerContainer}>
             <View style={styles.footerLinks}>
             <Pressable
               onPress={() => handleMenuAction('terms')}
@@ -433,7 +433,7 @@ const styles = StyleSheet.create({
   },
   logoutButton: {
     ...BUTTON_STYLES.primaryButton,
-    backgroundColor: '#dc2626',
+    backgroundColor: '#ff6b35',
     marginBottom: 24,
     marginTop: 8,
   },
@@ -441,15 +441,15 @@ const styles = StyleSheet.create({
   logoutButtonText: {
     ...BUTTON_STYLES.primaryButtonText,
   },
-  footerContainer: {
-    marginTop: 'auto',
-  },
   versionText: {
     fontSize: 14,
     fontWeight: '400',
     color: 'rgba(251, 239, 217, 0.4)',
     textAlign: 'center',
     marginBottom: 20,
+  },
+  footerContainer: {
+    marginTop: 'auto',
   },
   footerLinks: {
     flexDirection: 'row',
