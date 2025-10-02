@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useRef, useCallback, useState } from 'react';
 import {
   View,
   Text,
@@ -24,6 +24,7 @@ export default function SettingsModal({ visible, onClose }: SettingsModalProps) 
   
   const translateY = useRef(new Animated.Value(screenHeight)).current;
   const opacity = useRef(new Animated.Value(0)).current;
+  const [pressedButton, setPressedButton] = useState<string | null>(null);
 
   const DURATION_OPEN = 400;
   const DURATION_CLOSE = 350;
@@ -97,6 +98,14 @@ export default function SettingsModal({ visible, onClose }: SettingsModalProps) 
     console.log(`Settings action: ${action}`);
   }, []);
 
+  const handlePressIn = (buttonId: string) => {
+    setPressedButton(buttonId);
+  };
+
+  const handlePressOut = () => {
+    setPressedButton(null);
+  };
+
   if (!visible) return null;
 
   return (
@@ -128,8 +137,15 @@ export default function SettingsModal({ visible, onClose }: SettingsModalProps) 
           <Text style={styles.title}>Mi cuenta</Text>
 
           <View style={styles.subscriptionSection}>
-            <Text style={styles.subscriptionLabel}>Suscripción</Text>
-            <Text style={styles.subscriptionType}>Mensual</Text>
+            <View style={styles.subscriptionRow}>
+              <View style={styles.subscriptionInfo}>
+                <Text style={styles.subscriptionLabel}>Suscripción</Text>
+                <Text style={styles.subscriptionType}>Mensual</Text>
+              </View>
+              <View style={styles.budgetContainer}>
+                <Text style={styles.budgetText}>Budget: 10</Text>
+              </View>
+            </View>
             <View style={styles.activeButton}>
               <Text style={styles.activeButtonText}>ACTIVA</Text>
             </View>
@@ -137,11 +153,13 @@ export default function SettingsModal({ visible, onClose }: SettingsModalProps) 
 
           <View style={styles.menuSection}>
             <Pressable
-              style={({ pressed }) => [
+              style={[
                 styles.menuItem,
-                pressed && styles.menuItemPressed,
+                pressedButton === 'manage-subscription' && styles.menuItemScaled,
               ]}
               onPress={() => handleMenuAction('manage-subscription')}
+              onPressIn={() => handlePressIn('manage-subscription')}
+              onPressOut={handlePressOut}
               android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.1)' } : undefined}
               testID="menu-manage-subscription"
             >
@@ -152,11 +170,13 @@ export default function SettingsModal({ visible, onClose }: SettingsModalProps) 
             </Pressable>
 
             <Pressable
-              style={({ pressed }) => [
+              style={[
                 styles.menuItem,
-                pressed && styles.menuItemPressed,
+                pressedButton === 'edit-profile' && styles.menuItemScaled,
               ]}
               onPress={() => handleMenuAction('edit-profile')}
+              onPressIn={() => handlePressIn('edit-profile')}
+              onPressOut={handlePressOut}
               android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.1)' } : undefined}
               testID="menu-edit-profile"
             >
@@ -167,11 +187,13 @@ export default function SettingsModal({ visible, onClose }: SettingsModalProps) 
             </Pressable>
 
             <Pressable
-              style={({ pressed }) => [
+              style={[
                 styles.menuItem,
-                pressed && styles.menuItemPressed,
+                pressedButton === 'faq' && styles.menuItemScaled,
               ]}
               onPress={() => handleMenuAction('faq')}
+              onPressIn={() => handlePressIn('faq')}
+              onPressOut={handlePressOut}
               android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.1)' } : undefined}
               testID="menu-faq"
             >
@@ -182,11 +204,13 @@ export default function SettingsModal({ visible, onClose }: SettingsModalProps) 
             </Pressable>
 
             <Pressable
-              style={({ pressed }) => [
+              style={[
                 styles.menuItem,
-                pressed && styles.menuItemPressed,
+                pressedButton === 'contact' && styles.menuItemScaled,
               ]}
               onPress={() => handleMenuAction('contact')}
+              onPressIn={() => handlePressIn('contact')}
+              onPressOut={handlePressOut}
               android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.1)' } : undefined}
               testID="menu-contact"
             >
@@ -198,11 +222,13 @@ export default function SettingsModal({ visible, onClose }: SettingsModalProps) 
           </View>
 
           <Pressable
-            style={({ pressed }) => [
+            style={[
               styles.logoutButton,
-              pressed && styles.logoutButtonPressed,
+              pressedButton === 'logout' && styles.logoutButtonScaled,
             ]}
             onPress={() => handleMenuAction('logout')}
+            onPressIn={() => handlePressIn('logout')}
+            onPressOut={handlePressOut}
             android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.15)' } : undefined}
             testID="logout-button"
           >
@@ -284,6 +310,15 @@ const styles = StyleSheet.create({
   subscriptionSection: {
     marginBottom: 24,
   },
+  subscriptionRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 16,
+  },
+  subscriptionInfo: {
+    flex: 1,
+  },
   subscriptionLabel: {
     fontSize: 16,
     fontWeight: '400',
@@ -294,7 +329,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '400',
     color: '#fbefd9',
-    marginBottom: 16,
+  },
+  budgetContainer: {
+    backgroundColor: '#0f3d09',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  budgetText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#89e082',
   },
   activeButton: {
     alignSelf: 'flex-start',
@@ -321,8 +366,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(251, 239, 217, 0.08)',
     marginBottom: 10,
   },
-  menuItemPressed: {
-    opacity: 0.6,
+  menuItemScaled: {
+    transform: [{ scale: 0.9 }],
   },
   menuIconContainer: {
     width: 24,
@@ -340,8 +385,8 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     marginTop: 8,
   },
-  logoutButtonPressed: {
-    opacity: 0.7,
+  logoutButtonScaled: {
+    transform: [{ scale: 0.9 }],
   },
   logoutButtonText: {
     ...BUTTON_STYLES.primaryButtonText,
