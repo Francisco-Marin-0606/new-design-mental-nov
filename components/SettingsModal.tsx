@@ -100,14 +100,13 @@ export default function SettingsModal({ visible, onClose }: SettingsModalProps) 
 
   return (
     <View style={styles.overlay} testID="settings-overlay">
-      <Pressable style={styles.backdrop} onPress={closeModal}>
-        <Animated.View style={[StyleSheet.absoluteFillObject, { opacity, backgroundColor: '#000000' }]} />
-      </Pressable>
+      <Animated.View style={[styles.backdrop, { opacity }]} pointerEvents="none" />
       
       <Animated.View
         style={[
           styles.modalContainer,
           {
+            height: screenHeight,
             transform: [{ translateY }],
           },
         ]}
@@ -239,26 +238,30 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     zIndex: 3000,
-    justifyContent: 'flex-end',
   },
   backdrop: {
     ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#000000',
   },
   modalContainer: {
-    backgroundColor: '#000000',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    maxHeight: '95%',
-    paddingBottom: 40,
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: '#170501',
+    borderTopLeftRadius: 0,
+    borderTopRightRadius: 0,
+    overflow: 'hidden',
   },
   modalContent: {
+    flex: 1,
     paddingHorizontal: 24,
-    paddingTop: 24,
-    paddingBottom: 20,
+    paddingTop: 60,
+    paddingBottom: 40,
   },
   closeButton: {
     position: 'absolute',
-    top: 24,
+    top: 50,
     right: 24,
     zIndex: 10,
   },
@@ -266,7 +269,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(251, 239, 217, 0.1)',
+    backgroundColor: 'rgba(0, 0, 0, 0.2)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -278,7 +281,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   subscriptionSection: {
-    marginBottom: 32,
+    marginBottom: 24,
   },
   subscriptionLabel: {
     fontSize: 16,
@@ -294,7 +297,7 @@ const styles = StyleSheet.create({
   },
   activeButton: {
     alignSelf: 'flex-start',
-    backgroundColor: '#2d5f1e',
+    backgroundColor: '#4d7c0f',
     paddingHorizontal: 24,
     paddingVertical: 10,
     borderRadius: 20,
@@ -312,12 +315,12 @@ const styles = StyleSheet.create({
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 18,
+    paddingVertical: 16,
     paddingHorizontal: 16,
     gap: 16,
     borderRadius: 12,
     backgroundColor: 'rgba(251, 239, 217, 0.08)',
-    marginBottom: 12,
+    marginBottom: 10,
   },
   menuItemPressed: {
     opacity: 0.6,
@@ -338,10 +341,11 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingVertical: 16,
     borderRadius: 14,
-    backgroundColor: '#ff6b35',
+    backgroundColor: '#dc2626',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 24,
+    marginTop: 8,
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
