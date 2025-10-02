@@ -1402,8 +1402,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'transparent',
-    paddingVertical: 20,
-    paddingHorizontal: 40,
   },
   navToggleText: {
     color: 'rgba(251, 239, 217, 0.6)',
