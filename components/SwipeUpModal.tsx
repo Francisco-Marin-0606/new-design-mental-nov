@@ -19,14 +19,19 @@ import Svg, { Defs, LinearGradient as SvgLinearGradient, Stop, Rect } from 'reac
 import * as Haptics from 'expo-haptics';
 import PlayerModal from './PlayerModal';
 
+type DownloadState = 'idle' | 'downloading' | 'completed';
+interface ModalDownloadInfo { progress: number; state: DownloadState }
+
 interface SwipeUpModalProps {
   visible: boolean;
   onClose: () => void;
   imageUri?: string;
   title?: string;
+  downloadInfo?: ModalDownloadInfo;
+  onRequestDownload?: () => void;
 }
 
-export default function SwipeUpModal({ visible, onClose, imageUri, title }: SwipeUpModalProps) {
+export default function SwipeUpModal({ visible, onClose, imageUri, title, downloadInfo, onRequestDownload }: SwipeUpModalProps) {
   const { height: screenHeight, width: screenWidth } = useWindowDimensions();
   const [isClient, setIsClient] = useState(Platform.OS !== 'web');
   
@@ -53,12 +58,8 @@ export default function SwipeUpModal({ visible, onClose, imageUri, title }: Swip
   useEffect(() => { tabWidthsRef.current = tabWidths; }, [tabWidths]);
   useEffect(() => { tabPositionsRef.current = tabPositions; }, [tabPositions]);
 
-  const [isDownloading, setIsDownloading] = useState<boolean>(false);
-  const [downloadProgress, setDownloadProgress] = useState<number>(0);
-  const [isDownloaded, setIsDownloaded] = useState<boolean>(false);
   const scrollY = useRef(new Animated.Value(0)).current;
   const backgroundTranslateY = useRef(new Animated.Value(0)).current;
-  const progressWidth = useRef(new Animated.Value(0)).current;
 
   const tabIndicatorPosition = useRef(new Animated.Value(0)).current;
   const [indicatorInitialized, setIndicatorInitialized] = useState<boolean>(false);
@@ -133,49 +134,17 @@ export default function SwipeUpModal({ visible, onClose, imageUri, title }: Swip
     switchToTabSafe(toTab);
   }, [switchToTabSafe]);
 
+  const isDownloading = downloadInfo?.state === 'downloading';
+  const isDownloaded = downloadInfo?.state === 'completed';
+  const downloadProgress = Math.max(0, Math.min(100, Math.round(downloadInfo?.progress ?? 0)));
+
   const startDownload = useCallback(async () => {
     if (isDownloading || isDownloaded) return;
-
-    // Add haptic feedback
     if (Platform.OS !== 'web') {
-      try {
-        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-      } catch (error) {
-        console.log('Haptic feedback error:', error);
-      }
+      try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy); } catch (error) { console.log('Haptic feedback error:', error); }
     }
-
-    setIsDownloading(true);
-    setDownloadProgress(0);
-    progressWidth.setValue(0);
-
-    const duration = 3000;
-    const steps = 100;
-    const stepDuration = duration / steps;
-
-    let currentStep = 0;
-    const interval = setInterval(() => {
-      currentStep++;
-      const progress = currentStep;
-      setDownloadProgress(progress);
-
-      Animated.timing(progressWidth, {
-        toValue: progress,
-        duration: stepDuration,
-        useNativeDriver: false,
-      }).start();
-
-      if (currentStep >= steps) {
-        clearInterval(interval);
-        setTimeout(() => {
-          setIsDownloading(false);
-          setDownloadProgress(0);
-          progressWidth.setValue(0);
-          setIsDownloaded(true);
-        }, 500);
-      }
-    }, stepDuration);
-  }, [isDownloading, isDownloaded, progressWidth]);
+    onRequestDownload?.();
+  }, [isDownloading, isDownloaded, onRequestDownload]);
 
   const closeModal = useCallback(async () => {
     // Add haptic feedback
@@ -429,16 +398,10 @@ export default function SwipeUpModal({ visible, onClose, imageUri, title }: Swip
                       disabled={isDownloading || isDownloaded}
                     >
                       {isDownloading && (
-                        <Animated.View 
+                        <View 
                           style={[
                             styles.downloadProgress,
-                            {
-                              width: progressWidth.interpolate({
-                                inputRange: [0, 100],
-                                outputRange: ['0%', '100%'],
-                                extrapolate: 'clamp',
-                              }),
-                            },
+                            { width: `${downloadProgress}%` },
                           ]}
                         />
                       )}

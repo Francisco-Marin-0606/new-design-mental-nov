@@ -522,6 +522,29 @@ export default function HomeScreen() {
     setMenuModalVisible(false);
   }, []);
 
+  const startDownload = useCallback((id: string) => {
+    setDownloads((prev) => ({
+      ...prev,
+      [id]: { progress: 0, state: 'downloading' },
+    }));
+    try {
+      const stepMs = 400;
+      const handle = setInterval(() => {
+        setDownloads((prev) => {
+          const current = prev[id] ?? { progress: 0, state: 'downloading' };
+          if (current.state !== 'downloading') return prev;
+          const next = Math.min(100, (current.progress ?? 0) + Math.floor(5 + Math.random() * 12));
+          const state: DownloadState = next >= 100 ? 'completed' : 'downloading';
+          return { ...prev, [id]: { progress: next, state } };
+        });
+      }, stepMs) as unknown as number;
+      timersRef.current[id] = handle;
+    } catch (e) {
+      console.log('Download simulation error', e);
+      setDownloads((prev) => ({ ...prev, [id]: { progress: 0, state: 'idle' } }));
+    }
+  }, []);
+
   const handleMenuAction = useCallback(async (action: string) => {
     if (Platform.OS !== 'web') {
       try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy); } catch {}
@@ -538,26 +561,7 @@ export default function HomeScreen() {
 
     if (action === 'download') {
       const id = menuSession.id;
-      setDownloads((prev) => ({
-        ...prev,
-        [id]: { progress: 0, state: 'downloading' },
-      }));
-      try {
-        const stepMs = 400;
-        const handle = setInterval(() => {
-          setDownloads((prev) => {
-            const current = prev[id] ?? { progress: 0, state: 'downloading' };
-            if (current.state !== 'downloading') return prev;
-            const next = Math.min(100, (current.progress ?? 0) + Math.floor(5 + Math.random() * 12));
-            const state: DownloadState = next >= 100 ? 'completed' : 'downloading';
-            return { ...prev, [id]: { progress: next, state } };
-          });
-        }, stepMs) as unknown as number;
-        timersRef.current[id] = handle;
-      } catch (e) {
-        console.log('Download simulation error', e);
-        setDownloads((prev) => ({ ...prev, [id]: { progress: 0, state: 'idle' } }));
-      }
+      startDownload(id);
     }
   }, [menuSession]);
 
@@ -835,6 +839,12 @@ export default function HomeScreen() {
         onClose={handleClose}
         imageUri={selectedSession?.imageUri ?? ''}
         title={selectedSession?.title ?? ''}
+        downloadInfo={selectedSession ? downloads[selectedSession.id] : undefined}
+        onRequestDownload={() => {
+          if (selectedSession) {
+            startDownload(selectedSession.id);
+          }
+        }}
       />
 
       {menuModalVisible && (
