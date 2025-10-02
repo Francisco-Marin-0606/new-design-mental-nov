@@ -5,7 +5,6 @@ import React, { useEffect, useState } from "react";
 import * as SystemUI from "expo-system-ui";
 import { StyleSheet, Platform } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { RevealProgressProvider } from "@/providers/RevealProgressProvider";
 
 // Only prevent auto hide on native platforms
 if (Platform.OS !== 'web') {
@@ -48,11 +47,9 @@ export default function RootLayout() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <RevealProgressProvider>
-        <GestureHandlerRootView style={styles.flex} testID="gesture-root">
-          <RootLayoutNav />
-        </GestureHandlerRootView>
-      </RevealProgressProvider>
+      <GestureHandlerRootView style={styles.flex} testID="gesture-root">
+        <RootLayoutNav />
+      </GestureHandlerRootView>
     </QueryClientProvider>
   );
 }
