@@ -306,6 +306,7 @@ const styles = StyleSheet.create({
   },
   subscriptionSection: {
     marginBottom: 24,
+    marginTop: 25,
   },
   subscriptionRow: {
     flexDirection: 'row',
