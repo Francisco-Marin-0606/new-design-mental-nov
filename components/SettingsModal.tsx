@@ -332,7 +332,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 6,
     borderRadius: 8,
-    minWidth: 80,
+    minWidth: 120,
     alignItems: 'center',
   },
   budgetText: {
