@@ -20,5 +20,6 @@ export const BUTTON_STYLES = StyleSheet.create({
     fontSize: 20,
     fontWeight: '500' as const,
     color: '#ffffff',
+    letterSpacing: -0.3,
   },
 });
