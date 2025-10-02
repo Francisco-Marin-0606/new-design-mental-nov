@@ -318,10 +318,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   subscriptionLabel: {
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: '600',
     color: '#fbefd9',
-    marginBottom: 4,
+    marginBottom: 2,
   },
   subscriptionType: {
     fontSize: 16,
