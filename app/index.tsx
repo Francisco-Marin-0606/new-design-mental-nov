@@ -5,12 +5,11 @@ import {
   Pressable,
   Platform,
   Text,
+  Image,
   useWindowDimensions,
   Animated,
   FlatList,
   ListRenderItemInfo,
-  Image as RNImage,
-  ImageProps as RNImageProps,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -21,45 +20,6 @@ import SwipeUpModal from '@/components/SwipeUpModal';
 import PlayerModal from '@/components/PlayerModal';
 import SettingsModal from '@/components/SettingsModal';
 import { BUTTON_STYLES } from '@/constants/buttonStyles';
-
-// GrayscaleImage with robust URL proxying on native and CSS filter on web
-
-type GrayscaleImageProps = RNImageProps & { gray?: boolean };
-
-function buildWeservUrl(originalUri: string): string {
-  try {
-    if (!/^https?:\/\//i.test(originalUri)) return originalUri;
-    const u = new URL(originalUri);
-    const hostAndPath = `${u.host}${u.pathname}${u.search ?? ''}`;
-    const encoded = encodeURIComponent(hostAndPath);
-    return `https://images.weserv.nl/?url=${encoded}&n=-100&sharp=1`;
-  } catch {
-    return originalUri;
-  }
-}
-
-function GrayscaleImage({ gray, style, source, ...rest }: GrayscaleImageProps) {
-  const uri = typeof source === 'object' && source && (source as { uri?: string }).uri ? (source as { uri?: string }).uri ?? '' : '';
-  const proxied = useMemo(() => buildWeservUrl(uri), [uri]);
-
-  if (!gray || !source || typeof source === 'number') {
-    return <RNImage testID="GrayscaleImage" {...rest} source={source} style={style} />;
-  }
-
-  if (Platform.OS === 'web') {
-    const arr = Array.isArray(style) ? style : [style];
-    return (
-      <RNImage
-        testID="GrayscaleImage"
-        {...rest}
-        source={source}
-        style={[...arr, { filter: 'grayscale(100%)' } as unknown as any]}
-      />
-    );
-  }
-
-  return <RNImage testID="GrayscaleImage" {...rest} source={{ uri: proxied }} style={style} />;
-}
 
 interface HypnosisSession {
   id: string;
@@ -139,12 +99,7 @@ function ListItem({ item, onPress, onMenuPress, viewMode, downloadInfo }: ListIt
       >
         {({ pressed }) => (
           <>
-            <GrayscaleImage
-              gray={!!item.isGrayscale}
-              source={{ uri: item.imageUri }}
-              style={[styles.listItemImage, pressed && { opacity: 0.2 }]}
-              resizeMode="cover"
-            />
+            <Image source={{ uri: item.imageUri }} style={[styles.listItemImage, item.isGrayscale ? styles.grayscaleImage : undefined, pressed && { opacity: 0.2 }]} resizeMode="cover" />
             <View style={[styles.listItemContent, pressed && { opacity: 0.2 }]}>
               <Text style={styles.listItemTitle} numberOfLines={2}>{item.title}</Text>
               <View style={styles.durationRow}>
@@ -251,12 +206,7 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
         */}
         <View style={styles.cardShadow}>
           <View style={styles.cardInner}>
-            <GrayscaleImage
-              gray={!!item.isGrayscale}
-              source={{ uri: item.imageUri }}
-              style={styles.cardImage}
-              resizeMode="cover"
-            />
+            <Image source={{ uri: item.imageUri }} style={[styles.cardImage, item.isGrayscale ? styles.grayscaleImage : undefined]} resizeMode="cover" />
           </View>
           {index === 0 && (
             <View style={styles.badge} testID="listen-badge">
@@ -292,7 +242,7 @@ const HYPNOSIS_SESSIONS_RAW: HypnosisSession[] = [
   { id: '9', title: 'Liberación emocional suave y guiada', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg', durationSec: 21 * 60 + 7 },
   { id: '10', title: 'Conexión espiritual serena y profunda', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg', durationSec: 31 * 60 + 54 },
   { id: '11', title: 'Viaje hacia tu centro interior', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg', durationSec: 27 * 60 + 18 },
-  { id: '12', title: 'Silencio en blanco y negro', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg', durationSec: 24 * 60 + 9, isGrayscale: true },
+  { id: '12', title: 'Silencio en blanco y negro', imageUri: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1080&auto=format&fit=crop&sat=-100', durationSec: 24 * 60 + 9, isGrayscale: true },
 ];
 
 const HYPNOSIS_SESSIONS: HypnosisSession[] = [...HYPNOSIS_SESSIONS_RAW].reverse();
@@ -876,7 +826,7 @@ export default function HomeScreen() {
               testID="nav-hipnosis"
               accessibilityLabel="Hipnosis"
             >
-              <RNImage
+              <Image
                 source={{ uri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/FooterHipnosis.png' }}
                 style={[styles.navIconImage, { opacity: navSection === 'hipnosis' ? 1 : 0.2 }]}
                 resizeMode="contain"
@@ -889,7 +839,7 @@ export default function HomeScreen() {
               testID="nav-aura"
               accessibilityLabel="Aura"
             >
-              <RNImage
+              <Image
                 source={{ uri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/icono_aura.png' }}
                 style={[styles.navIconImage, { opacity: navSection === 'aura' ? 1 : 0.2 }]}
                 resizeMode="contain"
@@ -1555,5 +1505,8 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     backgroundColor: 'rgba(251, 239, 217, 0.08)',
   },
-
+  grayscaleImage: Platform.select({
+    web: { filter: 'grayscale(100%)' } as unknown as any,
+    default: { opacity: 0.6 },
+  }),
 });
