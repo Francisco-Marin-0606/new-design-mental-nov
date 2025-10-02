@@ -41,6 +41,7 @@ interface CarouselItemProps {
   snapInterval: number;
   scrollX: Animated.Value;
   onPress: (session: HypnosisSession) => void;
+  downloadInfo?: DownloadInfo;
 }
 
 interface ListItemProps {
@@ -128,7 +129,7 @@ function ListItem({ item, onPress, onMenuPress, viewMode, downloadInfo }: ListIt
   );
 }
 
-function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrollX, onPress }: CarouselItemProps) {
+function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrollX, onPress, downloadInfo }: CarouselItemProps) {
   const inputRange = [
     (index - 1) * snapInterval,
     index * snapInterval,
@@ -211,9 +212,16 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
           )}
         </View>
 
-        <Text style={[styles.cardTitle, { width: cardWidth }]} numberOfLines={3}>
-          {item.title}
-        </Text>
+        <View style={[styles.cardTitleContainer, { width: cardWidth }]}>
+          <Text style={styles.cardTitle} numberOfLines={3}>
+            {item.title}
+          </Text>
+          {downloadInfo?.state === 'completed' && (
+            <View style={styles.cardDownloadIcon}>
+              <Check size={10.2} color="#ffffff" />
+            </View>
+          )}
+        </View>
       </Pressable>
     </Animated.View>
   );
@@ -370,9 +378,10 @@ export default function HomeScreen() {
         snapInterval={snapInterval}
         scrollX={scrollX}
         onPress={handleCardPress}
+        downloadInfo={downloads[item.id]}
       />
     ),
-    [cardWidth, cardSpacing, snapInterval, scrollX, handleCardPress]
+    [cardWidth, cardSpacing, snapInterval, scrollX, handleCardPress, downloads]
   );
 
   const keyExtractor = useCallback((i: HypnosisSession) => i.id, []);
@@ -1098,14 +1107,29 @@ const styles = StyleSheet.create({
 
 
 
-  cardTitle: {
+  cardTitleContainer: {
     marginTop: 20,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    paddingHorizontal: 4,
+    gap: 8,
+  },
+  cardTitle: {
+    flex: 1,
     fontSize: 26,
     fontWeight: '600',
     color: '#fbefd9',
     textAlign: 'left',
-    paddingHorizontal: 4,
     lineHeight: 30,
+  },
+  cardDownloadIcon: {
+    width: 15.3,
+    height: 15.3,
+    borderRadius: 7.65,
+    backgroundColor: '#c9841e',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 7,
   },
 
   badge: {
