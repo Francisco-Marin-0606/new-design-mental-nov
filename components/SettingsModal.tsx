@@ -298,7 +298,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    fontSize: 22,
+    fontSize: 36,
     fontWeight: '700',
     color: '#fbefd9',
     marginBottom: 32,
