@@ -305,7 +305,7 @@ const styles = StyleSheet.create({
     marginTop: 25,
   },
   subscriptionSection: {
-    marginBottom: 24,
+    marginBottom: 12,
     marginTop: 25,
   },
   subscriptionRow: {
