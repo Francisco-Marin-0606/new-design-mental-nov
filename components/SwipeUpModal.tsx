@@ -70,13 +70,6 @@ export default function SwipeUpModal({ visible, onClose, imageUri, title, downlo
 
   const [audioPlayerVisible, setAudioPlayerVisible] = useState<boolean>(false);
 
-  const playBtnScale = useRef(new Animated.Value(1)).current;
-  const playBtnOpacity = useRef(new Animated.Value(1)).current;
-  const downloadBtnScale = useRef(new Animated.Value(1)).current;
-  const downloadBtnOpacity = useRef(new Animated.Value(1)).current;
-  const explainBtnScale = useRef(new Animated.Value(1)).current;
-  const explainBtnOpacity = useRef(new Animated.Value(1)).current;
-
   const easeInOut = Easing.out(Easing.cubic);
   const DURATION_OPEN = 600;
   const DURATION_CLOSE = 600;
@@ -363,39 +356,8 @@ export default function SwipeUpModal({ visible, onClose, imageUri, title, downlo
 
                   <View style={styles.actionsRow}>
                     <TouchableOpacity
-                      activeOpacity={1}
-                      onPressIn={() => {
-                        Animated.parallel([
-                          Animated.timing(playBtnScale, {
-                            toValue: 0.9,
-                            duration: 150,
-                            easing: Easing.out(Easing.ease),
-                            useNativeDriver: true,
-                          }),
-                          Animated.timing(playBtnOpacity, {
-                            toValue: 0.2,
-                            duration: 150,
-                            easing: Easing.out(Easing.ease),
-                            useNativeDriver: true,
-                          }),
-                        ]).start();
-                      }}
-                      onPressOut={() => {
-                        Animated.parallel([
-                          Animated.spring(playBtnScale, {
-                            toValue: 1,
-                            useNativeDriver: true,
-                            tension: 100,
-                            friction: 7,
-                          }),
-                          Animated.spring(playBtnOpacity, {
-                            toValue: 1,
-                            useNativeDriver: true,
-                            tension: 100,
-                            friction: 7,
-                          }),
-                        ]).start();
-                      }}
+                      style={styles.playBtn}
+                      activeOpacity={0.1}
                       onPress={async () => {
                         // Add haptic feedback
                         if (Platform.OS !== 'web') {
@@ -411,51 +373,20 @@ export default function SwipeUpModal({ visible, onClose, imageUri, title, downlo
                       accessibilityRole="button"
                       accessibilityLabel="Reproducir"
                     >
-                      <Animated.View style={[styles.playBtn, { transform: [{ scale: playBtnScale }], opacity: playBtnOpacity }]}>
-                        <Image
-                          source={{ uri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Netflix/Reproducir.png' }}
-                          style={styles.icon}
-                        />
-                        <Text style={styles.playText}>Reproducir</Text>
-                      </Animated.View>
+                      <Image
+                        source={{ uri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Netflix/Reproducir.png' }}
+                        style={styles.icon}
+                      />
+                      <Text style={styles.playText}>Reproducir</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
-                      activeOpacity={1}
-                      onPressIn={() => {
-                        if (isDownloading || isDownloaded) return;
-                        Animated.parallel([
-                          Animated.timing(downloadBtnScale, {
-                            toValue: 0.9,
-                            duration: 150,
-                            easing: Easing.out(Easing.ease),
-                            useNativeDriver: true,
-                          }),
-                          Animated.timing(downloadBtnOpacity, {
-                            toValue: 0.2,
-                            duration: 150,
-                            easing: Easing.out(Easing.ease),
-                            useNativeDriver: true,
-                          }),
-                        ]).start();
-                      }}
-                      onPressOut={() => {
-                        if (isDownloading || isDownloaded) return;
-                        Animated.parallel([
-                          Animated.spring(downloadBtnScale, {
-                            toValue: 1,
-                            useNativeDriver: true,
-                            tension: 100,
-                            friction: 7,
-                          }),
-                          Animated.spring(downloadBtnOpacity, {
-                            toValue: 1,
-                            useNativeDriver: true,
-                            tension: 100,
-                            friction: 7,
-                          }),
-                        ]).start();
-                      }}
+                      style={[
+                        styles.downloadBtnSmall, 
+                        isDownloading && styles.downloadBtnLoading,
+                        isDownloaded && styles.downloadBtnCompleted
+                      ]}
+                      activeOpacity={isDownloading || isDownloaded ? 1 : 0.2}
                       onPress={startDownload}
                       testID="download-button"
                       accessibilityRole="button"
@@ -465,67 +396,29 @@ export default function SwipeUpModal({ visible, onClose, imageUri, title, downlo
                       }
                       disabled={isDownloading || isDownloaded}
                     >
-                      <Animated.View style={[
-                        styles.downloadBtnSmall, 
-                        isDownloading && styles.downloadBtnLoading,
-                        isDownloaded && styles.downloadBtnCompleted,
-                        { transform: [{ scale: downloadBtnScale }], opacity: downloadBtnOpacity }
-                      ]}>
-                        {isDownloading && (
-                          <View 
-                            style={[
-                              styles.downloadProgress,
-                              { width: `${downloadProgress}%` },
-                            ]}
-                          />
-                        )}
-                        {isDownloaded ? (
-                          <Check color="#FFFFFF" size={18} />
-                        ) : (
-                          <Download color="#FFFFFF" size={18} />
-                        )}
-                        <Text style={styles.downloadText}>
-                          {isDownloaded ? 'Descargada' : 
-                           isDownloading ? `${downloadProgress}%` : 'Descargar'}
-                        </Text>
-                      </Animated.View>
+                      {isDownloading && (
+                        <View 
+                          style={[
+                            styles.downloadProgress,
+                            { width: `${downloadProgress}%` },
+                          ]}
+                        />
+                      )}
+                      {isDownloaded ? (
+                        <Check color="#FFFFFF" size={18} />
+                      ) : (
+                        <Download color="#FFFFFF" size={18} />
+                      )}
+                      <Text style={styles.downloadText}>
+                        {isDownloaded ? 'Descargada' : 
+                         isDownloading ? `${downloadProgress}%` : 'Descargar'}
+                      </Text>
                     </TouchableOpacity>
                   </View>
 
                   <TouchableOpacity
-                    activeOpacity={1}
-                    onPressIn={() => {
-                      Animated.parallel([
-                        Animated.timing(explainBtnScale, {
-                          toValue: 0.9,
-                          duration: 150,
-                          easing: Easing.out(Easing.ease),
-                          useNativeDriver: true,
-                        }),
-                        Animated.timing(explainBtnOpacity, {
-                          toValue: 0.2,
-                          duration: 150,
-                          easing: Easing.out(Easing.ease),
-                          useNativeDriver: true,
-                        }),
-                      ]).start();
-                    }}
-                    onPressOut={() => {
-                      Animated.parallel([
-                        Animated.spring(explainBtnScale, {
-                          toValue: 1,
-                          useNativeDriver: true,
-                          tension: 100,
-                          friction: 7,
-                        }),
-                        Animated.spring(explainBtnOpacity, {
-                          toValue: 1,
-                          useNativeDriver: true,
-                          tension: 100,
-                          friction: 7,
-                        }),
-                      ]).start();
-                    }}
+                    style={styles.explainBtnWide}
+                    activeOpacity={0.2}
                     onPress={async () => {
                       // Add haptic feedback
                       if (Platform.OS !== 'web') {
@@ -541,13 +434,11 @@ export default function SwipeUpModal({ visible, onClose, imageUri, title, downlo
                     accessibilityRole="button"
                     accessibilityLabel="Ver explicación"
                   >
-                    <Animated.View style={[styles.explainBtnWide, { transform: [{ scale: explainBtnScale }], opacity: explainBtnOpacity }]}>
-                      <Image
-                        source={{ uri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Netflix/Explicacion.png' }}
-                        style={styles.icon}
-                      />
-                      <Text style={styles.explainText}>Ver explicación</Text>
-                    </Animated.View>
+                    <Image
+                      source={{ uri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Netflix/Explicacion.png' }}
+                      style={styles.icon}
+                    />
+                    <Text style={styles.explainText}>Ver explicación</Text>
                   </TouchableOpacity>
                 </View>
               </View>
