@@ -302,7 +302,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#fbefd9',
     marginBottom: 32,
-    marginTop: 0,
+    marginTop: 50,
   },
   subscriptionSection: {
     marginBottom: 24,
