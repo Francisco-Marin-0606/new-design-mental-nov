@@ -442,9 +442,9 @@ const styles = StyleSheet.create({
     ...BUTTON_STYLES.primaryButtonText,
   },
   versionText: {
-    fontSize: 14,
+    fontSize: 10.5,
     fontWeight: '400',
-    color: 'rgba(251, 239, 217, 0.3)',
+    color: 'rgba(251, 239, 217, 0.15)',
     textAlign: 'center',
     marginBottom: 20,
   },
