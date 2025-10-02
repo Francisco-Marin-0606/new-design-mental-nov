@@ -1438,7 +1438,7 @@ const styles = StyleSheet.create({
   },
   menuIconContainer: { width: 22, height: 22, justifyContent: 'center', alignItems: 'center' },
   menuIconAccent: { width: 22, height: 22 },
-  menuItemText: { fontSize: 17, fontWeight: '800', color: '#ffffff', flex: 1, letterSpacing: 0.2, textAlign: 'center' },
+  menuItemText: { fontSize: 17, fontWeight: '800', color: '#ffffff', flex: 1, letterSpacing: 0.2 },
   menuItemMeta: { fontSize: 15, fontWeight: '800', color: '#ffffff', opacity: 0.9 },
   menuSpacer: { height: 12 },
   menuCancel: {
