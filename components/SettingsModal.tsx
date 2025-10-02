@@ -256,14 +256,14 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     flex: 1,
-    paddingHorizontal: 24,
+    paddingHorizontal: 44,
     paddingTop: 60,
     paddingBottom: 40,
   },
   closeButton: {
     position: 'absolute',
     top: 50,
-    right: 24,
+    right: 44,
     zIndex: 10,
   },
   closeButtonInner: {
