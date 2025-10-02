@@ -107,7 +107,7 @@ function ListItem({ item, onPress, onMenuPress, viewMode, downloadInfo }: ListIt
                 )}
                 {downloadInfo?.state === 'completed' && (
                   <View style={[styles.durationIconCircle, styles.durationIconCircleCompleted]}>
-                    <Check size={12} color="#ffffff" />
+                    <Check size={10.2} color="#ffffff" />
                   </View>
                 )}
                 <Text style={styles.durationText}>Duración {formatDuration(item.durationSec)}</Text>
@@ -1191,9 +1191,9 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   durationIconCircle: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
+    width: 15.3,
+    height: 15.3,
+    borderRadius: 7.65,
     backgroundColor: 'transparent',
     justifyContent: 'center',
     alignItems: 'center',
