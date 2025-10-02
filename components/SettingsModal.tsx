@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { X, User, Edit3, HelpCircle, Mail } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
+import { BUTTON_STYLES } from '@/constants/buttonStyles';
 
 interface SettingsModalProps {
   visible: boolean;
@@ -313,13 +314,10 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   menuItem: {
-    width: '100%',
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 16,
+    ...BUTTON_STYLES.primaryButton,
+    justifyContent: 'flex-start',
     paddingHorizontal: 16,
     gap: 16,
-    borderRadius: 14,
     backgroundColor: 'rgba(251, 239, 217, 0.08)',
     marginBottom: 10,
   },
@@ -333,33 +331,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   menuItemText: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#ffffff',
+    ...BUTTON_STYLES.primaryButtonText,
     flex: 1,
   },
   logoutButton: {
-    width: '100%',
-    paddingVertical: 16,
-    borderRadius: 14,
+    ...BUTTON_STYLES.primaryButton,
     backgroundColor: '#dc2626',
-    justifyContent: 'center',
-    alignItems: 'center',
     marginBottom: 24,
     marginTop: 8,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 8,
   },
   logoutButtonPressed: {
     opacity: 0.7,
   },
   logoutButtonText: {
-    color: '#ffffff',
-    fontSize: 20,
-    fontWeight: '600',
+    ...BUTTON_STYLES.primaryButtonText,
   },
   versionText: {
     fontSize: 14,

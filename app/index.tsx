@@ -19,6 +19,7 @@ import Svg, { Defs, LinearGradient as SvgLinearGradient, Stop, Rect } from 'reac
 import SwipeUpModal from '@/components/SwipeUpModal';
 import PlayerModal from '@/components/PlayerModal';
 import SettingsModal from '@/components/SettingsModal';
+import { BUTTON_STYLES } from '@/constants/buttonStyles';
 
 interface HypnosisSession {
   id: string;
@@ -1178,22 +1179,10 @@ const styles = StyleSheet.create({
   // Pie
   bottomSection: { paddingHorizontal: 44, paddingBottom: 0, paddingTop: 0 },
   nextButton: {
-    width: '100%',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#4d1904',
-    paddingVertical: 16,
-    borderRadius: 14,
-    gap: 8,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 8,
+    ...BUTTON_STYLES.primaryButton,
     marginBottom: 60,
   },
-  nextButtonText: { fontSize: 20, fontWeight: '600', color: '#ffffff', opacity: 0.3 },
+  nextButtonText: { ...BUTTON_STYLES.primaryButtonText, opacity: 0.3 },
 
   listContainer: {
     flex: 1,
