@@ -535,13 +535,38 @@ export default function HomeScreen() {
           useNativeDriver: true,
         }),
       ]).start(() => {
-        // ... resto sin cambios ...
         setViewMode(mode);
-        // ...
+        fadeAnim.setValue(0);
+        slideAnim.setValue(-50);
+        Animated.parallel([
+          Animated.timing(fadeAnim, {
+            toValue: 1,
+            duration: 180,
+            useNativeDriver: true,
+          }),
+          Animated.timing(slideAnim, {
+            toValue: 0,
+            duration: 180,
+            useNativeDriver: true,
+          }),
+        ]).start();
       });
     } else {
       setViewMode(mode);
-      // ...
+      fadeAnim.setValue(0);
+      slideAnim.setValue(-50);
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 180,
+          useNativeDriver: true,
+        }),
+        Animated.timing(slideAnim, {
+          toValue: 0,
+          duration: 180,
+          useNativeDriver: true,
+        }),
+      ]).start();
     }
   }, [fadeAnim, slideAnim, toggleIndicatorAnim, viewMode]);
 
