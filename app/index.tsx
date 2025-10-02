@@ -1451,7 +1451,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 44,
     paddingBottom: 20,
     paddingTop: 10,
-    marginBottom: 25,
+    marginBottom: 15,
   },
   navToggleContainer: { flexDirection: 'row', gap: 80, alignItems: 'center', justifyContent: 'center', position: 'relative' },
   navToggleOption: { justifyContent: 'center', alignItems: 'center', backgroundColor: 'transparent' },
