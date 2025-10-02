@@ -457,7 +457,7 @@ const styles = StyleSheet.create({
     gap: 24,
   },
   footerLinkText: {
-    fontSize: 14,
+    fontSize: 10.5,
     fontWeight: '400',
     color: 'rgba(251, 239, 217, 0.3)',
     textAlign: 'center',
