@@ -318,7 +318,7 @@ const styles = StyleSheet.create({
   },
   subscriptionLabel: {
     fontSize: 16,
-    fontWeight: '400',
+    fontWeight: '600',
     color: '#fbefd9',
     marginBottom: 4,
   },
