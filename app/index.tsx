@@ -1274,7 +1274,7 @@ const styles = StyleSheet.create({
 
   // Pie
   bottomSection: { paddingHorizontal: 44, paddingBottom: 0, paddingTop: 0 },
-  nextButton: { ...BUTTON_STYLES.primaryButton, marginBottom: 60 },
+  nextButton: { ...BUTTON_STYLES.primaryButton, marginBottom: 55 },
   nextButtonText: { ...BUTTON_STYLES.primaryButtonText, opacity: 0.3 },
 
   listContainer: { flex: 1, paddingHorizontal: 44 },
