@@ -98,7 +98,7 @@ function ListItem({ item, onPress, onMenuPress, viewMode, downloadInfo }: ListIt
       >
         {({ pressed }) => (
           <>
-            <Image source={{ uri: item.imageUri }} style={[styles.listItemImage, pressed && { opacity: 0.2 }]} resizeMode="cover" />
+            <Image source={{ uri: item.imageUri }} style={[styles.listItemImage, styles.grayscaleImage, pressed && { opacity: 0.2 }]} resizeMode="cover" />
             <View style={[styles.listItemContent, pressed && { opacity: 0.2 }]}>
               <Text style={styles.listItemTitle} numberOfLines={2}>{item.title}</Text>
               <View style={styles.durationRow}>
@@ -205,7 +205,7 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
         */}
         <View style={styles.cardShadow}>
           <View style={styles.cardInner}>
-            <Image source={{ uri: item.imageUri }} style={styles.cardImage} resizeMode="cover" />
+            <Image source={{ uri: item.imageUri }} style={[styles.cardImage, styles.grayscaleImage]} resizeMode="cover" />
           </View>
           {index === 0 && (
             <View style={styles.badge} testID="listen-badge">
@@ -240,6 +240,7 @@ const HYPNOSIS_SESSIONS_RAW: HypnosisSession[] = [
   { id: '8', title: 'Energía positiva para tu día', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg', durationSec: 28 * 60 + 46 },
   { id: '9', title: 'Liberación emocional suave y guiada', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg', durationSec: 21 * 60 + 7 },
   { id: '10', title: 'Conexión espiritual serena y profunda', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg', durationSec: 31 * 60 + 54 },
+  { id: '11', title: 'Viaje hacia tu centro interior', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg', durationSec: 27 * 60 + 18 },
 ];
 
 const HYPNOSIS_SESSIONS: HypnosisSession[] = [...HYPNOSIS_SESSIONS_RAW].reverse();
@@ -1501,5 +1502,8 @@ const styles = StyleSheet.create({
     marginTop: 8,
     borderRadius: 6,
     backgroundColor: 'rgba(251, 239, 217, 0.08)',
+  },
+  grayscaleImage: {
+    opacity: 0.7,
   },
 });
