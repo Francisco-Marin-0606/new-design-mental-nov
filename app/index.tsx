@@ -86,6 +86,7 @@ function weservProxy(url: string, opts?: { grayscale?: boolean }) {
 
 function ListItem({ item, onPress, onMenuPress, viewMode, downloadInfo }: ListItemProps) {
   const pressScale = useRef(new Animated.Value(1)).current;
+  const [isRevealing, setIsRevealing] = useState<boolean>(false);
 
   const handlePressIn = useCallback(() => {
     Animated.spring(pressScale, {
@@ -128,13 +129,25 @@ function ListItem({ item, onPress, onMenuPress, viewMode, downloadInfo }: ListIt
       >
         {({ pressed }) => (
           <>
-            <Image
-              source={{ uri: item.imageUri }}
-              style={[styles.listItemImage, pressed && { opacity: 0.2 }]}
-              resizeMode="cover"
-            />
+            <View style={[styles.listItemImageContainer, pressed && { opacity: 0.2 }]}>
+              {item.isGrayscale ? (
+                <RevealFromBottom
+                  grayscaleUri={item.imageUri}
+                  colorUri={weservProxy(DO_IMAGE)}
+                  onRevealChange={setIsRevealing}
+                />
+              ) : (
+                <Image
+                  source={{ uri: item.imageUri }}
+                  style={styles.listItemImage}
+                  resizeMode="cover"
+                />
+              )}
+            </View>
             <View style={[styles.listItemContent, pressed && { opacity: 0.2 }]}>
-              <Text style={styles.listItemTitle} numberOfLines={2}>{item.title}</Text>
+              <Text style={styles.listItemTitle} numberOfLines={2}>
+                {item.isGrayscale && isRevealing ? 'Tu hipnosis está siendo creada...' : item.title}
+              </Text>
               <View style={styles.durationRow}>
                 {downloadInfo?.state === 'downloading' && (
                   <View style={styles.downloadingIconContainer}>
@@ -1226,10 +1239,16 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   listItemImage: {
+    width: '100%',
+    height: '100%',
+  },
+  listItemImageContainer: {
     width: 60,
     height: 75,
     borderRadius: 8,
     backgroundColor: '#2a1410',
+    overflow: 'hidden',
+    position: 'relative',
   },
   listItemContent: { flex: 1, marginLeft: 16, justifyContent: 'center' },
   listItemTitle: {
