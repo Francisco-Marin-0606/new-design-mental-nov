@@ -143,7 +143,7 @@ export default function SettingsModal({ visible, onClose }: SettingsModalProps) 
                 <Text style={styles.subscriptionType}>Mensual</Text>
               </View>
               <View style={styles.budgetContainer}>
-                <Text style={styles.budgetText}>Activa</Text>
+                <Text style={styles.budgetText}>ACTIVA</Text>
               </View>
             </View>
           </View>
@@ -331,10 +331,12 @@ const styles = StyleSheet.create({
   budgetContainer: {
     backgroundColor: '#0f3d09',
     paddingHorizontal: 16,
-    paddingVertical: 6,
+    paddingVertical: 11,
     borderRadius: 8,
     minWidth: 120,
     alignItems: 'center',
+    height: 42.67,
+    justifyContent: 'center',
   },
   budgetText: {
     fontSize: 14,
