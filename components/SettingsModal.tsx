@@ -298,11 +298,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    fontSize: 36,
+    fontSize: 32.4,
     fontWeight: '700',
     color: '#fbefd9',
     marginBottom: 32,
-    marginTop: 8,
+    marginTop: 0,
   },
   subscriptionSection: {
     marginBottom: 24,
