@@ -362,18 +362,19 @@ function RevealFromBottom({ grayscaleUri, colorUri, onRevealChange, onProgressCh
       }
       
       progressListenerId.current = revealHeight.addListener(({ value }) => {
-        const progress = (value / h) * 100;
+        const raw = (value / h) * 100;
+        const progress = Math.min(85, raw);
         onProgressChange?.(progress);
       });
       
       Animated.timing(revealHeight, {
-        toValue: h,
+        toValue: h * 0.85,
         duration: 20000,
         useNativeDriver: false,
       }).start(({ finished }) => {
         if (finished) {
           onRevealChange?.(false);
-          onProgressChange?.(100);
+          onProgressChange?.(85);
         }
         if (progressListenerId.current) {
           revealHeight.removeListener(progressListenerId.current);
@@ -532,6 +533,32 @@ export default function HomeScreen() {
   );
 
   const keyExtractor = useCallback((i: HypnosisSession) => i.id, []);
+
+  const restoreScrollPositions = useCallback((targetMode: ViewMode) => {
+    try {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          if (targetMode === 'carousel' && carouselFlatListRef.current) {
+            const x = Math.max(0, carouselScrollOffsetRef.current ?? 0);
+            console.log('[Restore] Carousel to x:', x);
+            carouselFlatListRef.current.scrollToOffset({ offset: x, animated: false });
+          }
+          if (targetMode === 'list' && listFlatListRef.current) {
+            const y = Math.max(0, listScrollOffsetRef.current ?? 0);
+            console.log('[Restore] List to y:', y);
+            listFlatListRef.current.scrollToOffset({ offset: y, animated: false });
+          }
+          if (targetMode === 'previous' && previousFlatListRef.current) {
+            const y2 = Math.max(0, previousScrollOffsetRef.current ?? 0);
+            console.log('[Restore] Previous to y:', y2);
+            previousFlatListRef.current.scrollToOffset({ offset: y2, animated: false });
+          }
+        });
+      });
+    } catch (err) {
+      console.log('[Restore] error restoring scroll', err);
+    }
+  }, []);
 
   const handleNavSectionChange = useCallback(async (section: NavSection) => {
     if (Platform.OS !== 'web') {
@@ -720,32 +747,6 @@ export default function HomeScreen() {
 
   const onPreviousScroll = useCallback((e: { nativeEvent: { contentOffset: { y: number } } }) => {
     previousScrollOffsetRef.current = e?.nativeEvent?.contentOffset?.y ?? 0;
-  }, []);
-
-  const restoreScrollPositions = useCallback((targetMode: ViewMode) => {
-    try {
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          if (targetMode === 'carousel' && carouselFlatListRef.current) {
-            const x = Math.max(0, carouselScrollOffsetRef.current ?? 0);
-            console.log('[Restore] Carousel to x:', x);
-            carouselFlatListRef.current.scrollToOffset({ offset: x, animated: false });
-          }
-          if (targetMode === 'list' && listFlatListRef.current) {
-            const y = Math.max(0, listScrollOffsetRef.current ?? 0);
-            console.log('[Restore] List to y:', y);
-            listFlatListRef.current.scrollToOffset({ offset: y, animated: false });
-          }
-          if (targetMode === 'previous' && previousFlatListRef.current) {
-            const y2 = Math.max(0, previousScrollOffsetRef.current ?? 0);
-            console.log('[Restore] Previous to y:', y2);
-            previousFlatListRef.current.scrollToOffset({ offset: y2, animated: false });
-          }
-        });
-      });
-    } catch (err) {
-      console.log('[Restore] error restoring scroll', err);
-    }
   }, []);
 
   const showToggle = HYPNOSIS_SESSIONS.length > 8;
