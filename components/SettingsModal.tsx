@@ -143,7 +143,7 @@ export default function SettingsModal({ visible, onClose }: SettingsModalProps) 
                 <Text style={styles.subscriptionType}>Mensual</Text>
               </View>
               <View style={styles.budgetContainer}>
-                <Text style={styles.budgetText}>Budget: 10</Text>
+                <Text style={styles.budgetText}>Activa</Text>
               </View>
             </View>
           </View>
