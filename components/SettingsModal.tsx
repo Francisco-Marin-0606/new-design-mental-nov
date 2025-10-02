@@ -353,6 +353,7 @@ const styles = StyleSheet.create({
   },
   menuItemScaled: {
     transform: [{ scale: 0.9 }],
+    opacity: 0.2,
   },
   menuIconContainer: {
     width: 24,
@@ -372,6 +373,7 @@ const styles = StyleSheet.create({
   },
   logoutButtonScaled: {
     transform: [{ scale: 0.9 }],
+    opacity: 0.2,
   },
   logoutButtonText: {
     ...BUTTON_STYLES.primaryButtonText,
