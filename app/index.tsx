@@ -232,12 +232,28 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
         ]}
       >
         <View style={styles.cardShadow}>
-          <View style={styles.cardInner}>
-            <Image
-              source={{ uri: item.imageUri }}
-              style={styles.cardImage}
-              resizeMode="cover"
-            />
+          <View style={styles.cardInner} onLayout={(e) => {
+            try {
+              const h = e?.nativeEvent?.layout?.height ?? 0;
+              if (item.isGrayscale && h > 0) {
+                console.log('[Reveal] layout height', h);
+              }
+            } catch (err) {
+              console.log('[Reveal] onLayout error', err);
+            }
+          }}>
+            {item.isGrayscale ? (
+              <RevealFromBottom
+                grayscaleUri={item.imageUri}
+                colorUri={weservProxy(DO_IMAGE)}
+              />
+            ) : (
+              <Image
+                source={{ uri: item.imageUri }}
+                style={styles.cardImage}
+                resizeMode="cover"
+              />
+            )}
           </View>
           {index === 0 && (
             <View style={styles.badge} testID="listen-badge">
@@ -299,6 +315,44 @@ function formatDuration(totalSeconds: number): string {
 }
 
 type NavSection = 'hipnosis' | 'aura';
+
+function RevealFromBottom({ grayscaleUri, colorUri }: { grayscaleUri: string; colorUri: string }) {
+  const containerHeightRef = useRef<number>(0);
+  const revealHeight = useRef(new Animated.Value(0)).current;
+  const [hasLayout, setHasLayout] = useState<boolean>(false);
+
+  const onLayout = useCallback((e: { nativeEvent: { layout?: { height?: number } } }) => {
+    const h = e?.nativeEvent?.layout?.height ?? 0;
+    if (h > 0) {
+      containerHeightRef.current = h;
+      setHasLayout(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!hasLayout) return;
+    const h = containerHeightRef.current;
+    try {
+      revealHeight.setValue(0);
+      Animated.timing(revealHeight, {
+        toValue: h,
+        duration: 20000,
+        useNativeDriver: false,
+      }).start();
+    } catch (err) {
+      console.log('[Reveal] animation error', err);
+    }
+  }, [hasLayout, revealHeight]);
+
+  return (
+    <View style={styles.revealContainer} onLayout={onLayout} testID="reveal-grayscale-card">
+      <Image source={{ uri: grayscaleUri }} style={styles.cardImage} resizeMode="cover" />
+      <Animated.View style={[styles.revealOverlay, { height: revealHeight }]} testID="reveal-overlay">
+        <Image source={{ uri: colorUri }} style={styles.cardImage} resizeMode="cover" />
+      </Animated.View>
+    </View>
+  );
+}
 
 export default function HomeScreen() {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
@@ -1070,6 +1124,8 @@ const styles = StyleSheet.create({
   },
 
   cardImage: { width: '100%', height: '100%' },
+  revealContainer: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
+  revealOverlay: { position: 'absolute', left: 0, right: 0, bottom: 0, overflow: 'hidden' },
 
   cardTitleContainer: {
     marginTop: 20,
