@@ -460,7 +460,7 @@ const styles = StyleSheet.create({
   footerLinkText: {
     fontSize: 14,
     fontWeight: '400',
-    color: 'rgba(251, 239, 217, 0.6)',
+    color: 'rgba(251, 239, 217, 0.3)',
     textAlign: 'center',
   },
 });
