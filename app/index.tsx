@@ -242,7 +242,7 @@ const HYPNOSIS_SESSIONS_RAW: HypnosisSession[] = [
   { id: '9', title: 'Liberación emocional suave y guiada', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg', durationSec: 21 * 60 + 7 },
   { id: '10', title: 'Conexión espiritual serena y profunda', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg', durationSec: 31 * 60 + 54 },
   { id: '11', title: 'Viaje hacia tu centro interior', imageUri: 'https://mental-app-images.nyc3.cdn.digitaloceanspaces.com/Mental%20%7C%20Aura_v2/Carrusel%20V2/PruebaCarruselnaranja.jpg', durationSec: 27 * 60 + 18 },
-  { id: '12', title: 'Silencio en blanco y negro', imageUri: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1080&auto=format&fit=crop&grayscale=1', durationSec: 24 * 60 + 9, isGrayscale: true },
+  { id: '12', title: 'Silencio en blanco y negro', imageUri: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1080&auto=format&fit=crop&sat=-100', durationSec: 24 * 60 + 9, isGrayscale: true },
 ];
 
 const HYPNOSIS_SESSIONS: HypnosisSession[] = [...HYPNOSIS_SESSIONS_RAW].reverse();
