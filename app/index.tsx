@@ -688,11 +688,11 @@ export default function HomeScreen() {
       try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy); } catch {}
     }
     console.log(`Action: ${action} for session:`, menuSession?.title);
-    setMenuModalVisible(false);
     
     if (!menuSession) return;
 
     if (action === 'play') {
+      setMenuModalVisible(false);
       setPlayerSession(menuSession);
       setPlayerModalVisible(true);
     }
@@ -1027,6 +1027,7 @@ export default function HomeScreen() {
                 android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.1)' } : undefined}
                 testID="menu-download"
                 accessibilityLabel="Descargar"
+                disabled={menuDownload?.state === 'downloading' || menuDownload?.state === 'completed'}
               >
                 {menuDownload?.state === 'downloading' && (
                   <View 
@@ -1036,18 +1037,21 @@ export default function HomeScreen() {
                     ]}
                   />
                 )}
-                <View style={[styles.menuIconContainer, styles.menuIconAccent]}>
-                  {menuDownload?.state === 'completed' ? (
-                    <Check color="#ffffff" size={20} />
-                  ) : (
-                    <Download color="#ffffff" size={20} />
-                  )}
-                </View>
-                <Text style={styles.menuItemText}>
-                  {menuDownload?.state === 'completed' ? 'Descargada' : 'Descargar'}
-                </Text>
-                {menuDownload?.state === 'downloading' && (
-                  <Text style={styles.menuItemMeta}>{Math.max(0, Math.min(100, Math.round(menuDownload.progress)))}%</Text>
+                {menuDownload?.state === 'downloading' ? (
+                  <Text style={styles.menuItemText}>{Math.max(0, Math.min(100, Math.round(menuDownload.progress)))}%</Text>
+                ) : (
+                  <>
+                    <View style={[styles.menuIconContainer, styles.menuIconAccent]}>
+                      {menuDownload?.state === 'completed' ? (
+                        <Check color="#ffffff" size={20} />
+                      ) : (
+                        <Download color="#ffffff" size={20} />
+                      )}
+                    </View>
+                    <Text style={styles.menuItemText}>
+                      {menuDownload?.state === 'completed' ? 'Descargada' : 'Descargar'}
+                    </Text>
+                  </>
                 )}
               </Pressable>
 
@@ -1434,7 +1438,7 @@ const styles = StyleSheet.create({
   },
   menuIconContainer: { width: 22, height: 22, justifyContent: 'center', alignItems: 'center' },
   menuIconAccent: { width: 22, height: 22 },
-  menuItemText: { fontSize: 17, fontWeight: '800', color: '#ffffff', flex: 1, letterSpacing: 0.2 },
+  menuItemText: { fontSize: 17, fontWeight: '800', color: '#ffffff', flex: 1, letterSpacing: 0.2, textAlign: 'center' },
   menuItemMeta: { fontSize: 15, fontWeight: '800', color: '#ffffff', opacity: 0.9 },
   menuSpacer: { height: 12 },
   menuCancel: {
