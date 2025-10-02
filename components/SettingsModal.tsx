@@ -146,9 +146,6 @@ export default function SettingsModal({ visible, onClose }: SettingsModalProps) 
                 <Text style={styles.budgetText}>Budget: 10</Text>
               </View>
             </View>
-            <View style={styles.activeButton}>
-              <Text style={styles.activeButtonText}>ACTIVA</Text>
-            </View>
           </View>
 
           <View style={styles.menuSection}>
@@ -341,19 +338,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#89e082',
   },
-  activeButton: {
-    alignSelf: 'flex-start',
-    backgroundColor: '#4d7c0f',
-    paddingHorizontal: 24,
-    paddingVertical: 10,
-    borderRadius: 20,
-  },
-  activeButtonText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#ffffff',
-    letterSpacing: 0.5,
-  },
+
   menuSection: {
     gap: 0,
     marginBottom: 24,
