@@ -150,29 +150,33 @@ function ListItem({ item, onPress, onMenuPress, viewMode, downloadInfo }: ListIt
               <Text style={styles.listItemTitle} numberOfLines={2}>
                 {item.isGrayscale && revealProgress < 100 ? 'Tu hipnosis está siendo creada...' : item.title}
               </Text>
-              <View style={styles.durationRow}>
-                {downloadInfo?.state === 'downloading' && (
-                  <View style={styles.downloadingIconContainer}>
-                    <Download size={12} color="#ff9a2e" />
-                    <Text style={styles.downloadingPercentage}>{Math.max(0, Math.min(100, Math.round(downloadInfo.progress)))}%</Text>
-                  </View>
-                )}
-                {downloadInfo?.state === 'completed' && (
-                  <View style={[styles.durationIconCircle, styles.durationIconCircleCompleted]}>
-                    <Check size={10.2} color="#ffffff" />
-                  </View>
-                )}
-                <Text style={styles.durationText}>Duración {formatDuration(item.durationSec)}</Text>
-              </View>
+              {!(item.isGrayscale && revealProgress < 100) && (
+                <View style={styles.durationRow}>
+                  {downloadInfo?.state === 'downloading' && (
+                    <View style={styles.downloadingIconContainer}>
+                      <Download size={12} color="#ff9a2e" />
+                      <Text style={styles.downloadingPercentage}>{Math.max(0, Math.min(100, Math.round(downloadInfo.progress)))}%</Text>
+                    </View>
+                  )}
+                  {downloadInfo?.state === 'completed' && (
+                    <View style={[styles.durationIconCircle, styles.durationIconCircleCompleted]}>
+                      <Check size={10.2} color="#ffffff" />
+                    </View>
+                  )}
+                  <Text style={styles.durationText}>Duración {formatDuration(item.durationSec)}</Text>
+                </View>
+              )}
             </View>
 
-            <Pressable
-              style={styles.menuButton}
-              onPress={handleMenuPress}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            >
-              <MoreVertical color="#fbefd9" size={20} />
-            </Pressable>
+            {!(item.isGrayscale && revealProgress < 100) && (
+              <Pressable
+                style={styles.menuButton}
+                onPress={handleMenuPress}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <MoreVertical color="#fbefd9" size={20} />
+              </Pressable>
+            )}
           </>
         )}
       </Pressable>
