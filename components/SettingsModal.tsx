@@ -329,9 +329,11 @@ const styles = StyleSheet.create({
   },
   budgetContainer: {
     backgroundColor: '#0f3d09',
-    paddingHorizontal: 12,
+    paddingHorizontal: 16,
     paddingVertical: 6,
     borderRadius: 8,
+    minWidth: 80,
+    alignItems: 'center',
   },
   budgetText: {
     fontSize: 14,
