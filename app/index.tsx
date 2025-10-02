@@ -135,6 +135,7 @@ function ListItem({ item, onPress, onMenuPress, viewMode, downloadInfo }: ListIt
                   grayscaleUri={item.imageUri}
                   colorUri={weservProxy(DO_IMAGE)}
                   onRevealChange={setIsRevealing}
+                  sessionId={item.id}
                 />
               ) : (
                 <Image
@@ -261,6 +262,7 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
                 grayscaleUri={item.imageUri}
                 colorUri={weservProxy(DO_IMAGE)}
                 onRevealChange={setIsRevealing}
+                sessionId={item.id}
               />
             ) : (
               <Image
@@ -331,10 +333,14 @@ function formatDuration(totalSeconds: number): string {
 
 type NavSection = 'hipnosis' | 'aura';
 
-function RevealFromBottom({ grayscaleUri, colorUri, onRevealChange }: { grayscaleUri: string; colorUri: string; onRevealChange?: (revealing: boolean) => void }) {
+import { useRevealProgress, useSessionReveal } from "@/providers/RevealProgressProvider";
+
+function RevealFromBottom({ grayscaleUri, colorUri, onRevealChange, sessionId }: { grayscaleUri: string; colorUri: string; onRevealChange?: (revealing: boolean) => void; sessionId: string }) {
   const containerHeightRef = useRef<number>(0);
   const revealHeight = useRef(new Animated.Value(0)).current;
   const [hasLayout, setHasLayout] = useState<boolean>(false);
+  const { startReveal, getProgress, isRevealing } = useRevealProgress();
+  const { progress } = useSessionReveal(sessionId);
 
   const onLayout = useCallback((e: { nativeEvent: { layout?: { height?: number } } }) => {
     const h = e?.nativeEvent?.layout?.height ?? 0;
@@ -346,24 +352,23 @@ function RevealFromBottom({ grayscaleUri, colorUri, onRevealChange }: { grayscal
 
   useEffect(() => {
     if (!hasLayout) return;
-    const h = containerHeightRef.current;
     try {
-      revealHeight.setValue(0);
+      startReveal(sessionId, { durationMs: 20000, max: 0.85 });
       onRevealChange?.(true);
-      Animated.timing(revealHeight, {
-        toValue: h * 0.85,
-        duration: 20000,
-        useNativeDriver: false,
-      }).start(({ finished }) => {
-        if (finished) {
-          onRevealChange?.(false);
-        }
-      });
     } catch (err) {
-      console.log('[Reveal] animation error', err);
+      console.log('[Reveal] start error', err);
       onRevealChange?.(false);
     }
-  }, [hasLayout, revealHeight, onRevealChange]);
+  }, [hasLayout, startReveal, sessionId, onRevealChange]);
+
+  useEffect(() => {
+    const h = containerHeightRef.current;
+    const clamped = Math.max(0, Math.min(1, progress));
+    revealHeight.setValue(h * clamped);
+    if (!isRevealing(sessionId)) {
+      onRevealChange?.(false);
+    }
+  }, [progress, isRevealing, sessionId, revealHeight, onRevealChange]);
 
   return (
     <View style={styles.revealContainer} onLayout={onLayout} testID="reveal-grayscale-card">
