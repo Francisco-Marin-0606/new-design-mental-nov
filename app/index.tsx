@@ -1143,7 +1143,7 @@ const styles = StyleSheet.create({
     elevation: 8,
     marginBottom: 60,
   },
-  nextButtonText: { fontSize: 20, fontWeight: '700', color: '#ffffff', opacity: 0.3 },
+  nextButtonText: { fontSize: 20, fontWeight: '600', color: '#ffffff', opacity: 0.3 },
 
   listContainer: {
     flex: 1,
