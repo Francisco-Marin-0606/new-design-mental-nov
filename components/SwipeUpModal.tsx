@@ -566,7 +566,7 @@ const styles = StyleSheet.create({
   innerShift: { flex: 1, position: 'relative' },
   dragArea: { paddingTop: 12, paddingBottom: 8, alignItems: 'center' },
   handle: { width: 40, height: 4, backgroundColor: 'transparent', borderRadius: 2, marginBottom: 4 },
-  closeButton: { position: 'absolute', top: 24, right: 10, width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(0, 0, 0, 0.2)', justifyContent: 'center', alignItems: 'center', zIndex: 10, marginRight: 20, marginBottom: 10 },
+  closeButton: { position: 'absolute', top: 24, right: 10, width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(0, 0, 0, 0.2)', justifyContent: 'center', alignItems: 'center', zIndex: 10, marginRight: 30, marginBottom: 10 },
   scroll: { flex: 1, backgroundColor: 'transparent' },
   scrollContent: { paddingBottom: 120, position: 'relative' },
   content: { paddingHorizontal: 24, paddingTop: 56, marginTop: 40 },
