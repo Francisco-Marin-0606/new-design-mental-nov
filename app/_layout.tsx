@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import * as SystemUI from "expo-system-ui";
 import { StyleSheet, Platform } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -22,8 +22,6 @@ function RootLayoutNav() {
 }
 
 export default function RootLayout() {
-  const [isReady, setIsReady] = useState(Platform.OS === 'web');
-
   useEffect(() => {
     const initializeApp = async () => {
       try {
@@ -33,17 +31,11 @@ export default function RootLayout() {
         }
       } catch (error) {
         console.log('App initialization error:', error);
-      } finally {
-        setIsReady(true);
       }
     };
 
     initializeApp();
   }, []);
-
-  if (!isReady) {
-    return null;
-  }
 
   return (
     <QueryClientProvider client={queryClient}>
