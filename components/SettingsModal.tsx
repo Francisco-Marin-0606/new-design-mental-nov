@@ -388,7 +388,7 @@ const styles = StyleSheet.create({
   subscriptionType: {
     fontSize: 16,
     fontWeight: '400',
-    color: '#fbefd9',
+    color: 'rgba(251, 239, 217, 0.35)',
   },
   budgetContainer: {
     backgroundColor: '#0f3d09',
