@@ -8,6 +8,7 @@ import {
   Image,
   useWindowDimensions,
   Animated,
+  Easing,
   FlatList,
   ListRenderItemInfo,
 } from 'react-native';
@@ -433,7 +434,7 @@ export default function HomeScreen() {
   const menuContainerOpacity = useRef(new Animated.Value(0)).current;
 
   const [downloads, setDownloads] = useState<Record<string, DownloadInfo>>({});
-  const timersRef = useRef<Record<string, NodeJS.Timeout | number>>({});
+  const timersRef = useRef<Record<string, string | number>>({});
 
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const slideAnim = useRef(new Animated.Value(0)).current;
@@ -687,23 +688,49 @@ export default function HomeScreen() {
     });
   }, [menuContainerScale, menuContainerOpacity]);
 
+  const downloadAnimsRef = useRef<Record<string, Animated.Value>>({});
+
   const startDownload = useCallback((id: string) => {
     setDownloads((prev) => ({
       ...prev,
       [id]: { progress: 0, state: 'downloading' },
     }));
+    
     try {
-      const stepMs = 400;
-      const handle = setInterval(() => {
+      if (!downloadAnimsRef.current[id]) {
+        downloadAnimsRef.current[id] = new Animated.Value(0);
+      }
+      
+      const animValue = downloadAnimsRef.current[id];
+      animValue.setValue(0);
+      
+      const listenerId = animValue.addListener(({ value }) => {
         setDownloads((prev) => {
-          const current = prev[id] ?? { progress: 0, state: 'downloading' };
-          if (current.state !== 'downloading') return prev;
-          const next = Math.min(100, (current.progress ?? 0) + Math.floor(5 + Math.random() * 12));
-          const state: DownloadState = next >= 100 ? 'completed' : 'downloading';
-          return { ...prev, [id]: { progress: next, state } };
+          const current = prev[id];
+          if (!current || current.state !== 'downloading') return prev;
+          
+          const progress = Math.min(100, value);
+          const state: DownloadState = progress >= 100 ? 'completed' : 'downloading';
+          return { ...prev, [id]: { progress, state } };
         });
-      }, stepMs) as unknown as number;
-      timersRef.current[id] = handle;
+      });
+      
+      Animated.timing(animValue, {
+        toValue: 100,
+        duration: 8000,
+        easing: Easing.bezier(0.4, 0.0, 0.2, 1),
+        useNativeDriver: false,
+      }).start(({ finished }) => {
+        if (finished) {
+          setDownloads((prev) => ({
+            ...prev,
+            [id]: { progress: 100, state: 'completed' },
+          }));
+        }
+        animValue.removeListener(listenerId);
+      });
+      
+      timersRef.current[id] = listenerId;
     } catch (e) {
       console.log('Download simulation error', e);
       setDownloads((prev) => ({ ...prev, [id]: { progress: 0, state: 'idle' } }));
@@ -750,9 +777,11 @@ export default function HomeScreen() {
   useEffect(() => {
     Object.entries(downloads).forEach(([id, info]) => {
       if (info?.state === 'completed' && timersRef.current[id]) {
-        const t = timersRef.current[id];
-        if (typeof t === 'number') clearInterval(t as number);
-        timersRef.current[id] = 0;
+        const listenerId = timersRef.current[id];
+        if (downloadAnimsRef.current[id] && listenerId) {
+          downloadAnimsRef.current[id].removeListener(listenerId as string);
+        }
+        delete timersRef.current[id];
       }
     });
   }, [downloads]);
