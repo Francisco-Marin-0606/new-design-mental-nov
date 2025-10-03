@@ -704,7 +704,16 @@ export default function HomeScreen() {
       const animValue = downloadAnimsRef.current[id];
       animValue.setValue(0);
       
+      let lastUpdateTime = Date.now();
+      const UPDATE_THROTTLE = 100;
+      
       const listenerId = animValue.addListener(({ value }) => {
+        const now = Date.now();
+        if (now - lastUpdateTime < UPDATE_THROTTLE && value < 100) {
+          return;
+        }
+        lastUpdateTime = now;
+        
         setDownloads((prev) => {
           const current = prev[id];
           if (!current || current.state !== 'downloading') return prev;
