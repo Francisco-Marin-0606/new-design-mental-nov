@@ -429,6 +429,8 @@ export default function HomeScreen() {
   const menuRenameScale = useRef(new Animated.Value(1)).current;
   const menuCancelScale = useRef(new Animated.Value(1)).current;
   const settingsButtonOpacity = useRef(new Animated.Value(1)).current;
+  const menuContainerScale = useRef(new Animated.Value(0.85)).current;
+  const menuContainerOpacity = useRef(new Animated.Value(0)).current;
 
   const [downloads, setDownloads] = useState<Record<string, DownloadInfo>>({});
   const timersRef = useRef<Record<string, NodeJS.Timeout | number>>({});
@@ -640,14 +642,45 @@ export default function HomeScreen() {
     setMenuSession(session);
     setMenuViewMode(mode);
     setMenuModalVisible(true);
-  }, []);
+    
+    menuContainerScale.setValue(0.85);
+    menuContainerOpacity.setValue(0);
+    
+    Animated.parallel([
+      Animated.spring(menuContainerScale, {
+        toValue: 1,
+        useNativeDriver: true,
+        tension: 100,
+        friction: 10,
+      }),
+      Animated.timing(menuContainerOpacity, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [menuContainerScale, menuContainerOpacity]);
 
   const handleMenuClose = useCallback(async () => {
     if (Platform.OS !== 'web') {
       try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
     }
-    setMenuModalVisible(false);
-  }, []);
+    
+    Animated.parallel([
+      Animated.timing(menuContainerScale, {
+        toValue: 0.85,
+        duration: 150,
+        useNativeDriver: true,
+      }),
+      Animated.timing(menuContainerOpacity, {
+        toValue: 0,
+        duration: 150,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setMenuModalVisible(false);
+    });
+  }, [menuContainerScale, menuContainerOpacity]);
 
   const startDownload = useCallback((id: string) => {
     setDownloads((prev) => ({
@@ -996,7 +1029,13 @@ export default function HomeScreen() {
       {menuModalVisible && (
         <View style={styles.menuOverlay}>
           <Pressable style={styles.menuBackdrop} onPress={handleMenuClose} />
-          <View style={styles.menuContainer}>
+          <Animated.View style={[
+            styles.menuContainer,
+            {
+              opacity: menuContainerOpacity,
+              transform: [{ scale: menuContainerScale }],
+            },
+          ]}>
             <View style={styles.menuGradientBg}>
               <Svg width="100%" height="100%" style={StyleSheet.absoluteFillObject}>
                 <Defs>
@@ -1189,7 +1228,7 @@ export default function HomeScreen() {
                 </Animated.View>
               </Pressable>
             </View>
-          </View>
+          </Animated.View>
         </View>
       )}
 
