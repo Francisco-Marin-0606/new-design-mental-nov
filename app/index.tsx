@@ -1539,9 +1539,9 @@ const styles = StyleSheet.create({
   },
   navToggleContainer: { flexDirection: 'row', gap: 80, alignItems: 'center', justifyContent: 'center', position: 'relative' },
   navToggleOption: { justifyContent: 'center', alignItems: 'center', backgroundColor: 'transparent' },
-  navToggleText: { color: 'rgba(251, 239, 217, 0.6)', fontSize: 12, fontWeight: '600', letterSpacing: 0.2 },
+  navToggleText: { color: 'rgba(251, 239, 217, 0.2)', fontSize: 12, fontWeight: '600', letterSpacing: 0.2 },
   navToggleTextActive: { color: '#fbefd9' },
-  navToggleTextLabel: { color: 'rgba(251, 239, 217, 0.6)', fontSize: 16, fontWeight: '600' as const, letterSpacing: 0.2 },
+  navToggleTextLabel: { color: 'rgba(251, 239, 217, 0.2)', fontSize: 16, fontWeight: '600' as const, letterSpacing: 0.2 },
   navToggleTextLabelActive: { color: '#fbefd9' },
   navIconImage: { width: 35.7, height: 35.7 },
 
