@@ -761,16 +761,13 @@ export default function HomeScreen() {
               }}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
-              {({ pressed }) => (
-                <Settings
-                  color="#fbefd9"
-                  size={28}
-                  strokeWidth={1.5}
-                  testID="header-settings-icon"
-                  accessibilityLabel="Configuración"
-                  style={{ opacity: pressed ? 0.2 : 1 }}
-                />
-              )}
+              <Settings
+                color="#fbefd9"
+                size={28}
+                strokeWidth={1.5}
+                testID="header-settings-icon"
+                accessibilityLabel="Configuración"
+              />
             </Pressable>
           </View>
 
