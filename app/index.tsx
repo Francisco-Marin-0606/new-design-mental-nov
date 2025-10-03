@@ -549,25 +549,21 @@ export default function HomeScreen() {
 
   const restoreScrollPositions = useCallback((targetMode: ViewMode) => {
     try {
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          if (targetMode === 'carousel' && carouselFlatListRef.current) {
-            const x = Math.max(0, carouselScrollOffsetRef.current ?? 0);
-            console.log('[Restore] Carousel to x:', x);
-            carouselFlatListRef.current.scrollToOffset({ offset: x, animated: false });
-          }
-          if (targetMode === 'list' && listFlatListRef.current) {
-            const y = Math.max(0, listScrollOffsetRef.current ?? 0);
-            console.log('[Restore] List to y:', y);
-            listFlatListRef.current.scrollToOffset({ offset: y, animated: false });
-          }
-          if (targetMode === 'previous' && previousFlatListRef.current) {
-            const y2 = Math.max(0, previousScrollOffsetRef.current ?? 0);
-            console.log('[Restore] Previous to y:', y2);
-            previousFlatListRef.current.scrollToOffset({ offset: y2, animated: false });
-          }
-        });
-      });
+      if (targetMode === 'carousel' && carouselFlatListRef.current) {
+        const x = Math.max(0, carouselScrollOffsetRef.current ?? 0);
+        console.log('[Restore] Carousel to x:', x);
+        carouselFlatListRef.current.scrollToOffset({ offset: x, animated: false });
+      }
+      if (targetMode === 'list' && listFlatListRef.current) {
+        const y = Math.max(0, listScrollOffsetRef.current ?? 0);
+        console.log('[Restore] List to y:', y);
+        listFlatListRef.current.scrollToOffset({ offset: y, animated: false });
+      }
+      if (targetMode === 'previous' && previousFlatListRef.current) {
+        const y2 = Math.max(0, previousScrollOffsetRef.current ?? 0);
+        console.log('[Restore] Previous to y:', y2);
+        previousFlatListRef.current.scrollToOffset({ offset: y2, animated: false });
+      }
     } catch (err) {
       console.log('[Restore] error restoring scroll', err);
     }
@@ -610,30 +606,50 @@ export default function HomeScreen() {
       const enterFrom = mode === 'previous' ? 50 : -50;
       Animated.timing(fadeAnim, {
         toValue: 0,
-        duration: 150,
+        duration: 120,
         useNativeDriver: true,
       }).start(() => {
         setViewMode(mode);
-        fadeAnim.setValue(0);
-        slideAnim.setValue(enterFrom);
-        restoreScrollPositions(mode);
-        Animated.parallel([
-          Animated.timing(fadeAnim, {
-            toValue: 1,
-            duration: 180,
-            useNativeDriver: true,
-          }),
-          Animated.timing(slideAnim, {
-            toValue: 0,
-            duration: 180,
-            useNativeDriver: true,
-          }),
-        ]).start();
+        requestAnimationFrame(() => {
+          fadeAnim.setValue(0);
+          slideAnim.setValue(enterFrom);
+          requestAnimationFrame(() => {
+            restoreScrollPositions(mode);
+            requestAnimationFrame(() => {
+              Animated.parallel([
+                Animated.timing(fadeAnim, {
+                  toValue: 1,
+                  duration: 150,
+                  useNativeDriver: true,
+                }),
+                Animated.timing(slideAnim, {
+                  toValue: 0,
+                  duration: 150,
+                  useNativeDriver: true,
+                }),
+              ]).start();
+            });
+          });
+        });
       });
     } else {
-      setViewMode(mode);
-      restoreScrollPositions(mode);
-      fadeAnim.setValue(1);
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 100,
+        useNativeDriver: true,
+      }).start(() => {
+        setViewMode(mode);
+        requestAnimationFrame(() => {
+          restoreScrollPositions(mode);
+          requestAnimationFrame(() => {
+            Animated.timing(fadeAnim, {
+              toValue: 1,
+              duration: 120,
+              useNativeDriver: true,
+            }).start();
+          });
+        });
+      });
       slideAnim.setValue(0);
     }
   }, [fadeAnim, slideAnim, toggleIndicatorAnim, viewMode, restoreScrollPositions]);
