@@ -1340,16 +1340,16 @@ const styles = StyleSheet.create({
 
   badge: {
     position: 'absolute',
-    top: -17.5,
+    top: -13.125,
     right: 16,
     backgroundColor: '#c9841e',
-    paddingHorizontal: 14,
-    paddingVertical: 7,
+    paddingHorizontal: 10.5,
+    paddingVertical: 5.25,
     borderRadius: 999,
     zIndex: 10,
   },
   badgeText: {
-    fontSize: 17,
+    fontSize: 12.75,
     fontWeight: '500',
     color: '#fbefd9',
     letterSpacing: 0.2,
