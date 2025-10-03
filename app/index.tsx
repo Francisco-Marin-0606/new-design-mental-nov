@@ -423,6 +423,12 @@ export default function HomeScreen() {
   const [settingsModalVisible, setSettingsModalVisible] = useState<boolean>(false);
   const { width: screenWidth } = useWindowDimensions();
 
+  const menuPrimaryScale = useRef(new Animated.Value(1)).current;
+  const menuDownloadScale = useRef(new Animated.Value(1)).current;
+  const menuQAScale = useRef(new Animated.Value(1)).current;
+  const menuRenameScale = useRef(new Animated.Value(1)).current;
+  const menuCancelScale = useRef(new Animated.Value(1)).current;
+
   const [downloads, setDownloads] = useState<Record<string, DownloadInfo>>({});
   const timersRef = useRef<Record<string, NodeJS.Timeout | number>>({});
 
@@ -1009,108 +1015,179 @@ export default function HomeScreen() {
               <Text style={styles.menuTitle} numberOfLines={2}>{menuSession?.title}</Text>
 
               <Pressable
-                style={({ pressed }) => [
-                  styles.menuPrimary,
-                  pressed && { transform: [{ scale: 0.9 }], opacity: 0.2 }
-                ]}
                 onPress={() => handleMenuAction('play')}
+                onPressIn={() => {
+                  Animated.spring(menuPrimaryScale, {
+                    toValue: 0.9,
+                    useNativeDriver: true,
+                    speed: 50,
+                    bounciness: 0,
+                  }).start();
+                }}
+                onPressOut={() => {
+                  Animated.spring(menuPrimaryScale, {
+                    toValue: 1,
+                    useNativeDriver: true,
+                    speed: 50,
+                    bounciness: 0,
+                  }).start();
+                }}
                 android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.15)' } : undefined}
                 testID="menu-primary-play"
                 accessibilityLabel="Reproducir"
               >
-                <Play color="#1a0d08" size={22} fill="#1a0d08" />
-                <Text style={styles.menuPrimaryText}>Reproducir ahora</Text>
+                <Animated.View style={[styles.menuPrimary, { transform: [{ scale: menuPrimaryScale }], opacity: menuPrimaryScale.interpolate({ inputRange: [0.9, 1], outputRange: [0.2, 1] }) }]}>
+                  <Play color="#1a0d08" size={22} fill="#1a0d08" />
+                  <Text style={styles.menuPrimaryText}>Reproducir ahora</Text>
+                </Animated.View>
               </Pressable>
 
               <View style={styles.menuDivider} />
 
               <Pressable
-                style={({ pressed }) => [
-                  styles.menuItem,
-                  { overflow: 'hidden' },
-                  pressed && { transform: [{ scale: 0.9 }], opacity: 0.2 }
-                ]}
                 onPress={() => handleMenuAction('download')}
+                onPressIn={() => {
+                  if (menuDownload?.state === 'downloading' || menuDownload?.state === 'completed') return;
+                  Animated.spring(menuDownloadScale, {
+                    toValue: 0.9,
+                    useNativeDriver: true,
+                    speed: 50,
+                    bounciness: 0,
+                  }).start();
+                }}
+                onPressOut={() => {
+                  if (menuDownload?.state === 'downloading' || menuDownload?.state === 'completed') return;
+                  Animated.spring(menuDownloadScale, {
+                    toValue: 1,
+                    useNativeDriver: true,
+                    speed: 50,
+                    bounciness: 0,
+                  }).start();
+                }}
                 android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.1)' } : undefined}
                 testID="menu-download"
                 accessibilityLabel="Descargar"
                 disabled={menuDownload?.state === 'downloading' || menuDownload?.state === 'completed'}
               >
-                {menuDownload?.state === 'downloading' && (
-                  <View 
-                    style={[
-                      styles.menuItemProgressBar,
-                      { width: `${Math.max(0, Math.min(100, Math.round(menuDownload.progress)))}%` }
-                    ]}
-                  />
-                )}
-                {menuDownload?.state === 'downloading' ? (
-                  <Text style={styles.menuItemText}>{Math.max(0, Math.min(100, Math.round(menuDownload.progress)))}%</Text>
-                ) : (
-                  <>
-                    <View style={[styles.menuIconContainer, styles.menuIconAccent]}>
-                      {menuDownload?.state === 'completed' ? (
-                        <Check color="#ffffff" size={20} />
-                      ) : (
-                        <Download color="#ffffff" size={20} />
-                      )}
-                    </View>
-                    <Text style={styles.menuItemText}>
-                      {menuDownload?.state === 'completed' ? 'Descargada' : 'Descargar'}
-                    </Text>
-                  </>
-                )}
+                <Animated.View style={[styles.menuItem, { overflow: 'hidden', transform: [{ scale: menuDownloadScale }], opacity: menuDownloadScale.interpolate({ inputRange: [0.9, 1], outputRange: [0.2, 1] }) }]}>
+                  {menuDownload?.state === 'downloading' && (
+                    <View 
+                      style={[
+                        styles.menuItemProgressBar,
+                        { width: `${Math.max(0, Math.min(100, Math.round(menuDownload.progress)))}%` }
+                      ]}
+                    />
+                  )}
+                  {menuDownload?.state === 'downloading' ? (
+                    <Text style={styles.menuItemText}>{Math.max(0, Math.min(100, Math.round(menuDownload.progress)))}%</Text>
+                  ) : (
+                    <>
+                      <View style={[styles.menuIconContainer, styles.menuIconAccent]}>
+                        {menuDownload?.state === 'completed' ? (
+                          <Check color="#ffffff" size={20} />
+                        ) : (
+                          <Download color="#ffffff" size={20} />
+                        )}
+                      </View>
+                      <Text style={styles.menuItemText}>
+                        {menuDownload?.state === 'completed' ? 'Descargada' : 'Descargar'}
+                      </Text>
+                    </>
+                  )}
+                </Animated.View>
               </Pressable>
 
               {menuViewMode === 'previous' && (
                 <>
                   <View style={styles.menuDivider} />
                   <Pressable
-                    style={({ pressed }) => [
-                      styles.menuItem,
-                      pressed && { transform: [{ scale: 0.9 }], opacity: 0.2 }
-                    ]}
                     onPress={() => handleMenuAction('qa')}
+                    onPressIn={() => {
+                      Animated.spring(menuQAScale, {
+                        toValue: 0.9,
+                        useNativeDriver: true,
+                        speed: 50,
+                        bounciness: 0,
+                      }).start();
+                    }}
+                    onPressOut={() => {
+                      Animated.spring(menuQAScale, {
+                        toValue: 1,
+                        useNativeDriver: true,
+                        speed: 50,
+                        bounciness: 0,
+                      }).start();
+                    }}
                     android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.1)' } : undefined}
                     testID="menu-qa"
                     accessibilityLabel="Preguntas y respuestas"
                   >
-                    <View style={styles.menuIconContainer}>
-                      <MessageCircle color="#ffffff" size={20} />
-                    </View>
-                    <Text style={styles.menuItemText}>Preguntas y respuestas</Text>
+                    <Animated.View style={[styles.menuItem, { transform: [{ scale: menuQAScale }], opacity: menuQAScale.interpolate({ inputRange: [0.9, 1], outputRange: [0.2, 1] }) }]}>
+                      <View style={styles.menuIconContainer}>
+                        <MessageCircle color="#ffffff" size={20} />
+                      </View>
+                      <Text style={styles.menuItemText}>Preguntas y respuestas</Text>
+                    </Animated.View>
                   </Pressable>
 
                   <Pressable
-                    style={({ pressed }) => [
-                      styles.menuItem,
-                      pressed && { transform: [{ scale: 0.9 }], opacity: 0.2 }
-                    ]}
                     onPress={() => handleMenuAction('rename')}
+                    onPressIn={() => {
+                      Animated.spring(menuRenameScale, {
+                        toValue: 0.9,
+                        useNativeDriver: true,
+                        speed: 50,
+                        bounciness: 0,
+                      }).start();
+                    }}
+                    onPressOut={() => {
+                      Animated.spring(menuRenameScale, {
+                        toValue: 1,
+                        useNativeDriver: true,
+                        speed: 50,
+                        bounciness: 0,
+                      }).start();
+                    }}
                     android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.1)' } : undefined}
                     testID="menu-rename"
                     accessibilityLabel="Cambiar nombre"
                   >
-                    <View style={styles.menuIconContainer}>
-                      <Edit3 color="#ffffff" size={20} />
-                    </View>
-                    <Text style={styles.menuItemText}>Cambiar nombre</Text>
+                    <Animated.View style={[styles.menuItem, { transform: [{ scale: menuRenameScale }], opacity: menuRenameScale.interpolate({ inputRange: [0.9, 1], outputRange: [0.2, 1] }) }]}>
+                      <View style={styles.menuIconContainer}>
+                        <Edit3 color="#ffffff" size={20} />
+                      </View>
+                      <Text style={styles.menuItemText}>Cambiar nombre</Text>
+                    </Animated.View>
                   </Pressable>
                 </>
               )}
 
               <View style={styles.menuSpacer} />
               <Pressable
-                style={({ pressed }) => [
-                  styles.menuCancel,
-                  pressed && { transform: [{ scale: 0.9 }], opacity: 0.2 }
-                ]}
                 onPress={handleMenuClose}
+                onPressIn={() => {
+                  Animated.spring(menuCancelScale, {
+                    toValue: 0.9,
+                    useNativeDriver: true,
+                    speed: 50,
+                    bounciness: 0,
+                  }).start();
+                }}
+                onPressOut={() => {
+                  Animated.spring(menuCancelScale, {
+                    toValue: 1,
+                    useNativeDriver: true,
+                    speed: 50,
+                    bounciness: 0,
+                  }).start();
+                }}
                 android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.15)' } : undefined}
                 testID="menu-cancel"
                 accessibilityLabel="Cancelar"
               >
-                <Text style={styles.menuCancelText}>Cancelar</Text>
+                <Animated.View style={[styles.menuCancel, { transform: [{ scale: menuCancelScale }], opacity: menuCancelScale.interpolate({ inputRange: [0.9, 1], outputRange: [0.2, 1] }) }]}>
+                  <Text style={styles.menuCancelText}>Cancelar</Text>
+                </Animated.View>
               </Pressable>
             </View>
           </View>
