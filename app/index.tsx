@@ -645,6 +645,11 @@ export default function HomeScreen() {
     
     menuContainerScale.setValue(0.85);
     menuContainerOpacity.setValue(0);
+    menuPrimaryScale.setValue(1);
+    menuDownloadScale.setValue(1);
+    menuQAScale.setValue(1);
+    menuRenameScale.setValue(1);
+    menuCancelScale.setValue(1);
     
     Animated.parallel([
       Animated.spring(menuContainerScale, {
@@ -659,7 +664,7 @@ export default function HomeScreen() {
         useNativeDriver: true,
       }),
     ]).start();
-  }, [menuContainerScale, menuContainerOpacity]);
+  }, [menuContainerScale, menuContainerOpacity, menuPrimaryScale, menuDownloadScale, menuQAScale, menuRenameScale, menuCancelScale]);
 
   const handleMenuClose = useCallback(async () => {
     if (Platform.OS !== 'web') {
