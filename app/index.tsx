@@ -1492,10 +1492,10 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   menuGradientBg: { ...StyleSheet.absoluteFillObject },
-  menuContent: { paddingVertical: 20, paddingHorizontal: 20, position: 'relative', zIndex: 1 },
+  menuContent: { paddingVertical: 32, paddingHorizontal: 20, position: 'relative', zIndex: 1 },
   menuCloseButton: {
     position: 'absolute',
-    top: 20,
+    top: 24,
     right: 20,
     zIndex: 10,
     width: 32,
