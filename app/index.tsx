@@ -1343,7 +1343,7 @@ const styles = StyleSheet.create({
     top: -13.125,
     right: 16,
     backgroundColor: '#c9841e',
-    paddingHorizontal: 11.55,
+    paddingHorizontal: 13.2825,
     paddingVertical: 5.25,
     borderRadius: 999,
     zIndex: 10,
