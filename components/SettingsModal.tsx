@@ -402,17 +402,12 @@ const styles = StyleSheet.create({
     elevation: 8,
     borderWidth: 1.5,
     borderColor: 'rgba(201, 132, 30, 0.4)',
-    minWidth: 120,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   budgetText: {
     fontSize: 11,
     fontWeight: '800',
     color: '#1a0d08',
     letterSpacing: 1.2,
-    textAlign: 'center',
-    width: '100%',
   },
 
   menuSection: {
