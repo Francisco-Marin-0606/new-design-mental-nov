@@ -279,8 +279,8 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
             )}
           </View>
           {index === 1 && (
-            <View style={styles.badge} testID="listen-badge">
-              <Text style={styles.badgeText}>NUEVA</Text>
+            <View style={styles.badgeActiva} testID="listen-badge">
+              <Text style={styles.badgeActivaText}>ACTIVA</Text>
             </View>
           )}
         </View>
@@ -1377,6 +1377,29 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: '#1a0d08',
     letterSpacing: 1.2,
+  },
+  badgeActiva: {
+    position: 'absolute',
+    top: -13.125,
+    right: 16,
+    backgroundColor: '#1a0d08',
+    paddingHorizontal: 18,
+    paddingVertical: 8,
+    borderRadius: 999,
+    zIndex: 10,
+    shadowColor: '#c9841e',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 12,
+    elevation: 12,
+    borderWidth: 2,
+    borderColor: '#c9841e',
+  },
+  badgeActivaText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#fbefd9',
+    letterSpacing: 1.4,
   },
 
   // Pie
