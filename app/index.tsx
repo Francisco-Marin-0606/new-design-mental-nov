@@ -1502,7 +1502,7 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 4,
   },
-  menuPrimaryText: { color: '#1a0d08', fontSize: 17, fontWeight: '800', letterSpacing: 0.2 },
+  menuPrimaryText: { color: '#1a0d08', fontSize: 17, fontWeight: '600', letterSpacing: 0.2 },
   menuDivider: { height: 1, backgroundColor: 'rgba(255,255,255,0.15)', marginVertical: 16 },
   menuItem: {
     flexDirection: 'row',
@@ -1531,8 +1531,8 @@ const styles = StyleSheet.create({
   },
   menuIconContainer: { width: 22, height: 22, justifyContent: 'center', alignItems: 'center' },
   menuIconAccent: { width: 22, height: 22 },
-  menuItemText: { fontSize: 17, fontWeight: '800', color: '#ffffff', letterSpacing: 0.2 },
-  menuItemMeta: { fontSize: 15, fontWeight: '800', color: '#ffffff', opacity: 0.9 },
+  menuItemText: { fontSize: 17, fontWeight: '600', color: '#ffffff', letterSpacing: 0.2 },
+  menuItemMeta: { fontSize: 15, fontWeight: '600', color: '#ffffff', opacity: 0.9 },
   menuSpacer: { height: 12 },
   menuCancel: {
     alignSelf: 'stretch',
@@ -1542,7 +1542,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  menuCancelText: { color: '#ffffff', fontSize: 17, fontWeight: '800', letterSpacing: 0.2 },
+  menuCancelText: { color: '#ffffff', fontSize: 17, fontWeight: '600', letterSpacing: 0.2 },
   emptyText: { textAlign: 'center', color: 'rgba(251, 239, 217, 0.6)', marginTop: 24 },
   footerNav: {
     position: 'absolute',
