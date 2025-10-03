@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { MoreVertical, Play, Download, MessageCircle, Edit3, Settings, Check } from 'lucide-react-native';
+import { MoreVertical, Play, Download, MessageCircle, Edit3, Settings, Check, X } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import Svg, { Defs, LinearGradient as SvgLinearGradient, Stop, Rect } from 'react-native-svg';
 import SwipeUpModal from '@/components/SwipeUpModal';
@@ -1054,7 +1054,13 @@ export default function HomeScreen() {
             </View>
             
             <View style={styles.menuContent}>
-              <View style={styles.sheetHandle} />
+              <Pressable
+                style={styles.menuCloseButton}
+                onPress={handleMenuClose}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <X color="#ffffff" size={24} strokeWidth={2} />
+              </Pressable>
               <Text style={styles.menuTitle} numberOfLines={2}>{menuSession?.title}</Text>
 
               <Pressable
@@ -1204,34 +1210,6 @@ export default function HomeScreen() {
                   </Pressable>
                 </>
               )}
-
-              <View style={styles.menuSpacer} />
-              <Pressable
-                onPress={handleMenuClose}
-                onPressIn={() => {
-                  Animated.spring(menuCancelScale, {
-                    toValue: 0.9,
-                    useNativeDriver: true,
-                    speed: 50,
-                    bounciness: 0,
-                  }).start();
-                }}
-                onPressOut={() => {
-                  Animated.spring(menuCancelScale, {
-                    toValue: 1,
-                    useNativeDriver: true,
-                    speed: 50,
-                    bounciness: 0,
-                  }).start();
-                }}
-                android_ripple={Platform.OS === 'android' ? { color: 'rgba(255,255,255,0.15)' } : undefined}
-                testID="menu-cancel"
-                accessibilityLabel="Cancelar"
-              >
-                <Animated.View style={[styles.menuCancel, { transform: [{ scale: menuCancelScale }], opacity: menuCancelScale.interpolate({ inputRange: [0.9, 1], outputRange: [0.2, 1] }) }]}>
-                  <Text style={styles.menuCancelText}>Cancelar</Text>
-                </Animated.View>
-              </Pressable>
             </View>
           </Animated.View>
         </View>
@@ -1515,13 +1493,15 @@ const styles = StyleSheet.create({
   },
   menuGradientBg: { ...StyleSheet.absoluteFillObject },
   menuContent: { paddingVertical: 20, paddingHorizontal: 20, position: 'relative', zIndex: 1 },
-  sheetHandle: {
-    alignSelf: 'center',
-    width: 48,
-    height: 5,
-    borderRadius: 3,
-    backgroundColor: 'rgba(255,255,255,0.35)',
-    marginBottom: 16,
+  menuCloseButton: {
+    position: 'absolute',
+    top: 20,
+    right: 20,
+    zIndex: 10,
+    width: 32,
+    height: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   menuTitle: {
     fontSize: 22,
