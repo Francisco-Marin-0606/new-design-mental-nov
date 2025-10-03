@@ -604,21 +604,15 @@ export default function HomeScreen() {
     const shouldAnimate = isChangingToPrevious || isChangingFromPrevious;
 
     if (shouldAnimate) {
-      Animated.parallel([
-        Animated.timing(fadeAnim, {
-          toValue: 0,
-          duration: 150,
-          useNativeDriver: true,
-        }),
-        Animated.timing(slideAnim, {
-          toValue: -50,
-          duration: 150,
-          useNativeDriver: true,
-        }),
-      ]).start(() => {
+      const enterFrom = mode === 'previous' ? 50 : -50;
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 150,
+        useNativeDriver: true,
+      }).start(() => {
         setViewMode(mode);
         fadeAnim.setValue(0);
-        slideAnim.setValue(-50);
+        slideAnim.setValue(enterFrom);
         restoreScrollPositions(mode);
         Animated.parallel([
           Animated.timing(fadeAnim, {
