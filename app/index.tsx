@@ -763,14 +763,14 @@ export default function HomeScreen() {
               onPressIn={() => {
                 Animated.timing(settingsButtonOpacity, {
                   toValue: 0.5,
-                  duration: 100,
+                  duration: 150,
                   useNativeDriver: true,
                 }).start();
               }}
               onPressOut={() => {
                 Animated.timing(settingsButtonOpacity, {
                   toValue: 1,
-                  duration: 100,
+                  duration: 150,
                   useNativeDriver: true,
                 }).start();
               }}
