@@ -10,7 +10,6 @@ import {
   Animated,
   FlatList,
   ListRenderItemInfo,
-  Easing,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -35,7 +34,6 @@ type DownloadState = 'idle' | 'downloading' | 'completed';
 interface DownloadInfo {
   progress: number;
   state: DownloadState;
-  animatedProgress?: Animated.Value;
 }
 
 interface CarouselItemProps {
@@ -154,16 +152,10 @@ function ListItem({ item, onPress, onMenuPress, viewMode, downloadInfo }: ListIt
               </Text>
               {!(item.isGrayscale && revealProgress < 100) && (
                 <View style={styles.durationRow}>
-                  {downloadInfo?.state === 'downloading' && downloadInfo.animatedProgress && (
+                  {downloadInfo?.state === 'downloading' && (
                     <View style={styles.downloadingIconContainer}>
                       <Download size={12} color="#ff9a2e" />
-                      <Animated.Text style={styles.downloadingPercentage}>
-                        {downloadInfo.animatedProgress.interpolate({
-                          inputRange: [0, 100],
-                          outputRange: ['0%', '100%'],
-                          extrapolate: 'clamp',
-                        })}
-                      </Animated.Text>
+                      <Text style={styles.downloadingPercentage}>{Math.max(0, Math.min(100, Math.round(downloadInfo.progress)))}%</Text>
                     </View>
                   )}
                   {downloadInfo?.state === 'completed' && (
@@ -696,45 +688,21 @@ export default function HomeScreen() {
   }, [menuContainerScale, menuContainerOpacity]);
 
   const startDownload = useCallback((id: string) => {
-    const animatedProgress = new Animated.Value(0);
-    
     setDownloads((prev) => ({
       ...prev,
-      [id]: { progress: 0, state: 'downloading', animatedProgress },
+      [id]: { progress: 0, state: 'downloading' },
     }));
-    
     try {
-      let currentProgress = 0;
-      const stepMs = 100;
-      
+      const stepMs = 400;
       const handle = setInterval(() => {
         setDownloads((prev) => {
-          const current = prev[id];
-          if (!current || current.state !== 'downloading') return prev;
-          
-          const increment = Math.random() * 3 + 1;
-          currentProgress = Math.min(100, currentProgress + increment);
-          const state: DownloadState = currentProgress >= 100 ? 'completed' : 'downloading';
-          
-          if (current.animatedProgress) {
-            Animated.timing(current.animatedProgress, {
-              toValue: currentProgress,
-              duration: stepMs,
-              useNativeDriver: false,
-              easing: Easing.linear,
-            }).start();
-          }
-          
-          return { ...prev, [id]: { ...current, progress: currentProgress, state } };
+          const current = prev[id] ?? { progress: 0, state: 'downloading' };
+          if (current.state !== 'downloading') return prev;
+          const next = Math.min(100, (current.progress ?? 0) + Math.floor(5 + Math.random() * 12));
+          const state: DownloadState = next >= 100 ? 'completed' : 'downloading';
+          return { ...prev, [id]: { progress: next, state } };
         });
-        
-        if (currentProgress >= 100) {
-          const t = timersRef.current[id];
-          if (typeof t === 'number') clearInterval(t as number);
-          timersRef.current[id] = 0;
-        }
       }, stepMs) as unknown as number;
-      
       timersRef.current[id] = handle;
     } catch (e) {
       console.log('Download simulation error', e);
@@ -1153,28 +1121,16 @@ export default function HomeScreen() {
                 disabled={menuDownload?.state === 'downloading' || menuDownload?.state === 'completed'}
               >
                 <Animated.View style={[styles.menuItem, { overflow: 'hidden', transform: [{ scale: menuDownloadScale }], opacity: menuDownloadScale.interpolate({ inputRange: [0.9, 1], outputRange: [0.2, 1] }) }]}>
-                  {menuDownload?.state === 'downloading' && menuDownload.animatedProgress && (
-                    <Animated.View 
+                  {menuDownload?.state === 'downloading' && (
+                    <View 
                       style={[
                         styles.menuItemProgressBar,
-                        { 
-                          width: menuDownload.animatedProgress.interpolate({
-                            inputRange: [0, 100],
-                            outputRange: ['0%', '100%'],
-                            extrapolate: 'clamp',
-                          })
-                        }
+                        { width: `${Math.max(0, Math.min(100, Math.round(menuDownload.progress)))}%` }
                       ]}
                     />
                   )}
-                  {menuDownload?.state === 'downloading' && menuDownload.animatedProgress ? (
-                    <Animated.Text style={styles.menuItemText}>
-                      {menuDownload.animatedProgress.interpolate({
-                        inputRange: [0, 100],
-                        outputRange: ['0%', '100%'],
-                        extrapolate: 'clamp',
-                      })}
-                    </Animated.Text>
+                  {menuDownload?.state === 'downloading' ? (
+                    <Text style={styles.menuItemText}>{Math.max(0, Math.min(100, Math.round(menuDownload.progress)))}%</Text>
                   ) : (
                     <>
                       <View style={[styles.menuIconContainer, styles.menuIconAccent]}>
