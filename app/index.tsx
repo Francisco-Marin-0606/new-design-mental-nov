@@ -635,21 +635,9 @@ export default function HomeScreen() {
       });
     } else {
       setViewMode(mode);
-      fadeAnim.setValue(0);
-      slideAnim.setValue(-50);
       restoreScrollPositions(mode);
-      Animated.parallel([
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 180,
-          useNativeDriver: true,
-        }),
-        Animated.timing(slideAnim, {
-          toValue: 0,
-          duration: 180,
-          useNativeDriver: true,
-        }),
-      ]).start();
+      fadeAnim.setValue(1);
+      slideAnim.setValue(0);
     }
   }, [fadeAnim, slideAnim, toggleIndicatorAnim, viewMode, restoreScrollPositions]);
 
