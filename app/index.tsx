@@ -428,6 +428,7 @@ export default function HomeScreen() {
   const menuQAScale = useRef(new Animated.Value(1)).current;
   const menuRenameScale = useRef(new Animated.Value(1)).current;
   const menuCancelScale = useRef(new Animated.Value(1)).current;
+  const settingsButtonOpacity = useRef(new Animated.Value(1)).current;
 
   const [downloads, setDownloads] = useState<Record<string, DownloadInfo>>({});
   const timersRef = useRef<Record<string, NodeJS.Timeout | number>>({});
@@ -759,15 +760,31 @@ export default function HomeScreen() {
                 }
                 setSettingsModalVisible(true);
               }}
+              onPressIn={() => {
+                Animated.timing(settingsButtonOpacity, {
+                  toValue: 0.5,
+                  duration: 100,
+                  useNativeDriver: true,
+                }).start();
+              }}
+              onPressOut={() => {
+                Animated.timing(settingsButtonOpacity, {
+                  toValue: 1,
+                  duration: 100,
+                  useNativeDriver: true,
+                }).start();
+              }}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
-              <Settings
-                color="#fbefd9"
-                size={28}
-                strokeWidth={1.5}
-                testID="header-settings-icon"
-                accessibilityLabel="Configuración"
-              />
+              <Animated.View style={{ opacity: settingsButtonOpacity }}>
+                <Settings
+                  color="#fbefd9"
+                  size={28}
+                  strokeWidth={1.5}
+                  testID="header-settings-icon"
+                  accessibilityLabel="Configuración"
+                />
+              </Animated.View>
             </Pressable>
           </View>
 
