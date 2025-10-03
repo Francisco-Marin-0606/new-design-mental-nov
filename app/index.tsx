@@ -1054,13 +1054,15 @@ export default function HomeScreen() {
             </View>
             
             <View style={styles.menuContent}>
-              <Pressable
-                style={styles.menuCloseButton}
-                onPress={handleMenuClose}
-                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-              >
-                <X color="#ffffff" size={24} strokeWidth={2} />
-              </Pressable>
+              <View style={styles.menuHeader}>
+                <Pressable
+                  style={styles.menuCloseButton}
+                  onPress={handleMenuClose}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                >
+                  <X color="#ffffff" size={24} strokeWidth={2} />
+                </Pressable>
+              </View>
               <Text style={styles.menuTitle} numberOfLines={2}>{menuSession?.title}</Text>
 
               <Pressable
@@ -1492,12 +1494,15 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   menuGradientBg: { ...StyleSheet.absoluteFillObject },
-  menuContent: { paddingVertical: 32, paddingHorizontal: 20, position: 'relative', zIndex: 1 },
+  menuContent: { paddingVertical: 24, paddingHorizontal: 20, position: 'relative', zIndex: 1 },
+  menuHeader: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    marginBottom: 12,
+    minHeight: 32,
+  },
   menuCloseButton: {
-    position: 'absolute',
-    top: 24,
-    right: 20,
-    zIndex: 10,
     width: 32,
     height: 32,
     justifyContent: 'center',
