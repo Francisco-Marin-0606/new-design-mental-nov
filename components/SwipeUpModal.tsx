@@ -136,8 +136,7 @@ export default function SwipeUpModal({ visible, onClose, imageUri, title, downlo
 
   const isDownloading = downloadInfo?.state === 'downloading';
   const isDownloaded = downloadInfo?.state === 'completed';
-  const downloadProgress = Math.max(0, Math.min(100, downloadInfo?.progress ?? 0));
-  const downloadProgressRounded = Math.round(downloadProgress);
+  const downloadProgress = Math.max(0, Math.min(100, Math.round(downloadInfo?.progress ?? 0)));
 
   const startDownload = useCallback(async () => {
     if (isDownloading || isDownloaded) return;
@@ -393,7 +392,7 @@ export default function SwipeUpModal({ visible, onClose, imageUri, title, downlo
                       accessibilityRole="button"
                       accessibilityLabel={
                         isDownloaded ? 'Descargada' : 
-                        isDownloading ? `${downloadProgressRounded}%` : 'Descargar'
+                        isDownloading ? `${downloadProgress}%` : 'Descargar'
                       }
                       disabled={isDownloading || isDownloaded}
                     >
@@ -412,7 +411,7 @@ export default function SwipeUpModal({ visible, onClose, imageUri, title, downlo
                       )}
                       <Text style={styles.downloadText}>
                         {isDownloaded ? 'Descargada' : 
-                         isDownloading ? `${downloadProgressRounded}%` : 'Descargar'}
+                         isDownloading ? `${downloadProgress}%` : 'Descargar'}
                       </Text>
                     </TouchableOpacity>
                   </View>
