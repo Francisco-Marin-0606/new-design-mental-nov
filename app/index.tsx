@@ -277,6 +277,11 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
                 resizeMode="cover"
               />
             )}
+            {downloadInfo?.state === 'completed' && (
+              <View style={styles.cardDownloadIconInside}>
+                <ArrowDown size={11.73} color="#ffffff" strokeWidth={3} />
+              </View>
+            )}
           </View>
           {index === 1 && (
             <View style={styles.badge} testID="listen-badge">
@@ -289,11 +294,6 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
           <Text style={styles.cardTitle} numberOfLines={3}>
             {item.isGrayscale && revealProgress < 100 ? 'Tu hipnosis está siendo creada...' : item.title}
           </Text>
-          {downloadInfo?.state === 'completed' && (
-            <View style={styles.cardDownloadIcon}>
-              <ArrowDown size={10.2} color="#ffffff" strokeWidth={3} />
-            </View>
-          )}
         </View>
       </Pressable>
     </Animated.View>
@@ -1377,6 +1377,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 7,
+  },
+  cardDownloadIconInside: {
+    position: 'absolute',
+    bottom: 12,
+    right: 12,
+    width: 17.595,
+    height: 17.595,
+    borderRadius: 8.7975,
+    backgroundColor: '#c9841e',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
   },
 
   badge: {
