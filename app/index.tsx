@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { MoreVertical, Play, Download, MessageCircle, Edit3, Settings, Check, X } from 'lucide-react-native';
+import { MoreVertical, Play, Download, MessageCircle, Edit3, Settings, Check, X, ArrowDown } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import Svg, { Defs, LinearGradient as SvgLinearGradient, Stop, Rect } from 'react-native-svg';
 import SwipeUpModal from '@/components/SwipeUpModal';
@@ -160,7 +160,7 @@ function ListItem({ item, onPress, onMenuPress, viewMode, downloadInfo }: ListIt
                   )}
                   {downloadInfo?.state === 'completed' && (
                     <View style={[styles.durationIconCircle, styles.durationIconCircleCompleted]}>
-                      <Check size={10.2} color="#ffffff" />
+                      <ArrowDown size={10.2} color="#ffffff" strokeWidth={3} />
                     </View>
                   )}
                   <Text style={styles.durationText}>Duración {formatDuration(item.durationSec)}</Text>
@@ -291,7 +291,7 @@ function CarouselItem({ item, index, cardWidth, cardSpacing, snapInterval, scrol
           </Text>
           {downloadInfo?.state === 'completed' && (
             <View style={styles.cardDownloadIcon}>
-              <Check size={10.2} color="#ffffff" />
+              <ArrowDown size={10.2} color="#ffffff" strokeWidth={3} />
             </View>
           )}
         </View>
