@@ -20,7 +20,7 @@ import * as Haptics from 'expo-haptics';
 import PlayerModal from './PlayerModal';
 
 type DownloadState = 'idle' | 'downloading' | 'completed';
-interface ModalDownloadInfo { progress: number; state: DownloadState }
+interface ModalDownloadInfo { progress: number; state: DownloadState; animatedProgress?: Animated.Value }
 
 interface SwipeUpModalProps {
   visible: boolean;
@@ -396,11 +396,17 @@ export default function SwipeUpModal({ visible, onClose, imageUri, title, downlo
                       }
                       disabled={isDownloading || isDownloaded}
                     >
-                      {isDownloading && (
-                        <View 
+                      {isDownloading && downloadInfo?.animatedProgress && (
+                        <Animated.View 
                           style={[
                             styles.downloadProgress,
-                            { width: `${downloadProgress}%` },
+                            { 
+                              width: downloadInfo.animatedProgress.interpolate({
+                                inputRange: [0, 100],
+                                outputRange: ['0%', '100%'],
+                                extrapolate: 'clamp',
+                              })
+                            },
                           ]}
                         />
                       )}
@@ -409,10 +415,19 @@ export default function SwipeUpModal({ visible, onClose, imageUri, title, downlo
                       ) : (
                         <Download color="#FFFFFF" size={18} />
                       )}
-                      <Text style={styles.downloadText}>
-                        {isDownloaded ? 'Descargada' : 
-                         isDownloading ? `${downloadProgress}%` : 'Descargar'}
-                      </Text>
+                      {isDownloading && downloadInfo?.animatedProgress ? (
+                        <Animated.Text style={styles.downloadText}>
+                          {downloadInfo.animatedProgress.interpolate({
+                            inputRange: [0, 100],
+                            outputRange: ['0%', '100%'],
+                            extrapolate: 'clamp',
+                          })}
+                        </Animated.Text>
+                      ) : (
+                        <Text style={styles.downloadText}>
+                          {isDownloaded ? 'Descargada' : 'Descargar'}
+                        </Text>
+                      )}
                     </TouchableOpacity>
                   </View>
 
