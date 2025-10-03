@@ -178,24 +178,16 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
         if (Platform.OS === 'web') {
           if (mode === 'audio') {
             const audioEl = webAudioRef.current;
-            const bgVideoEl = webBackgroundVideoRef.current;
             if (audioEl) audioEl.currentTime = target / 1000;
-            if (bgVideoEl) bgVideoEl.currentTime = target / 1000; // Sync background video
           } else {
             const el = webVideoRef.current;
             if (el) el.currentTime = target / 1000;
           }
           setPosition(target);
         } else {
-          // Native: sync both main video and background video
-          const promises = [];
           if (videoRef.current) {
-            promises.push(videoRef.current.setPositionAsync(target));
+            await videoRef.current.setPositionAsync(target);
           }
-          if (mode === 'audio' && backgroundVideoRef.current) {
-            promises.push(backgroundVideoRef.current.setPositionAsync(target));
-          }
-          await Promise.all(promises);
           setPosition(target);
         }
       } catch (err) {
