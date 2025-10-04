@@ -314,8 +314,27 @@ const HYPNOSIS_SESSIONS_RAW: HypnosisSession[] = [
   { id: '9', title: 'Liberación emocional suave y guiada', imageUri: weservProxy(DO_IMAGE), durationSec: 21 * 60 + 7 },
   { id: '10', title: 'Conexión espiritual serena y profunda', imageUri: weservProxy(DO_IMAGE), durationSec: 31 * 60 + 54 },
   { id: '11', title: 'Viaje hacia tu centro interior', imageUri: weservProxy(DO_IMAGE), durationSec: 27 * 60 + 18 },
-  // SOLO esta en gris real (filt=greyscale)
   { id: '12', title: 'Silencio en blanco y negro', imageUri: weservProxy(DO_IMAGE, { grayscale: true }), durationSec: 24 * 60 + 9, isGrayscale: true },
+  { id: '13', title: 'Descanso profundo bajo las estrellas', imageUri: weservProxy(DO_IMAGE), durationSec: 33 * 60 + 22 },
+  { id: '14', title: 'Armonía mental y física completa', imageUri: weservProxy(DO_IMAGE), durationSec: 26 * 60 + 45 },
+  { id: '15', title: 'Relajación total del cuerpo y mente', imageUri: weservProxy(DO_IMAGE), durationSec: 29 * 60 + 18 },
+  { id: '16', title: 'Sanación interior con luz dorada', imageUri: weservProxy(DO_IMAGE), durationSec: 22 * 60 + 33 },
+  { id: '17', title: 'Equilibrio emocional y serenidad', imageUri: weservProxy(DO_IMAGE), durationSec: 24 * 60 + 56 },
+  { id: '18', title: 'Viaje al jardín de la tranquilidad', imageUri: weservProxy(DO_IMAGE), durationSec: 38 * 60 + 12 },
+  { id: '19', title: 'Liberación de tensiones acumuladas', imageUri: weservProxy(DO_IMAGE), durationSec: 20 * 60 + 8 },
+  { id: '20', title: 'Conexión con tu yo superior', imageUri: weservProxy(DO_IMAGE), durationSec: 32 * 60 + 41 },
+  { id: '21', title: 'Paz mental para dormir mejor', imageUri: weservProxy(DO_IMAGE), durationSec: 27 * 60 + 29 },
+  { id: '22', title: 'Renovación energética matutina', imageUri: weservProxy(DO_IMAGE), durationSec: 15 * 60 + 52 },
+  { id: '23', title: 'Meditación en el bosque sagrado', imageUri: weservProxy(DO_IMAGE), durationSec: 36 * 60 + 17 },
+  { id: '24', title: 'Calma ante la ansiedad diaria', imageUri: weservProxy(DO_IMAGE), durationSec: 23 * 60 + 44 },
+  { id: '25', title: 'Respiración consciente y sanadora', imageUri: weservProxy(DO_IMAGE), durationSec: 18 * 60 + 36 },
+  { id: '26', title: 'Desconexión digital y mental', imageUri: weservProxy(DO_IMAGE), durationSec: 25 * 60 + 21 },
+  { id: '27', title: 'Viaje a tu lugar seguro interior', imageUri: weservProxy(DO_IMAGE), durationSec: 30 * 60 + 9 },
+  { id: '28', title: 'Sanación del corazón y el alma', imageUri: weservProxy(DO_IMAGE), durationSec: 34 * 60 + 55 },
+  { id: '29', title: 'Relajación profunda guiada paso a paso', imageUri: weservProxy(DO_IMAGE), durationSec: 28 * 60 + 3 },
+  { id: '30', title: 'Equilibrio de chakras y energía vital', imageUri: weservProxy(DO_IMAGE), durationSec: 40 * 60 + 28 },
+  { id: '31', title: 'Meditación para soltar el pasado', imageUri: weservProxy(DO_IMAGE), durationSec: 26 * 60 + 14 },
+  { id: '32', title: 'Despertar consciente y renovado', imageUri: weservProxy(DO_IMAGE), durationSec: 17 * 60 + 47 },
 ];
 
 const HYPNOSIS_SESSIONS: HypnosisSession[] = [...HYPNOSIS_SESSIONS_RAW].reverse();
