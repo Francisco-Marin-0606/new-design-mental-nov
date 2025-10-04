@@ -568,25 +568,23 @@ export default function HomeScreen() {
 
   const restoreScrollPositions = useCallback((targetMode: ViewMode) => {
     try {
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          if (targetMode === 'carousel' && carouselFlatListRef.current) {
-            const x = Math.max(0, carouselScrollOffsetRef.current ?? 0);
-            console.log('[Restore] Carousel to x:', x);
-            carouselFlatListRef.current.scrollToOffset({ offset: x, animated: false });
-          }
-          if (targetMode === 'list' && listFlatListRef.current) {
-            const y = Math.max(0, listScrollOffsetRef.current ?? 0);
-            console.log('[Restore] List to y:', y);
-            listFlatListRef.current.scrollToOffset({ offset: y, animated: false });
-          }
-          if (targetMode === 'previous' && previousFlatListRef.current) {
-            const y2 = Math.max(0, previousScrollOffsetRef.current ?? 0);
-            console.log('[Restore] Previous to y:', y2);
-            previousFlatListRef.current.scrollToOffset({ offset: y2, animated: false });
-          }
-        });
-      });
+      setTimeout(() => {
+        if (targetMode === 'carousel' && carouselFlatListRef.current) {
+          const x = Math.max(0, carouselScrollOffsetRef.current ?? 0);
+          console.log('[Restore] Carousel to x:', x);
+          carouselFlatListRef.current.scrollToOffset({ offset: x, animated: false });
+        }
+        if (targetMode === 'list' && listFlatListRef.current) {
+          const y = Math.max(0, listScrollOffsetRef.current ?? 0);
+          console.log('[Restore] List to y:', y);
+          listFlatListRef.current.scrollToOffset({ offset: y, animated: false });
+        }
+        if (targetMode === 'previous' && previousFlatListRef.current) {
+          const y2 = Math.max(0, previousScrollOffsetRef.current ?? 0);
+          console.log('[Restore] Previous to y:', y2);
+          previousFlatListRef.current.scrollToOffset({ offset: y2, animated: false });
+        }
+      }, 50);
     } catch (err) {
       console.log('[Restore] error restoring scroll', err);
     }
@@ -1005,6 +1003,7 @@ export default function HomeScreen() {
                 scrollEventThrottle={16}
                 removeClippedSubviews={false}
                 maintainVisibleContentPosition={undefined}
+                initialScrollIndex={undefined}
               />
             </Animated.View>
           ) : (
@@ -1022,6 +1021,7 @@ export default function HomeScreen() {
                 scrollEventThrottle={16}
                 removeClippedSubviews={false}
                 maintainVisibleContentPosition={undefined}
+                initialScrollIndex={undefined}
               />
             </Animated.View>
           )}
