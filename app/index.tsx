@@ -1252,7 +1252,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#170501' },
   safe: { flex: 1, backgroundColor: '#170501' },
-  container: { flex: 1, paddingTop: 24, paddingBottom: 20, justifyContent: 'center' },
+  container: { flex: 1, paddingTop: 24, paddingBottom: 8, justifyContent: 'center' },
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
