@@ -517,7 +517,7 @@ export default function PlayerModal({ visible, onClose, mode, title = 'Reproduct
     if (Platform.OS === 'web') return;
     Audio.setAudioModeAsync({
       allowsRecordingIOS: false,
-      staysActiveInBackground: false,
+      staysActiveInBackground: true,
       playsInSilentModeIOS: true,
       shouldDuckAndroid: true,
       playThroughEarpieceAndroid: false,
